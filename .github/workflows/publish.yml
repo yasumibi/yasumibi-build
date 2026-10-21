@@ -1,0 +1,39 @@
+name: サイトを作り直して公開
+
+on:
+  workflow_call: {}
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/checkout@v5
+        with: { repository: yasumibi/yasumibi-data, token: "${{ secrets.SITE_PUSH_TOKEN }}", path: data }
+      - uses: actions/checkout@v5
+        with: { repository: yasumibi/yasumibi-site, token: "${{ secrets.SITE_PUSH_TOKEN }}", path: site }
+      - uses: actions/setup-python@v6
+        with: { python-version: "3.12" }
+      - name: サイトを作り直す
+        env:
+          YB_OUT: ${{ github.workspace }}/site
+        run: |
+          python3 tools/build_hotel.py
+          python3 tools/build_card.py
+          python3 tools/build_rank.py
+          python3 tools/build_renkyu.py
+          python3 tools/build_site.py
+          python3 tools/build_top2.py
+          python3 tools/build_404.py
+      - name: 公開
+        working-directory: site
+        run: |
+          git config user.name "yasumibi-bot"; git config user.email "yasumibi@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || git commit -m "料金更新 $(TZ=Asia/Tokyo date +%Y-%m-%d)"
+          for i in 1 2 3; do git pull --rebase -X theirs origin main && git push && break; sleep 5; done

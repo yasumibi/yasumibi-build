@@ -1,0 +1,57 @@
+name: 候補調査（エリアを足す）
+
+on:
+  workflow_dispatch:
+    inputs:
+      areas:
+        description: "調べるエリア（例: kusatsu,yufuin）"
+        required: true
+      add:
+        description: "選んだ宿を一覧に足す（yes / no）"
+        default: "yes"
+      max:
+        description: "1エリアで足す上限"
+        default: "60"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rakuten-api
+  cancel-in-progress: false
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/checkout@v5
+        with: { repository: yasumibi/yasumibi-data, token: "${{ secrets.SITE_PUSH_TOKEN }}", path: data }
+      - uses: actions/setup-python@v6
+        with: { python-version: "3.12" }
+      - name: 楽天トラベルで候補を調べ、宿の情報と料金を取得
+        env:
+          RAKUTEN_APP_ID: ${{ secrets.RAKUTEN_APP_ID }}
+          RAKUTEN_ACCESS_KEY: ${{ secrets.RAKUTEN_ACCESS_KEY }}
+          YB_REFERER: https://yasumibi.com/
+          YB_AREAS: ${{ github.event.inputs.areas }}
+          YB_ADD: ${{ github.event.inputs.add == 'yes' && '1' || '0' }}
+          YB_MAX: ${{ github.event.inputs.max }}
+          YB_BUDGET_MIN: "200"
+        run: |
+          python3 tools/research_area.py
+          if [ "$YB_ADD" = "1" ]; then python3 tools/fetch_info.py && python3 tools/fetch_prices.py; fi
+      - name: 保存
+        working-directory: data
+        run: |
+          git config user.name "yasumibi-bot"; git config user.email "yasumibi@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || git commit -m "候補調査 ${{ github.event.inputs.areas }} $(TZ=Asia/Tokyo date +%Y-%m-%d)"
+          for i in 1 2 3; do git pull --rebase -X theirs origin main && git push && break; sleep 5; done
+
+  publish:
+    needs: research
+    if: ${{ github.event.inputs.add == 'yes' }}
+    uses: ./.github/workflows/publish.yml
+    secrets: inherit

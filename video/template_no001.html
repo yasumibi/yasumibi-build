@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="ja" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/gsap.min.js"></script>
+    <script src="assets/times.js"></script>
+    <script src="assets/prices.js"></script>
+    <link rel="stylesheet" href="assets/fonts.css" />
+    <style>
+      @font-face { font-family: "Noto Serif CJK JP"; font-weight: 600; src: local("Noto Serif CJK JP SemiBold"), local("NotoSerifCJKjp-SemiBold"); }
+      @font-face { font-family: "Noto Serif CJK JP"; font-weight: 900; src: local("Noto Serif CJK JP Black"), local("NotoSerifCJKjp-Black"); }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1920px; overflow: hidden; background: #f6f7f4; }
+      :root { --paper: #f6f7f4; --raised: #ffffff; --ink: #15171c; --muted: #5e6660; --hair: #d9ded8; --pine: #0f5c45; --marker: #ffd84d;
+        --cheap: #0f7d4d; --near: #cdebd9; --warm: #f4b259; --high: #c23a2e; --sold: #cfcfca; }
+      #root { position: relative; width: 1080px; height: 1920px; overflow: hidden; font-family: "Zen Kaku Gothic New", sans-serif; color: var(--ink); background: var(--paper); }
+      .bg { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; object-fit: cover; z-index: 0; }
+      #stage { position: absolute; inset: 0; z-index: 2; }
+      .clip { position: absolute; inset: 0; }
+      .page { position: absolute; inset: 0; }
+      .lat { font-family: "Archivo V", sans-serif; }
+      .bod { font-family: "Archivo V", sans-serif; font-weight: 800; font-stretch: 100%; letter-spacing: -0.01em; font-variant-numeric: lining-nums tabular-nums; }
+      .min { font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 900; letter-spacing: 0; }
+      .hd { position: absolute; top: 130px; left: 48px; right: 48px; display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 14px; border-bottom: 3px solid currentColor; font-family: "Archivo V", sans-serif; font-weight: 800; font-stretch: 112%; letter-spacing: 0.02em; }
+      .hd .l { font-size: 40px; letter-spacing: -0.01em; } .hd .r { font-size: 24px; font-weight: 700; font-stretch: 100%; letter-spacing: 0.16em; }
+      .mk { background: linear-gradient(transparent 58%, var(--marker) 58%, var(--marker) 92%, transparent 92%); padding: 0 6px; }
+      .label { display: inline-block; background: var(--marker); color: var(--ink); font-weight: 900; letter-spacing: 0.14em; padding: 4px 18px 8px 22px; }
+      .shadowT { text-shadow: 0 4px 6px rgba(5,20,45,.45), 0 12px 36px rgba(5,20,45,.55); }
+      .softT { text-shadow: 0 3px 14px rgba(10,40,90,.45); }
+      /* cover */
+      .cv-meta { position: absolute; top: 120px; left: 48px; right: 48px; display: flex; justify-content: space-between; font-family: "Archivo V"; font-weight: 700; font-stretch: 100%; font-size: 26px; letter-spacing: .14em; color: #fff; }
+      .cv-logo { position: absolute; top: 168px; left: 36px; font-family: "Archivo V"; font-weight: 900; font-stretch: 118%; font-size: 206px; line-height: .86; letter-spacing: -.035em; white-space: nowrap; color: #fff; }
+      .cv-tag { position: absolute; top: 350px; left: 48px; right: 48px; display: flex; justify-content: space-between; align-items: center; border-top: 3px solid #fff; padding-top: 14px; font-size: 26px; font-weight: 700; letter-spacing: .12em; color: #fff; }
+      .cv-tag b { font-family: "Archivo V"; font-stretch: 100%; font-weight: 700; letter-spacing: .16em; }
+      .cv-kick { position: absolute; top: 500px; left: 48px; font-size: 40px; }
+      .cv-title { position: absolute; top: 572px; left: 40px; font-weight: 900; font-size: 200px; line-height: 1.0; letter-spacing: -.02em; color: #fff; }
+      .cv-title .dot { color: var(--marker); }
+      .cv-sub { position: absolute; top: 990px; left: 48px; font-weight: 900; font-size: 50px; letter-spacing: .04em; color: #fff; }
+      .cv-lines { position: absolute; top: 640px; right: 48px; width: 300px; text-align: right; display: flex; flex-direction: column; gap: 26px; color: #fff; }
+      .cv-lines div { font-size: 30px; font-weight: 700; line-height: 1.35; }
+      .cv-lines .n { display: block; font-family: "Archivo V"; font-weight: 800; font-stretch: 100%; font-size: 64px; line-height: 1; color: var(--marker); }
+      .seal { position: absolute; top: 410px; right: 56px; width: 200px; height: 200px; border-radius: 50%; background: var(--marker); color: var(--ink); display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 900; text-align: center; line-height: 1.1; }
+      .seal small { font-size: 26px; } .seal span { font-size: 44px; }
+      /* matrix */
+      .mx { position: absolute; left: 36px; top: 560px; width: 1008px; background: var(--raised); color: var(--ink); padding: 26px 22px 22px; }
+      .mx .hd2, .mx .mr, .mx .ft { display: grid; grid-template-columns: 250px repeat(31, 1fr); gap: 3px; align-items: center; }
+      .mx .hd2 { margin-bottom: 8px; height: 40px; }
+      .mx .hd2 div { text-align: center; font-family: "Archivo V"; font-weight: 600; font-size: 22px; color: var(--muted); }
+      .mx .mr { margin-bottom: 8px; }
+      .mx .nm { font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 700; font-size: 31px; letter-spacing: -0.05em; padding-right: 4px; white-space: nowrap; }
+      .mx .c { height: 96px; border-radius: 3px; background: #eef0ec; }
+      .mx .ft div { text-align: center; font-weight: 700; font-size: 18px; color: #2f6fd6; }
+      .colbox { position: absolute; border: 7px solid var(--ink); opacity: 0; }
+      .colbox.red { border-color: var(--high); } .colbox.blue { border-color: #2f6fd6; } .colbox.grn { border-color: var(--marker); border-width: 9px; }
+      .lgd { position: absolute; left: 48px; right: 48px; top: 1332px; display: flex; gap: 26px; justify-content: center; color: #fff; font-size: 26px; font-weight: 700; }
+      .lgd span { display: inline-flex; align-items: center; gap: 8px; } .lgd i { width: 26px; height: 26px; display: inline-block; border: 2px solid rgba(255,255,255,.7); }
+      .badge { position: absolute; background: var(--ink); color: #fff; font-weight: 900; font-size: 22px; padding: 2px 10px 4px; opacity: 0; white-space: nowrap; }
+      .callout { position: absolute; font-weight: 900; white-space: nowrap; }
+      /* compare */
+      .sheet { position: absolute; left: 0; right: 0; top: 860px; bottom: 0; background: var(--paper); }
+      .cols { position: absolute; left: 48px; right: 48px; top: 905px; display: grid; grid-template-columns: 1fr 1fr; }
+      .col { padding: 0 24px; } .col + .col { border-left: 3px solid var(--ink); } .col { padding: 0 20px; }
+      .col .when { font-weight: 900; font-size: 42px; letter-spacing: .04em; }
+      .col .p { font-family: "Archivo V"; font-weight: 800; font-stretch: 100%; font-size: 104px; line-height: 1.05; letter-spacing: -0.01em; }
+      .col .c { font-size: 24px; color: var(--muted); font-weight: 500; }
+      .rule { position: absolute; left: 48px; right: 48px; height: 3px; background: var(--ink); }
+      #disc { position: absolute; left: 0; width: 1080px; top: 1462px; text-align: center; font-weight: 500; letter-spacing: 0.03em; font-size: 26px; color: #fff; z-index: 50; line-height: 1.4; text-shadow: 0 1px 6px rgba(0,0,0,.35); }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="__TOTAL__" data-width="1080" data-height="1920">
+      <audio id="snd" src="assets/audio.wav" data-start="0" data-duration="__TOTAL__" data-volume="1"></audio>
+__VIDEOS__
+      <div id="stage">
+
+        <!-- S0a cover -->
+        <div id="s0" class="clip" data-start="0" data-duration="__D_S0__" data-track-index="1">
+          <div class="cv-meta"><span>No.001</span><span>JANUARY 2027</span></div>
+          <div id="logo" class="cv-logo">YASUMIBI</div>
+          <div class="cv-tag"><span>休み日を、安い日に。</span><b>¥ PRICE MAGAZINE</b></div>
+          <div class="cv-kick label">特集</div>
+          <div id="cvt" class="cv-title shadowT">箱根の<br />神日<span class="dot">。</span></div>
+          <div id="seal" class="seal"><small>最大</small><span>半額</span><small>以下の日</small></div>
+          <div id="cvl" class="cv-lines softT">
+            <div><span class="n">155</span>日分の料金、<br />ぜんぶ調べた</div>
+            <div><span class="n">4/5</span>軒が<br />同じ日に最安</div>
+          </div>
+          <div class="cv-sub softT">2人で5万円前後の、人気宿5軒。</div>
+        </div>
+
+        <!-- S0b 4/5 page -->
+        <div id="s0b" class="clip page" data-start="__S_L02__" data-duration="__D_S0B__" data-track-index="1" style="background:var(--paper);">
+          <div class="hd" style="color:var(--ink);"><span class="l">YASUMIBI</span><span class="r">No.001 / P.01</span></div>
+          <div id="b1" style="position:absolute;top:300px;left:48px;font-weight:900;font-size:84px;letter-spacing:.02em;">5軒のうち、</div>
+          <div id="b2" class="bod" style="position:absolute;top:400px;left:30px;font-size:600px;line-height:1;letter-spacing:-0.04em;">4<span style="font-size:300px;color:var(--muted);">/5</span></div>
+          <div id="b3" style="position:absolute;top:1050px;left:48px;font-weight:900;font-size:96px;line-height:1.3;">軒が、<br /><span class="mk">同じ日</span>に最安。</div>
+        </div>
+
+        <!-- S1 matrix -->
+        <div id="s1" class="clip page" data-start="__S_L03__" data-duration="__D_S1__" data-track-index="1" style="background:var(--pine);color:#fff;">
+          <div class="hd" style="color:#fff;"><span class="l">YASUMIBI</span><span class="r">No.001 / P.02</span></div>
+          <div id="s1t" style="position:absolute;top:250px;left:48px;font-weight:900;font-size:64px;letter-spacing:.02em;line-height:1.2;">5軒 × 31日 ＝</div>
+          <div id="s1n" style="position:absolute;top:320px;left:40px;display:flex;align-items:baseline;gap:18px;"><span id="cnt" class="bod" style="font-size:220px;line-height:1;color:var(--marker);">0</span><span style="font-weight:900;font-size:72px;">日分、ぜんぶ見た。</span></div>
+          <div id="mx" class="mx"></div>
+          <div id="lgd" class="lgd"><span><i style="background:var(--cheap)"></i>その宿の最安</span><span><i style="background:var(--near)"></i>+15%</span><span><i style="background:var(--warm)"></i>+35%</span><span><i style="background:var(--high)"></i>それ以上</span></div>
+          <div id="coA" class="callout label" style="font-size:48px;top:1232px;left:48px;">お正月</div>
+          <div id="coB" class="callout label" style="font-size:48px;top:1232px;left:520px;background:#fff;">土曜泊</div>
+          <div id="coC" class="callout" style="top:1210px;left:48px;"><span class="label" style="font-size:72px;letter-spacing:.06em;">1/6(水)泊 ＝ 神日</span></div>
+        </div>
+
+        <!-- S2 compare -->
+        <div id="s2" class="clip" data-start="__S_L06__" data-duration="__D_S2__" data-track-index="1">
+          <div class="hd" style="color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.4);border-color:#fff;"><span class="l">YASUMIBI</span><span class="r">No.001 / P.03</span></div>
+          <div id="s2e" class="softT" style="position:absolute;top:300px;left:48px;color:#fff;font-family:'Archivo V';font-weight:700;font-size:28px;letter-spacing:.2em;">CASE STUDY — 芦ノ湖</div>
+          <div id="s2n" class="min shadowT" style="position:absolute;top:400px;left:40px;color:#fff;font-weight:900;font-size:170px;letter-spacing:.06em;line-height:1.15;">山の<br />ホテル</div>
+          <div class="sheet"></div>
+          <div class="cols">
+            <div id="cL" class="col"><div class="when" style="color:var(--high);">1/3(日)泊</div><div class="p" style="color:var(--high);">¥94,600</div><div class="c">大人2名・1泊2食</div></div>
+            <div id="cR" class="col"><div class="when" style="color:var(--cheap);">1/6(水)泊</div><div class="p" style="color:var(--cheap);">¥45,540</div><div class="c">大人2名・1泊2食</div></div>
+          </div>
+          <div id="r2" class="rule" style="top:1190px;"></div>
+          <div id="s2d" style="position:absolute;top:1200px;left:48px;display:flex;align-items:baseline;gap:20px;font-weight:900;font-size:48px;">差額<span id="diff" class="bod" style="font-size:110px;color:var(--high);">¥0</span></div>
+          <div id="s2h" style="position:absolute;top:1330px;left:48px;font-weight:900;font-size:88px;"><span class="mk">半額以下。</span></div>
+        </div>
+
+        <!-- S3 Saturday -->
+        <div id="s3" class="clip" data-start="__S_L08__" data-duration="__D_S3__" data-track-index="1">
+          <div class="hd" style="color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.4);border-color:#fff;"><span class="l">YASUMIBI</span><span class="r">No.001 / P.04</span></div>
+          <div id="s3t" style="position:absolute;top:260px;left:48px;"><span class="label" style="font-size:44px;">土曜しか休めない人へ</span></div>
+          <div id="s3n" class="min shadowT" style="position:absolute;top:360px;left:40px;color:#fff;font-weight:900;font-size:230px;letter-spacing:.08em;line-height:1.1;">水の音</div>
+          <div id="s3l" class="softT" style="position:absolute;top:640px;left:52px;color:#fff;font-family:'Archivo V';font-weight:700;font-size:28px;letter-spacing:.2em;">HAKONE — 強羅温泉の宿</div>
+          <div id="s3b" class="sheet" style="top:860px;"></div>
+          <div class="cols" style="top:905px;grid-template-columns:1fr 120px 1fr;">
+            <div id="wL" class="col"><div class="when">平日泊</div><div class="p" style="color:var(--cheap);font-size:96px;">¥52,712</div></div>
+            <div></div>
+            <div id="wR" class="col" style="border-left:none;"><div class="when" style="color:#2f6fd6;">1/30(土)泊</div><div class="p" style="color:var(--cheap);font-size:96px;">¥52,712</div></div>
+          </div>
+          <div id="eq" class="bod" style="position:absolute;top:975px;left:0;width:1080px;text-align:center;font-size:120px;color:var(--ink);">＝</div>
+          <div id="r3" class="rule" style="top:1150px;"></div>
+          <div id="s3s" style="position:absolute;top:1180px;left:48px;font-weight:900;font-size:92px;"><span class="mk">土曜でも同額。優勝。</span></div>
+          <div id="s3x" style="position:absolute;top:1320px;left:52px;font-weight:700;font-size:30px;color:var(--muted);">5軒のうち、土曜泊が最安値と同じなのはここだけ</div>
+        </div>
+
+        <!-- S4 closing -->
+        <div id="s4" class="clip page" data-start="__S_L09__" data-duration="__D_S4__" data-track-index="1" style="background:var(--pine);color:#fff;">
+          <div id="logo2" class="cv-logo" style="top:220px;">YASUMIBI</div>
+          <div class="cv-tag" style="top:402px;"><span>休み日を、安い日に。</span><b>¥ PRICE MAGAZINE</b></div>
+          <div id="s4a" style="position:absolute;top:560px;left:48px;font-weight:900;font-size:76px;">料金は、毎日変わる。</div>
+          <div id="s4b" style="position:absolute;top:690px;left:48px;font-weight:900;font-size:112px;line-height:1.25;color:#fff;">保存しないと、<br /><span class="mk" style="color:var(--ink);background-image:linear-gradient(var(--marker),var(--marker));padding:0 18px 8px;">普通に損。</span></div>
+          <div id="s4c" style="position:absolute;top:1040px;left:48px;right:48px;background:var(--paper);color:var(--ink);padding:30px 36px 34px;display:flex;justify-content:space-between;align-items:center;">
+            <div><div style="font-family:'Archivo V';font-weight:700;font-size:24px;letter-spacing:.2em;color:var(--pine);">FULL CALENDAR</div><div style="font-weight:900;font-size:54px;margin-top:6px;">5軒のカレンダーは、プロフへ</div></div>
+            <div class="bod" style="font-size:90px;line-height:1;">→</div>
+          </div>
+        </div>
+      </div>
+      <div id="disc">※2026年10月20日時点・楽天トラベル調べ（大人2名1泊2食付きの最安プラン、税込）<br />※料金・空室は変動します　※写真：Guilhem Vellut / CC BY 2.0（明るさを調整）</div>
+    </div>
+
+    <script>
+      const S = (k) => T[k][0], E = (k) => T[k][1];
+      // fit wordmarks to 1008px
+      document.querySelectorAll(".cv-logo").forEach((l) => { const r = document.createRange(); r.selectNodeContents(l); const w = r.getBoundingClientRect().width; if (w) l.style.fontSize = (206 * 1008) / w + "px"; });
+      const WD = (d) => new Date(2027, 0, d).getDay();
+      const col = (r) => (r === 0 ? "#cfcfca" : r <= 1.0001 ? "#0f7d4d" : r <= 1.15 ? "#cdebd9" : r <= 1.35 ? "#f4b259" : "#c23a2e");
+      (function () {
+        let h = '<div class="hd2"><div></div>';
+        for (let d = 1; d <= 31; d++) h += "<div>" + ([1, 6, 10, 15, 20, 25, 31].includes(d) ? d : "") + "</div>";
+        h += "</div>";
+        H.forEach((x, i) => {
+          const mn = Math.min(...x.p.filter((v) => v > 0));
+          h += '<div class="mr"><div class="nm">' + x.name.replace("小田急 ", "").replace("箱根仙石原プリンスホテル", "仙石原プリンス") + "</div>";
+          for (let d = 1; d <= 31; d++) { const v = x.p[d - 1]; h += '<div class="c" id="c' + i + "_" + d + '" data-col="' + col(v ? v / mn : 0) + '"></div>'; }
+          h += "</div>";
+        });
+        h += '<div class="ft"><div></div>';
+        for (let d = 1; d <= 31; d++) h += "<div>" + (WD(d) === 6 ? "土" : "") + "</div>";
+        document.getElementById("mx").innerHTML = h + "</div>";
+      })();
+      const CX = (d) => 311 + (d - 1) * 23.03, RY = (i) => 634 + i * 104;
+      function colBox(id, d0, d1, cls) {
+        const el = document.createElement("div"); el.className = "colbox " + cls; el.id = id;
+        el.style.left = CX(d0) - 8 + "px"; el.style.top = RY(0) - 8 + "px"; el.style.width = CX(d1) + 20.03 - CX(d0) + 16 + "px"; el.style.height = RY(4) + 96 - RY(0) + 16 + "px";
+        document.getElementById("s1").appendChild(el); return "#" + id;
+      }
+      const bxNY = colBox("bxNY", 1, 3, "red");
+      const bxSat = [9, 16, 23, 30].map((d) => colBox("bxS" + d, d, d, "blue"));
+      const bx6 = colBox("bx6", 6, 6, "grn");
+      const bdg = [];
+      H.forEach((x, i) => {
+        const mn = Math.min(...x.p.filter((v) => v > 0));
+        if (x.p[5] === mn) { const el = document.createElement("div"); el.className = "badge"; el.id = "bd" + i; el.textContent = "最安"; el.style.left = CX(6) + 36 + "px"; el.style.top = RY(i) + 30 + "px"; document.getElementById("s1").appendChild(el); bdg.push("#bd" + i); }
+      });
+
+      const tl = gsap.timeline({ paused: true });
+      const up = (sel, at, d) => tl.fromTo(sel, { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: d || 0.35, ease: "power3.out" }, at);
+      const wipe = (sel, at) => tl.fromTo(sel, { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.35, ease: "power2.out" }, at);
+      const out = (sel, at) => tl.to(sel, { opacity: 0, duration: 0.2 }, at);
+      const counter = (sel, at, dur, to, fmt) => { const o = { v: 0 }, el = document.querySelector(sel); tl.to(o, { v: to, duration: dur, ease: "power2.out", onUpdate: () => (el.textContent = fmt(Math.round(o.v))) }, at); };
+      const hit = (sel, at) => tl.fromTo(sel, { scale: 1.25, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.22, ease: "power3.out" }, at);
+      const markIn = (sel, at) => tl.fromTo(sel, { backgroundSize: "0% 100%" }, { backgroundSize: "100% 100%", duration: 0.3, ease: "power2.out" }, at);
+      document.querySelectorAll(".mk").forEach((m) => { m.style.backgroundRepeat = "no-repeat"; });
+
+      // S0 cover
+      tl.fromTo("#logo", { y: -260, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: "power4.out" }, 0);
+      tl.fromTo(["#s0 .cv-meta", "#s0 .cv-tag"], { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0.25);
+      tl.fromTo("#s0 .cv-kick", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.25 }, 0.45);
+      wipe("#cvt", 0.6);
+      tl.fromTo("#seal", { scale: 0, rotation: -40 }, { scale: 1, rotation: 8, duration: 0.35, ease: "back.out(2)" }, 1.6);
+      up("#cvl", 2.2); up("#s0 .cv-sub", 2.6);
+      // S0b
+      up("#b1", S("L02"));
+      tl.fromTo("#b2", { opacity: 0, y: 120 }, { opacity: 1, y: 0, duration: 0.4, ease: "power4.out" }, S("L02") + 0.3);
+      up("#b3", S("L02") + 1.2);
+      markIn("#b3 .mk", S("L02") + 1.7);
+      // S1 matrix
+      up("#s1t", S("L03")); up("#s1n", S("L03") + 0.2);
+      counter("#cnt", S("L03") + 0.6, 1.4, 155, (v) => String(v));
+      tl.fromTo("#mx", { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, S("L03") + 0.2);
+      for (let d = 1; d <= 31; d++) for (let i = 0; i < 5; i++) { const c = document.getElementById("c" + i + "_" + d); tl.to(c, { backgroundColor: c.dataset.col, duration: 0.1 }, S("L03") + 0.7 + d * 0.06 + i * 0.015); }
+      tl.fromTo("#lgd", { opacity: 0 }, { opacity: 1, duration: 0.3 }, S("L03") + 2.6);
+      tl.set(["#coA", "#coB", "#coC", bxNY, bx6, ...bxSat, ...bdg], { opacity: 0 }, 0);
+      tl.to("#lgd", { opacity: 0, duration: 0.2 }, S("L04") + 0.4);
+      tl.fromTo(bxNY, { opacity: 0, scale: 1.3 }, { opacity: 1, scale: 1, duration: 0.22, ease: "back.out(2)" }, S("L04") + 0.6);
+      hit("#coA", S("L04") + 0.7);
+      tl.fromTo(bxSat, { opacity: 0, scale: 1.3 }, { opacity: 1, scale: 1, duration: 0.2, stagger: 0.08, ease: "back.out(2)" }, S("L04") + 1.3);
+      hit("#coB", S("L04") + 1.4);
+      out(["#coA", "#coB", bxNY, ...bxSat], S("L05"));
+      const not6 = [...document.querySelectorAll("#mx .c")].filter((c) => !c.id.endsWith("_6"));
+      tl.to(not6, { opacity: 0.3, duration: 0.3 }, S("L05") + 3.1);
+      tl.fromTo(bx6, { opacity: 0, scale: 1.4 }, { opacity: 1, scale: 1, duration: 0.22, ease: "back.out(2)" }, S("L05") + 3.4);
+      tl.fromTo("#coC", { opacity: 0, scale: 1.6, rotation: -6 }, { opacity: 1, scale: 1, rotation: -2, duration: 0.2, ease: "power3.in" }, S("L05") + 3.35);
+      tl.to("#stage", { x: 12, duration: 0.05 }, S("L05") + 3.55).to("#stage", { x: -7, duration: 0.05 }).to("#stage", { x: 0, duration: 0.06 });
+      tl.fromTo(bdg, { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.2, stagger: 0.12 }, S("L05") + 4.0);
+      // S2
+      up("#s2e", S("L06")); wipe("#s2n", S("L06") + 0.2);
+      tl.fromTo("#s2 .sheet", { y: 1060 }, { y: 0, duration: 0.4, ease: "power3.out" }, S("L06") + 0.25);
+      up("#cL", S("L06") + 1.7);
+      up("#cR", S("L07"));
+      tl.set(["#r2", "#s2d", "#s2h"], { opacity: 0 }, 0);
+      tl.fromTo("#r2", { opacity: 1, scaleX: 0, transformOrigin: "0 50%" }, { scaleX: 1, duration: 0.3 }, S("L07") + 0.5);
+      up("#s2d", S("L07") + 0.6);
+      counter("#diff", S("L07") + 0.7, 1.2, 49060, (v) => "¥" + v.toLocaleString("ja-JP"));
+      up("#s2h", S("L07") + 3.2, 0.25); markIn("#s2h .mk", S("L07") + 3.35);
+      // S3
+      up("#s3t", S("L08")); wipe("#s3n", S("L08") + 1.4); up("#s3l", S("L08") + 1.8);
+      tl.fromTo("#s3b", { y: 1060 }, { y: 0, duration: 0.4, ease: "power3.out" }, S("L08") + 2.4);
+      up("#wL", S("L08") + 2.8); up("#wR", S("L08") + 3.4);
+      tl.set(["#eq", "#r3", "#s3s", "#s3x"], { opacity: 0 }, 0);
+      hit("#eq", S("L08") + 4.8);
+      tl.fromTo("#r3", { opacity: 1, scaleX: 0, transformOrigin: "0 50%" }, { scaleX: 1, duration: 0.3 }, S("L08") + 5.2);
+      up("#s3s", S("L08") + 5.4, 0.25); markIn("#s3s .mk", S("L08") + 5.55);
+      up("#s3x", S("L08") + 6.4);
+      // S4
+      tl.fromTo("#logo2", { y: -200, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: "power4.out" }, S("L09"));
+      tl.fromTo("#s4 .cv-tag", { opacity: 0 }, { opacity: 1, duration: 0.3 }, S("L09") + 0.2);
+      up("#s4a", S("L09") + 0.3);
+      up("#s4b", S("L09") + 1.5); markIn("#s4b .mk", S("L09") + 1.9);
+      tl.fromTo("#s4c", { opacity: 0, y: 80 }, { opacity: 1, y: 0, duration: 0.35, ease: "power3.out" }, S("L09") + 3.5);
+      tl.to("#s4c .bod", { x: 16, duration: 0.3, yoyo: true, repeat: 5, ease: "sine.inOut" }, S("L09") + 3.9);
+      // disclaimer color per page
+      tl.set("#disc", { color: "#ffffff" }, 0);
+      tl.set("#disc", { color: "#5e6660", textShadow: "none" }, S("L02"));
+      tl.set("#disc", { color: "#ffffff", textShadow: "0 1px 6px rgba(0,0,0,.35)" }, S("L03"));
+      tl.set("#disc", { color: "#5e6660", textShadow: "none" }, S("L06") + 0.3);
+      tl.set("#disc", { color: "#ffffff", textShadow: "0 1px 6px rgba(0,0,0,.35)" }, S("L08"));
+      tl.set("#disc", { color: "#5e6660", textShadow: "none" }, S("L08") + 2.4);
+      tl.set("#disc", { color: "#ffffff", textShadow: "0 1px 6px rgba(0,0,0,.35)" }, S("L09"));
+      
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,35 @@
+import json, subprocess, os, sys
+P = "proto8"
+J = json.load(open(f"{P}/assets/times.json")); T, TOTAL = J["T"], J["TOTAL"]
+s = lambda k: T[k][0]
+R = {}
+for f in ["stock/results1.json","stock/results.json","stock/results3.json","stock/results4.json","stock/results5.json","stock/res6.json"]:
+    for q,hits in json.load(open(f)).items():
+        for h in hits: R[h["id"]] = h
+SPEC = [
+ ("v01", 128620, 0, s("L03"), 0.5, 0.42, 0),
+ ("v02", 94560, s("L03"), s("L04"), 1.0, 0.55, 0),
+ ("v03", 243873, s("L04"), s("L07"), 1.0, 0.5, 2),
+ ("v04", 187526, s("L07"), s("L08"), 1.0, 0.5, 2),
+ ("v05", 5774, s("L08"), s("L09"), 0.5, 0.55, 2),
+ ("v06", 369444, s("L09"), s("L10"), 1.0, 0.5, 0),
+ ("v07", 240320, s("L10"), TOTAL, 1.0, 0.5, 0),
+]
+os.makedirs("stock/raw", exist_ok=True); clips=[]
+for name, vid, a, b, off, cx, blur in SPEC:
+    raw=f"stock/raw/{vid}.mp4"
+    if not os.path.exists(raw):
+        v=R[vid]["videos"]; src=v["large"] if v["large"]["url"] else v["medium"]
+        subprocess.run(["curl","-sS","-o",raw,src["url"]],check=True)
+    pr=json.loads(subprocess.run(["ffprobe","-v","error","-select_streams","v:0","-show_entries","stream=width,height:format=duration","-of","json",raw],capture_output=True,text=True).stdout)
+    W,H=pr["streams"][0]["width"],pr["streams"][0]["height"]; sd=float(pr["format"]["duration"]); off=min(off,max(0,sd-1))
+    d=round(b-a+0.1,3)
+    if W/H>9/16: cw=int(H*9/16)//2*2; ch=H; x=int(min(max(cx*W-cw/2,0),W-cw)); y=0
+    else: cw=W; ch=int(W*16/9)//2*2; x=0; y=int((H-ch)/2)
+    vf=f"crop={cw}:{ch}:{x}:{y},scale=1080:1920:flags=lanczos,fps=30,eq=saturation=1.08:brightness=0.02"
+    if blur==1: vf+=",boxblur=18:2"
+    elif blur==2: vf+=",boxblur=6:1"
+    vf+=f",tpad=stop_mode=clone:stop_duration={d}"
+    subprocess.run(["ffmpeg","-y","-loglevel","error","-ss",str(off),"-i",raw,"-t",str(d),"-vf",vf,"-an","-c:v","libx264","-preset","veryfast","-crf","20","-pix_fmt","yuv420p",f"{P}/assets/v/{name}.mp4"],check=True)
+    clips.append({"name":name,"start":round(a,3),"dur":round(b-a,3)}); print(name,vid,R[vid]["tags"][:50])
+json.dump(clips,open(f"{P}/assets/clips.json","w"))

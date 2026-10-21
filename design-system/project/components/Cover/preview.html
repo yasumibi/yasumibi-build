@@ -1,0 +1,46 @@
+<!-- @dsCard height=300 -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@118,900&family=Shippori+Mincho+B1:wght@700&display=swap">
+<style>
+  html,body{margin:0;background:var(--paper)}
+  .cv{position:relative;width:960px;height:300px;overflow:hidden;background:var(--paper)}
+  svg{position:absolute;inset:0}
+  .b-pine{fill:var(--pine)} .b-ink{fill:var(--ink)} .b-mist{fill:var(--mist)}
+  .tile{rx:var(--radius-sm)}
+  .t-paper{fill:var(--paper)} .t-mist{fill:var(--mist)} .t-marker{fill:var(--marker)} .t-ink{fill:var(--ink)}
+  .rule{stroke:var(--hairline);stroke-width:1}
+  .txt{position:absolute;left:40px;bottom:36px;max-width:440px}
+  .nm{font-family:"Archivo","Arial Black",sans-serif;font-weight:900;font-stretch:118%;font-size:68px;line-height:.92;letter-spacing:-.035em;color:var(--ink)}
+  .tg{margin-top:16px;font-family:"Shippori Mincho B1","Noto Serif JP",serif;font-weight:700;font-size:14px;letter-spacing:.2em;color:var(--ink-muted)}
+</style>
+<div class="cv">
+<svg width="960" height="300" viewBox="0 0 960 300" aria-hidden="true">
+<!-- blocks: pine 360x300 slab bleeding right/top/bottom; mist 96x168 and ink 96x112 stacked at x=504 (space-24 wide)
+     arrangement: one tall slab with two staggered satellites, flush to the right edge
+     pattern: a 5x4 calendar grid of 48px tiles (gap space-2) cut into the pine slab: YASUMIBI is a price calendar, one marker tile = the 神日
+     steps & radii: space-2 (8) gap, space-12 (48) tile, space-24 (96) satellites; tiles radius-sm -->
+<rect class="b-mist" x="504" y="0" width="96" height="172"/>
+<rect class="b-ink" x="504" y="188" width="96" height="112"/>
+<rect class="b-pine" x="600" y="0" width="360" height="300"/>
+<rect class="tile t-mist" x="640" y="40" width="48" height="48"/>
+<rect class="tile t-paper" x="696" y="40" width="48" height="48"/>
+<rect class="tile t-paper" x="752" y="40" width="48" height="48"/>
+<rect class="tile t-mist" x="808" y="40" width="48" height="48"/>
+<rect class="tile t-paper" x="864" y="40" width="48" height="48"/>
+<rect class="tile t-paper" x="640" y="96" width="48" height="48"/>
+<rect class="tile t-paper" x="696" y="96" width="48" height="48"/>
+<rect class="tile t-marker" x="752" y="96" width="48" height="48"/>
+<rect class="tile t-paper" x="808" y="96" width="48" height="48"/>
+<rect class="tile t-paper" x="864" y="96" width="48" height="48"/>
+<rect class="tile t-paper" x="640" y="152" width="48" height="48"/>
+<rect class="tile t-mist" x="696" y="152" width="48" height="48"/>
+<rect class="tile t-paper" x="752" y="152" width="48" height="48"/>
+<rect class="tile t-paper" x="808" y="152" width="48" height="48"/>
+<rect class="tile t-ink" x="864" y="152" width="48" height="48"/>
+<rect class="tile t-ink" x="640" y="208" width="48" height="48"/>
+<rect class="tile t-paper" x="696" y="208" width="48" height="48"/>
+<rect class="tile t-paper" x="752" y="208" width="48" height="48"/>
+<rect class="tile t-mist" x="808" y="208" width="48" height="48"/>
+<rect class="tile t-paper" x="864" y="208" width="48" height="48"/>
+</svg>
+<div class="txt"><div class="nm">YASUMIBI</div><div class="tg">休み日を、安い日に。</div></div>
+</div>

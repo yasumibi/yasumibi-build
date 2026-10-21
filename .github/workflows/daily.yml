@@ -1,0 +1,82 @@
+name: 毎日の料金更新
+
+on:
+  schedule:
+    - cron: "17 17 * * *"   # 毎日 2:17（日本時間）
+  workflow_dispatch:
+    inputs:
+      areas:
+        description: "取得するエリア（空欄＝全部。例: hakone,atami）"
+        default: ""
+      days:
+        description: "お試し：取得する日数（0＝全部）"
+        default: "0"
+      full:
+        description: "全日付を取り直す（yes / no）"
+        default: "no"
+      publish:
+        description: "サイトを公開する（yes / no）"
+        default: "yes"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rakuten-api          # 楽天APIを同時に2つ使わない（1秒1回を守る）
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      shards: ${{ steps.p.outputs.shards }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/checkout@v5
+        with: { repository: yasumibi/yasumibi-data, token: "${{ secrets.SITE_PUSH_TOKEN }}", path: data }
+      - id: p
+        run: |
+          if [ -n "${{ github.event.inputs.areas }}" ]; then echo 'shards=["${{ github.event.inputs.areas }}"]' >> "$GITHUB_OUTPUT"; else python3 tools/plan_shards.py; fi
+
+  fetch:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    strategy:
+      max-parallel: 1          # エリアのまとまりを1つずつ順番に
+      fail-fast: false
+      matrix:
+        areas: ${{ fromJSON(needs.plan.outputs.shards) }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/checkout@v5
+        with: { repository: yasumibi/yasumibi-data, token: "${{ secrets.SITE_PUSH_TOKEN }}", path: data }
+      - uses: actions/setup-python@v6
+        with: { python-version: "3.12" }
+      - name: 宿の情報（新しい宿・月曜は全宿）と料金を取得
+        env:
+          RAKUTEN_APP_ID: ${{ secrets.RAKUTEN_APP_ID }}
+          RAKUTEN_ACCESS_KEY: ${{ secrets.RAKUTEN_ACCESS_KEY }}
+          YB_REFERER: https://yasumibi.com/
+          YB_AREAS: ${{ matrix.areas }}
+          YB_DAYS: ${{ github.event.inputs.days || '0' }}
+          YB_BUDGET_MIN: "280"
+          YB_FULL: ${{ github.event.inputs.full == 'yes' && '1' || '0' }}
+        run: |
+          if [ "$(TZ=Asia/Tokyo date +%u)" = "1" ]; then export YB_INFO_ALL=1; fi
+          python3 tools/fetch_info.py
+          python3 tools/fetch_prices.py
+      - name: 料金データを保存
+        if: ${{ github.event.inputs.publish != 'no' }}
+        working-directory: data
+        run: |
+          git config user.name "yasumibi-bot"; git config user.email "yasumibi@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || git commit -m "料金更新 ${{ matrix.areas }} $(TZ=Asia/Tokyo date +%Y-%m-%d)"
+          for i in 1 2 3; do git pull --rebase -X theirs origin main && git push && break; sleep 5; done
+
+  publish:
+    needs: fetch
+    if: ${{ always() && github.event.inputs.publish != 'no' }}
+    uses: ./.github/workflows/publish.yml
+    secrets: inherit
