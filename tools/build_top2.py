@@ -157,13 +157,11 @@ page = f"""<!doctype html>
   <section class="pick" aria-labelledby="pk1">
     <div class="rhd"><h2 id="pk1"><span id="pk-m" class="pkm"></span>いちばん安い<span class="kw">神日</span></h2><span class="pkr"><span class="prt">PR</span><b class="top5">TOP5</b></span></div>
     <ol class="rlist" id="p-cheap"></ol>
-    <button type="button" class="pkmore" data-open="p-cheap">4位・5位も見る</button>
   </section>
   <section class="pick" aria-labelledby="pk2">
     <div class="rhd"><h2 id="pk2">ずらすと、超お得に泊まれる宿</h2><span class="pkr"><span class="prt">PR</span><b class="top5">TOP5</b></span></div>
     <p class="rnote">土曜泊の平均と、その月の神日の差。</p>
     <ol class="rlist" id="p-gap"></ol>
-    <button type="button" class="pkmore" data-open="p-gap">4位・5位も見る</button>
     <a class="pmore" href="{base}ranking/">ランキングをもっと見る ›</a>
   </section>
   <p class="cond">※★4.3以上＝楽天トラベルの口コミ評価4.3以上（口コミ50件以上）の宿。大人2名・1室・1泊2食付きの最安プラン（2名合計・税込）。{ASOF}時点の楽天トラベルの料金。予約前に最新の料金をご確認ください。宿の写真：楽天トラベル</p>
