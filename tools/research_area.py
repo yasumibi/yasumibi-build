@@ -103,7 +103,7 @@ def check_dates():
 
 def clean_name(n):
     n = unicodedata.normalize("NFKC", n)
-    n = re.sub(r"[（(].*?[)）]", "", n).strip()
+    n = re.sub(r"[（(<＜].*?[)）>＞]", "", n).strip()
     n = re.sub(r"^\S*温泉\s+", "", n) if len(re.sub(r"^\S*温泉\s+", "", n)) >= 3 else n
     return n.strip()
 
