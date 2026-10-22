@@ -101,6 +101,16 @@ Q_PEN = lambda s: (f"1位の{_name(s)}は、土曜でもほぼ平日料金。差
 Q_NEAR = lambda s: f"1位の{_name(s)}は、{s['ndays']}日のうち{s['near']}日がほぼ神日。もはや毎日が神日。"
 
 
+F_COSPA = lambda s: (yen(s["mn"]), f"★{H[s['no']]['avg']:.2f}・{KM}月の神日の料金")
+Q_COSPA = lambda s: f"1位の{_name(s)}は、★{H[s['no']]['avg']:.2f}で{yen(s['mn'])}。2人で割ると、1人{yen(s['mn'] // 2)}。"
+
+
+def cospa(nos):
+    """コスパ：口コミ★4.5以上の宿を、神日の料金が安い順に。"""
+    ss = [s for s in (stats(no, KY, KM) for no in nos) if s and H[s["no"]].get("avg", 0) >= 4.5]
+    return sorted(ss, key=lambda s: (s["mn"], -H[s["no"]]["avg"]))
+
+
 def rank_sets(nos):
     ss = [s for s in (stats(no, KY, KM) for no in nos) if s]
     gap = sorted([s for s in ss if s.get("gap", 0) > 0], key=lambda s: -s["gap"])
@@ -166,7 +176,7 @@ def page(path, title, desc, crumb, h1, lead, body, base, cv=""):
 <link rel="stylesheet" href="{base}assets/otoku.css?v={v[2]}">
 <link rel="stylesheet" href="{base}assets/rank.css?v={v[2]}">
 <link rel="icon" href="{base}assets/img/favicon-48.png" type="image/png">
-<link rel="apple-touch-icon" href="{base}assets/img/apple-touch-icon.png">
+<link rel="apple-touch-icon" href="{base}assets/img/apple-touch-icon.png">\n<link rel="manifest" href="{base}manifest.webmanifest">\n<meta name="theme-color" content="#ffffff">\n<meta name="apple-mobile-web-app-title" content="YASUMIBI">
 </head>
 <body class="app top2 otk">
 {site_header(base, "features")}
@@ -197,6 +207,7 @@ for a in AREAS:
     body = when_block(nos)
     body += ranking_block("gap", "ずらすだけで、浮く。", "土曜の予定を神日にずらしたときの差額。", gap, F_GAP, base, quip=Q_GAP)
     body += ranking_block("pen", "土曜でも、ほぼ平日。", "土日しか休めない人の味方。土曜の値上がりが小さい宿。", pen, F_PEN, base, quip=Q_PEN)
+    body += ranking_block("cospa", "★4.5以上なのに、この値段。", "口コミ★4.5以上の宿を、神日の料金が安い順に。いわゆるコスパの良い宿。", cospa(nos), F_COSPA, base, quip=Q_COSPA)
     body += ranking_block("near", "いつ行っても、だいたい安い。", "神日に近い料金の日が多い宿。日程を選ばない。", near, F_NEAR, base, quip=Q_NEAR)
     body += f'<a class="c-apply" href="{base}?area={a["key"]}#search">{esc(nm)}の宿を、日付・予算で探す</a>'
     title = f"{nm}の宿ランキング｜ずらし甲斐・土曜ペナルティ・神日の多さ（{KY}年{KM}月）｜YASUMIBI"
@@ -213,8 +224,9 @@ base = "../"
 links = "".join(f'<li><a href="{base}areas/{a["key"]}/">{esc(a["name"])}<small>{n}軒</small></a></li>' for a, n, _ in made)
 body = ranking_block("gap", "全国・ずらすだけで、浮く。", "土曜の予定を神日にずらしたときの差額。", gap, F_GAP, base, True, 5, quip=Q_GAP)
 body += ranking_block("pen", "全国・土曜でも、ほぼ平日。", "土曜の値上がりが小さい宿。", pen, F_PEN, base, True, 5, quip=Q_PEN)
+body += ranking_block("cospa", "全国・★4.5以上なのに、この値段。", "口コミ★4.5以上の宿を、神日の料金が安い順に。いわゆるコスパの良い宿。", cospa(allnos), F_COSPA, base, True, 5, quip=Q_COSPA)
 body += f'<section class="rsec"><h2>エリア別のランキング</h2><div class="reg"><ul>{links}</ul></div></section>'
-write(f"{OUT}/ranking/index.html", page("ranking/", f"全国の宿ランキング｜ずらし甲斐・土曜ペナルティ（{KY}年{KM}月）｜YASUMIBI",
+write(f"{OUT}/ranking/index.html", page("ranking/", f"全国の宿ランキング｜ずらし甲斐・土曜ペナルティ・コスパ（{KY}年{KM}月）｜YASUMIBI",
       "全国の人気温泉地の宿の料金を全日調べて、日をずらすと安くなる宿、土曜でも高くならない宿をランキング。毎日更新。",
       f'<a href="{base}">ホーム</a><span aria-hidden="true">›</span><span>ランキング</span>', "日をずらすと、いくら浮く？",
       f"全国{len(made)}エリア・{len(allnos)}軒、{KM}月の料金で比べました。毎日更新。", body, base))

@@ -49,10 +49,10 @@ def footer(base):
 """
 
 
-def og_meta(title, desc, path):
+def og_meta(title, desc, path, img=None):
     return (f'<meta property="og:type" content="website">\n<meta property="og:site_name" content="YASUMIBI 神日カレンダー">\n'
             f'<meta property="og:title" content="{title}">\n<meta property="og:description" content="{desc}">\n'
-            f'<meta property="og:url" content="{SITE}{path}">\n<meta property="og:image" content="{OG_IMG}">\n'
+            f'<meta property="og:url" content="{SITE}{path}">\n<meta property="og:image" content="{img or OG_IMG}">\n'
             f'<meta property="og:image:width" content="1200">\n<meta property="og:image:height" content="630">\n'
             f'<meta name="twitter:card" content="summary_large_image">\n')
 

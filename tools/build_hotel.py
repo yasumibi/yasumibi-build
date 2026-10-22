@@ -38,7 +38,7 @@ HEAD = """<!doctype html>
 <link rel="stylesheet" href="{base}assets/site.css?v={v1}">
 <link rel="stylesheet" href="{base}assets/hotel.css?v={v2}">
 <link rel="icon" href="{base}assets/img/favicon-48.png" type="image/png">
-<link rel="apple-touch-icon" href="{base}assets/img/apple-touch-icon.png">
+<link rel="apple-touch-icon" href="{base}assets/img/apple-touch-icon.png">\n<link rel="manifest" href="{base}manifest.webmanifest">\n<meta name="theme-color" content="#ffffff">\n<meta name="apple-mobile-web-app-title" content="YASUMIBI">
 </head>
 <body class="app">
 """
@@ -193,7 +193,8 @@ for meta in AREA["hotels"]:
     kdl = "・".join(f"{KM}/{d}({wd(KY,KM,d)})" for d in kd[:3])
     title = f"{name}（{H['area']}・{meta['loc']}）の神日カレンダー｜いちばん安い日と料金｜YASUMIBI"
     desc = f"{full}の宿泊料金を全日調査。{KM}月の神日は{kdl}の{yen(mn0)}（2名1泊2食）。楽天カードで払った場合のポイントも試算。"
-    page = HEAD.format(robots="index,follow", title=esc(title), desc=esc(desc), canon=f"hotels/{H['slug']}/", base=base, v1=v1, v2=v2, og=og_meta(esc(title), esc(desc), f"hotels/{H['slug']}/")) + f"""
+    page = HEAD.format(robots="index,follow", title=esc(title), desc=esc(desc), canon=f"hotels/{H['slug']}/", base=base, v1=v1, v2=v2, og=og_meta(esc(title), esc(desc), f"hotels/{H['slug']}/",
+            f"https://yasumibi.com/assets/og/{slug}.jpg" if os.path.exists(f"{OUT}/assets/og/{slug}.jpg") else None)) + f"""
     {site_header(base)}
     <div class="wrap">
       <nav class="crumb" aria-label="現在地"><a href="{base}">ホーム</a><span>›</span><a href="{crumb_area}">{H['area']}</a><span>›</span><b>{esc(H['name'])}</b></nav>
@@ -217,6 +218,7 @@ for meta in AREA["hotels"]:
             <button type="button" class="fav" id="fav" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.2-9.3C1.6 7.8 3.9 4.5 7.3 4.5c2 0 3.6 1.1 4.7 2.7 1.1-1.6 2.7-2.7 4.7-2.7 3.4 0 5.7 3.3 4.5 6.7-1.7 4.7-9.2 9.3-9.2 9.3z"/></svg><span>お気に入り</span></button>
             <a class="line" id="line-share" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c-5 0-9 3.2-9 7.2 0 3.6 3.2 6.6 7.5 7.1.3.1.7.2.8.5.1.2.1.6 0 .8l-.1.8c0 .2-.2.9.8.5s5.3-3.1 7.2-5.3c1.3-1.4 1.8-2.9 1.8-4.4 0-4-4-7.2-9-7.2z"/></svg><span>LINEで相談</span></a>
           </div>
+          <button type="button" class="ics" id="ics"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/></svg><span id="ics-t">この日をカレンダーに入れる</span></button>
           <label class="sw"><input type="checkbox" id="card-sw"><span class="track" aria-hidden="true"><span class="knob"></span></span><span class="swl">楽天カード払いで見る<small>ポイントを引いた実質の目安</small></span></label>
         </div>
       </div>

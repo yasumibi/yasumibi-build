@@ -24,6 +24,9 @@ jobs:
         env:
           YB_OUT: ${{ github.workspace }}/site
         run: |
+          if python3 -c "import sys,os,json;sys.path.insert(0,'tools');from common import HOTELS,OUT;sys.exit(0 if any(not os.path.exists(f'{OUT}/assets/og/{h[\"slug\"]}.jpg') for h in HOTELS) else 1)"; then
+            pip install -q pillow && sudo apt-get install -y -qq fonts-noto-cjk >/dev/null && python3 tools/make_og.py || echo "シェア画像は次回に作ります"
+          fi
           python3 tools/build_hotel.py
           python3 tools/build_card.py
           python3 tools/build_cards.py

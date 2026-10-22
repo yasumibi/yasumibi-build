@@ -106,7 +106,7 @@ page = f"""<!doctype html>
 <link rel="stylesheet" href="{base}assets/hotel.css?v={v2}">
 <link rel="stylesheet" href="{base}assets/top.css?v={v3}">
 <link rel="icon" href="{base}assets/img/favicon-48.png" type="image/png">
-<link rel="apple-touch-icon" href="{base}assets/img/apple-touch-icon.png">
+<link rel="apple-touch-icon" href="{base}assets/img/apple-touch-icon.png">\n<link rel="manifest" href="{base}manifest.webmanifest">\n<meta name="theme-color" content="#ffffff">\n<meta name="apple-mobile-web-app-title" content="YASUMIBI">
 </head>
 <body class="app top2">
 {site_header(base)}
@@ -129,9 +129,12 @@ page = f"""<!doctype html>
           <select id="f-month">{month_opts}</select></label>
         <label class="fld" id="w-date" hidden><span>泊まる日</span>
           <input type="date" id="f-date" min="{dmin}" max="{dmax}" value="{date_default}"></label>
-        <label class="fld" id="w-wd"><span>曜日</span>
-          <select id="f-wd"><option value="all">こだわらない</option><option value="sat">土曜泊</option><option value="wk">日〜木泊</option></select></label>
+        <label class="fld" id="w-range" hidden><span>前後の日も見る</span>
+          <select id="f-range"><option value="0">この日だけ</option><option value="1">前後1日も見る</option><option value="3">前後3日も見る（記念日など）</option></select></label>
+        <label class="fld" id="w-wd"><span>曜日・泊数</span>
+          <select id="f-wd"><option value="all">こだわらない</option><option value="sat">土曜泊</option><option value="wk">日〜木泊</option><option value="n2">2泊する（合計が安い2日）</option></select></label>
         <button type="submit" class="go" id="f-go">神日を探す</button>
+        <div class="cands" id="w-cands" hidden><span class="cl">ほかに休めそうな日</span><div class="cl2" id="f-cands"></div><button type="button" class="cadd" id="f-add">＋日付を追加</button></div>
       </form>
       {tag_html}
     </div>
@@ -201,7 +204,7 @@ fpage = f"""<!doctype html>
 <link rel="stylesheet" href="{base}assets/site.css?v={v1}">
 <link rel="stylesheet" href="{base}assets/top.css?v={v3}">
 <link rel="icon" href="{base}assets/img/favicon-48.png" type="image/png">
-<link rel="apple-touch-icon" href="{base}assets/img/apple-touch-icon.png">
+<link rel="apple-touch-icon" href="{base}assets/img/apple-touch-icon.png">\n<link rel="manifest" href="{base}manifest.webmanifest">\n<meta name="theme-color" content="#ffffff">\n<meta name="apple-mobile-web-app-title" content="YASUMIBI">
 </head>
 <body class="app top2">
 {site_header(base, "features")}

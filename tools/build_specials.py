@@ -118,7 +118,7 @@ def page(slug, area, img, eyebrow, h1, lead, body, note):
 <link rel="stylesheet" href="{base}assets/otoku.css?v={v[2]}">
 <link rel="stylesheet" href="{base}assets/rank.css?v={v[2]}">
 <link rel="icon" href="{base}assets/img/favicon-48.png" type="image/png">
-<link rel="apple-touch-icon" href="{base}assets/img/apple-touch-icon.png">
+<link rel="apple-touch-icon" href="{base}assets/img/apple-touch-icon.png">\n<link rel="manifest" href="{base}manifest.webmanifest">\n<meta name="theme-color" content="#ffffff">\n<meta name="apple-mobile-web-app-title" content="YASUMIBI">
 </head>
 <body class="app top2 otk">
 {site_header(base, "features")}
