@@ -84,7 +84,7 @@ page = f"""<!doctype html>
 <body class="app top2 otk">
 {site_header(base, "otoku")}
 <main class="gin ok cdp">
-  <p class="prtop">PR｜このページには広告（アフィリエイト）を含みます。当サイトを経由してお申し込みがあった場合、売上の一部が当サイトに還元されることがあります。</p>
+  <p class="prtop"><span>PR</span></p>
   <nav class="crumb" aria-label="現在地"><a href="{base}">ホーム</a><span aria-hidden="true">›</span><a href="{base}otoku/">さらに安く</a><span aria-hidden="true">›</span><span>カード</span></nav>
   <header class="ok-hd">
     <h1>旅の支払いに、カードは2枚。</h1>
