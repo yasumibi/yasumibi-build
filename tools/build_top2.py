@@ -58,7 +58,10 @@ dmin = f"{months[0]['y']}-{months[0]['m']:02d}-01"; dmax = f"{months[-1]['y']}-{
 MAXES = list(range(4, 13)) + [15, 20]
 max_opts = '<option value="0" selected>こだわらない</option>' + "".join(f'<option value="{m*10000}">〜{m}万円</option>' for m in MAXES)
 
-FEATURES = [("renkyu/", "有給1日で、何連休？", "連休のいちばん安い夜を毎日計算", None),
+FEATURES = [("weekend/", "今週末に泊まれる神日。", "直前でも、いつもより安い宿", None),
+            ("renkyu/2027/", "2027年の連休カレンダー。", "祝日と、有給で何連休になるか", None),
+            ("otoku-days/", "楽天で、さらに安くなる日。", "5と0のつく日・スーパーSALE", None),
+            ("renkyu/", "有給1日で、何連休？", "連休のいちばん安い夜を毎日計算", None),
             ("ranking/", "日をずらすと、いくら浮く？", "全国の宿ランキング・毎日更新", None),
             ("features/hakone-5man/", "同じ5万円で、いちばん良い宿。", "箱根・予算を固定して★の高い順", "hakone-fuji-ship.jpg"),
             ("features/hakone-10man/", "10万円の宿が、手の届く日。", "箱根・高級宿の値下がり幅", "hakone-torii.jpg"),
@@ -68,7 +71,7 @@ FEATURES = [("renkyu/", "有給1日で、何連休？", "連休のいちばん�
             ("features/yufuin-2haku/", "由布院、2泊するならこの2日。", "由布院・連泊の合計が安い2日", "yufuin-kinrinko-2.jpg"),
             ("features/beppu-1man/", "1人1万円台で泊まれる別府。", "別府・1人2万円未満の日がある宿", "beppu-umijigoku.jpg")]
 FEATURES = [f for f in FEATURES if f[3] is None or os.path.isdir(f"{OUT}/{f[0]}")]
-TILE = {"renkyu/": '<span class="tile t-ren">有給1日で<b>何連休？</b></span>', "ranking/": '<span class="tile t-rank">ずらすと<b>いくら浮く？</b></span>'}
+TILE = {"weekend/": '<span class="tile">直前でも<b>今週末</b></span>', "renkyu/2027/": '<span class="tile">2027年の<b>連休</b></span>', "otoku-days/": '<span class="tile">予約は<b>5と0の日</b></span>', "renkyu/": '<span class="tile t-ren">有給1日で<b>何連休？</b></span>', "ranking/": '<span class="tile t-rank">ずらすと<b>いくら浮く？</b></span>'}
 base = ""
 def fcard(s, t, sub, img):
     vis = TILE.get(s) or f'<img src="{base}assets/img/{img}" alt="" loading="lazy">'

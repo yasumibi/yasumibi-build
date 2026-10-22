@@ -150,14 +150,15 @@ def run_area(area, nos, today, lim, force):
     old = json.loads(json.dumps(hotels))
     known = set(pr.get("hotel_set", []))
     fetched = pr.setdefault("fetched", {})            # 日付ごとに、最後に取った日
-    for k in [k for k in fetched if k < WINDOW_START.isoformat()]: fetched.pop(k)
+    keep = min(today, WINDOW_START).isoformat()       # 今日から先は、月の残りが少なくても取る（直前ページ用）
+    for k in [k for k in fetched if k < keep]: fetched.pop(k)
     new = [n for n in nos if n not in known]          # 新しく足した宿は、全日付を取る
     upto = pr.setdefault("new_upto", {})              # 新しい宿を、どの日付まで取り終えたか（時間切れで途中になったとき用）
-    start = max(today, WINDOW_START); end = WINDOW_END
+    start = today; end = WINDOW_END
     if lim > 0: end = min(end, start + datetime.timedelta(days=lim - 1))
     # 期間より前の古い料金は消す（ファイルを小さく保つ）
     for v in hotels.values():
-        for k in [k for k in v if k < WINDOW_START.isoformat()]: v.pop(k)
+        for k in [k for k in v if k < keep]: v.pop(k)
     print(f"[{area}] {len(nos)}軒（新規 {len(new)}軒）／ {start}〜{end}", flush=True)
     d = start; calls_days = 0; fails = 0; tried = 0; t1 = time.time(); c1 = STAT["calls"]; cut = False
     while d <= end:
