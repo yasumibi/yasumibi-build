@@ -1,0 +1,33 @@
+name: 取り方の比較テスト
+
+on:
+  workflow_dispatch:
+    inputs:
+      areas:
+        description: "テストするエリア"
+        default: "hakone,yufuin,beppu"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rakuten-api
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/checkout@v5
+        with: { repository: yasumibi/yasumibi-data, token: "${{ secrets.SITE_PUSH_TOKEN }}", path: data }
+      - uses: actions/setup-python@v6
+        with: { python-version: "3.12" }
+      - name: 比較
+        env:
+          RAKUTEN_APP_ID: ${{ secrets.RAKUTEN_APP_ID }}
+          RAKUTEN_ACCESS_KEY: ${{ secrets.RAKUTEN_ACCESS_KEY }}
+          YB_REFERER: https://yasumibi.com/
+          YB_AREAS: ${{ github.event.inputs.areas }}
+        run: python3 tools/probe_pattern.py
