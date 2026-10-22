@@ -216,9 +216,7 @@ for meta in AREA["hotels"]:
           </div>
           <div class="hact">
             <button type="button" class="fav" id="fav" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.2-9.3C1.6 7.8 3.9 4.5 7.3 4.5c2 0 3.6 1.1 4.7 2.7 1.1-1.6 2.7-2.7 4.7-2.7 3.4 0 5.7 3.3 4.5 6.7-1.7 4.7-9.2 9.3-9.2 9.3z"/></svg><span>お気に入り</span></button>
-            <a class="line" id="line-share" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c-5 0-9 3.2-9 7.2 0 3.6 3.2 6.6 7.5 7.1.3.1.7.2.8.5.1.2.1.6 0 .8l-.1.8c0 .2-.2.9.8.5s5.3-3.1 7.2-5.3c1.3-1.4 1.8-2.9 1.8-4.4 0-4-4-7.2-9-7.2z"/></svg><span>LINEで相談</span></a>
           </div>
-          <button type="button" class="ics" id="ics"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/></svg><span id="ics-t">この日をカレンダーに入れる</span></button>
           <label class="sw"><input type="checkbox" id="card-sw"><span class="track" aria-hidden="true"><span class="knob"></span></span><span class="swl">楽天カード払いで見る<small>ポイントを引いた実質の目安</small></span></label>
         </div>
       </div>
