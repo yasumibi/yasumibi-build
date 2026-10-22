@@ -95,6 +95,7 @@ page = f"""<!doctype html>
 <section class="hero" id="search">
   <div class="gin">
     <h1>泊まるなら、いちばん安い日に。</h1>
+    <div class="shift" aria-label="YASUMIBIの考え方"><div class="o"><small>これまで</small>休みの日に、安い宿を探す。</div><div class="n"><small>これから</small><b>安い日に、休みを合わせる。</b></div></div>
     <p class="kexp"><span class="star"><i aria-hidden="true">★</i>口コミ4.3以上の宿だけ</span><span class="kd"><b>神日</b>＝その宿がその月でいちばん安い日</span></p>
     <div class="sbox">
       <div class="stabs" role="tablist" aria-label="探し方">
