@@ -333,7 +333,7 @@ for slug, (t, pg, bodyhtml) in prose.items():
 write(f"{OUT}/robots.txt", "User-agent: *\nAllow: /\nSitemap: https://yasumibi.com/sitemap.xml\n")
 _hs = sorted(os.listdir(f"{OUT}/hotels")) if os.path.isdir(f"{OUT}/hotels") else []
 _ar = sorted(os.listdir(f"{OUT}/areas")) if os.path.isdir(f"{OUT}/areas") else []
-urls = [""] + [x for x in ("ranking/", "renkyu/", "renkyu/2027/", "otoku-days/", "weekend/") if os.path.isdir(f"{OUT}/{x}")] + [f"areas/{x}/" for x in _ar] + [f"features/{x}/" for x in ("hakone-5man", "hakone-10man", "atami-5man", "atami-10man", "kusatsu-winter", "yufuin-2haku", "beppu-1man")] + [f"hotels/{h}/" for h in _hs] + ["otoku/", "rakuten-card/", "cards/", "about/", "privacy/", "disclosure/"]
+urls = [""] + [x for x in ("ranking/", "renkyu/", "renkyu/2027/", "otoku-days/", "weekend/", "features/") if os.path.isdir(f"{OUT}/{x}")] + [f"areas/{x}/" for x in _ar] + [f"features/{x}/" for x in ("hakone-5man", "hakone-10man", "atami-5man", "atami-10man", "kusatsu-winter", "yufuin-2haku", "beppu-1man")] + [f"hotels/{h}/" for h in _hs] + ["otoku/", "rakuten-card/", "cards/", "about/", "privacy/", "disclosure/"]
 today = datetime.date.today().isoformat()
 write(f"{OUT}/sitemap.xml", '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + "".join(f"  <url><loc>https://yasumibi.com/{u}</loc><lastmod>{today}</lastmod></url>\n" for u in urls) + "</urlset>\n")
 print("built", len(FEATURES), "features")

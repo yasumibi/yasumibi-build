@@ -18,7 +18,7 @@ def site_header(base, cur=""):
     def a(key, href, label, extra=""):
         return f'<a href="{href}"{extra}{" aria-current=\"page\"" if key == cur else ""}>{label}</a>'
     nav = (a("areas", f"{base}#areas", "エリアから探す") + a("date", f"{base}#date", "日付から探す")
-           + a("features", f"{base}#features", "特集") + a("otoku", f"{base}otoku/", "さらに安く", ' class="ot"'))
+           + a("features", f"{base}features/", "特集") + a("otoku", f"{base}otoku/", "さらに安く", ' class="ot"'))
     return f"""<header class="gh">
   <div class="gin">
     {logo_html(base)}

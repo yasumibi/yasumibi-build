@@ -48,8 +48,8 @@ for a in LIVE:
     if a["region"] not in REGIONS: REGIONS.append(a["region"])
 area_opts = '<option value="all">すべて</option>' + "".join(
     f'<optgroup label="{esc(r)}">' + "".join(f'<option value="{a["key"]}">{esc(a["name"])}</option>' for a in LIVE if a["region"] == r) + "</optgroup>" for r in REGIONS)
-area_blocks = "".join(
-    f'<div class="reg"><h3>{esc(r)}</h3><ul>' + "".join(f'<li><a href="#search" data-go-area="{a["key"]}">{esc(a["name"])}<small>{CNT[a["key"]]}軒</small></a></li>' for a in LIVE if a["region"] == r) + "</ul></div>" for r in REGIONS)
+area_blocks = '<div class="regs">' + "".join(
+    f'<div class="reg"><h3>{esc(r)}</h3><ul>' + "".join(f'<li><a href="#search" data-go-area="{a["key"]}">{esc(a["name"])}<small>{CNT[a["key"]]}軒</small></a></li>' for a in LIVE if a["region"] == r) + "</ul></div>" for r in REGIONS) + "</div>"
 _dd = datetime.date(*DEFAULT_YM, 16)
 date_default = _dd.isoformat()
 month_opts = "".join(f'<option value="{i}"{" selected" if i == DEF_MI else ""}>{mm["y"]}年{mm["m"]}月</option>' for i, mm in enumerate(months))
@@ -77,7 +77,10 @@ def fcard(s, t, sub, img):
     vis = TILE.get(s) or f'<img src="{base}assets/img/{img}" alt="" loading="lazy">'
     return f'<li><a href="{base}{s}">{vis}<span class="ft">{esc(t)}</span><span class="fs">{esc(sub)}</span></a></li>'
 strip_html = "".join(fcard(*f) for f in FEATURES)
-feat_html = strip_html
+TOP_N = 8   # トップの下に出す特集の数（残りは /features/ へ）
+_tx = [f for f in FEATURES if f[3] is None]; _ph = [f for f in FEATURES if f[3]]
+FEATURES = [x for pair in zip(_tx, _ph) for x in pair] + _tx[len(_ph):] + _ph[len(_tx):]   # 文字と写真を交互に
+feat_html = "".join(fcard(*f) for f in FEATURES[:TOP_N])
 v1 = ver("site.css"); v2 = ver("hotel.css", "hotel.js"); v3 = ver("top.css", "top.js")
 
 page = f"""<!doctype html>
@@ -129,7 +132,7 @@ page = f"""<!doctype html>
 
 <main class="gin">
   <section class="fstrip" aria-labelledby="fsh">
-    <div class="fs-hd"><h2 id="fsh">特集</h2><a href="#features">すべて見る ›</a></div>
+    <div class="fs-hd"><h2 id="fsh">特集</h2><a href="{base}features/">すべて見る ›</a></div>
     <div class="fs-wrap"><button type="button" class="fs-ar prev" aria-label="前へ" hidden>‹</button><ul class="fs-row" id="fs-row">{strip_html}</ul><button type="button" class="fs-ar next" aria-label="次へ">›</button></div>
   </section>
 
@@ -167,6 +170,7 @@ page = f"""<!doctype html>
   <section class="feats" id="features" aria-labelledby="fh">
     <div class="rhd"><h2 id="fh">特集</h2><span>エリアと予算ごとの神日を、読み物で</span></div>
     <ul class="flist">{feat_html}</ul>
+    {f'<a class="fall" href="{base}features/">特集をすべて見る（{len(FEATURES)}本）<span aria-hidden="true">›</span></a>' if len(FEATURES) > TOP_N else ''}
   </section>
 
 </main>
@@ -180,3 +184,40 @@ page = f"""<!doctype html>
 """
 open(f"{OUT}/index.html", "w", encoding="utf-8").write(page)
 print("new top built", len(hotels))
+
+# ---- 特集の一覧ページ（/features/）
+base = "../"
+fl = "".join(fcard(*f) for f in FEATURES)
+_t = "特集一覧｜YASUMIBI"; _d = "神日（いちばん安い日）を、エリア・予算・連休・週末ごとにまとめた特集の一覧。口コミ★4.3以上の宿だけで、毎日更新しています。"
+fpage = f"""<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="index,follow">
+<title>{esc(_t)}</title>
+<meta name="description" content="{esc(_d)}">
+{og_meta(esc(_t), esc(_d), "features/")}<link rel="canonical" href="https://yasumibi.com/features/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,600..900&display=swap">
+<link rel="stylesheet" href="{base}assets/site.css?v={v1}">
+<link rel="stylesheet" href="{base}assets/top.css?v={v3}">
+<link rel="icon" href="{base}assets/img/favicon-48.png" type="image/png">
+<link rel="apple-touch-icon" href="{base}assets/img/apple-touch-icon.png">
+</head>
+<body class="app top2">
+{site_header(base, "features")}
+<main class="gin">
+  <nav class="crumb" aria-label="現在地"><a href="{base}">ホーム</a><span aria-hidden="true">›</span><span>特集一覧</span></nav>
+  <section class="feats fpage" aria-labelledby="fh">
+    <div class="rhd"><h1 id="fh">特集</h1><span>全{len(FEATURES)}本・毎日更新</span></div>
+    <ul class="flist">{fl}</ul>
+  </section>
+</main>
+{footer(base)}
+{tabbar(base, "")}
+</body></html>
+"""
+open(f"{OUT}/features/index.html", "w", encoding="utf-8").write(fpage)
+print("features index", len(FEATURES))
