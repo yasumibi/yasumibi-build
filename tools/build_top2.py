@@ -58,18 +58,25 @@ dmin = f"{months[0]['y']}-{months[0]['m']:02d}-01"; dmax = f"{months[-1]['y']}-{
 MAXES = list(range(4, 13)) + [15, 20]
 max_opts = '<option value="0" selected>こだわらない</option>' + "".join(f'<option value="{m*10000}">〜{m}万円</option>' for m in MAXES)
 
-FEATURES = [("renkyu", "有給1日で、何連休？", "連休のいちばん安い夜を毎日計算", "hakone-torii.jpg"),
-            ("ranking", "日をずらすと、いくら浮く？", "全国の宿ランキング・毎日更新", "hakone-fuji-ship.jpg"),
-            ("hakone-5man", "箱根の神日。", "2人で5万円前後の人気宿5軒", "hakone-fuji-ship.jpg"),
-            ("hakone-10man", "箱根、10万円の夜。", "天悠、富士屋ホテルほか5軒", "hakone-torii.jpg"),
-            ("atami-5man", "熱海の神日。", "2人で5万円前後の人気宿5軒", "atami-panorama.jpg"),
-            ("atami-10man", "熱海、10万円の夜。", "迎賓館、大観荘ほか5軒", "atami-fireworks.jpg")]
-
+FEATURES = [("renkyu/", "有給1日で、何連休？", "連休のいちばん安い夜を毎日計算", None),
+            ("ranking/", "日をずらすと、いくら浮く？", "全国の宿ランキング・毎日更新", None),
+            ("features/hakone-5man/", "箱根の神日。", "2人で5万円前後の人気宿5軒", "hakone-fuji-ship.jpg"),
+            ("features/hakone-10man/", "箱根、10万円の夜。", "天悠、富士屋ホテルほか5軒", "hakone-torii.jpg"),
+            ("features/atami-5man/", "熱海の神日。", "2人で5万円前後の人気宿5軒", "atami-panorama.jpg"),
+            ("features/atami-10man/", "熱海、10万円の夜。", "迎賓館、大観荘ほか5軒", "atami-fireworks.jpg")]
+AREA_FEAT = {"kusatsu": ("草津、どの日に泊まる？", "kusatsu-yubatake.jpg"), "yufuin": ("由布院、どの日に泊まる？", "yufuin-kinrinko.jpg"),
+             "beppu": ("別府、どの日に泊まる？", "beppu-chinoike.jpg")}
+for k, (t, img) in AREA_FEAT.items():
+    if CNT.get(k, 0) >= 5 and os.path.isdir(f"{OUT}/areas/{k}"):
+        FEATURES.append((f"areas/{k}/", t, f"人気宿{CNT[k]}軒・いつ行く？とランキング", img))
+TILE = {"renkyu/": '<span class="tile t-ren">有給1日で<b>何連休？</b></span>', "ranking/": '<span class="tile t-rank">ずらすと<b>いくら浮く？</b></span>'}
 base = ""
+def fcard(s, t, sub, img):
+    vis = TILE.get(s) or f'<img src="{base}assets/img/{img}" alt="" loading="lazy">'
+    return f'<li><a href="{base}{s}">{vis}<span class="ft">{esc(t)}</span><span class="fs">{esc(sub)}</span></a></li>'
+strip_html = "".join(fcard(*f) for f in FEATURES)
+feat_html = strip_html
 v1 = ver("site.css"); v2 = ver("hotel.css", "hotel.js"); v3 = ver("top.css", "top.js")
-TILE = {"renkyu": '<span class="tile t-ren">有給1日で<b>何連休？</b></span>', "ranking": '<span class="tile t-rank">ずらすと<b>いくら浮く？</b></span>'}
-strip_html = "".join(f'<li><a href="{base}{s if s in TILE else "features/" + s}/">' + (TILE.get(s) or f'<img src="{base}assets/img/{img}" alt="" loading="lazy">') + f'<span class="ft">{esc(t)}</span><span class="fs">{esc(sub)}</span></a></li>' for s, t, sub, img in FEATURES)
-feat_html = "".join(f'<li><a href="{base}{s if s in TILE else "features/" + s}/">' + (TILE.get(s) or f'<img src="{base}assets/img/{img}" alt="" loading="lazy">') + f'<span class="ft">{esc(t)}</span><span class="fs">{esc(sub)}</span></a></li>' for s, t, sub, img in FEATURES)
 
 page = f"""<!doctype html>
 <html lang="ja">
@@ -121,7 +128,7 @@ page = f"""<!doctype html>
 <main class="gin">
   <section class="fstrip" aria-labelledby="fsh">
     <div class="fs-hd"><h2 id="fsh">特集</h2><a href="#features">すべて見る ›</a></div>
-    <ul class="fs-row">{strip_html}</ul>
+    <div class="fs-wrap"><button type="button" class="fs-ar prev" aria-label="前へ" hidden>‹</button><ul class="fs-row" id="fs-row">{strip_html}</ul><button type="button" class="fs-ar next" aria-label="次へ">›</button></div>
   </section>
 
   <section class="res" aria-labelledby="rh" id="results" hidden>
@@ -136,7 +143,7 @@ page = f"""<!doctype html>
     <ol class="rlist" id="p-cheap"></ol>
   </section>
   <section class="pick" aria-labelledby="pk2">
-    <div class="rhd"><h2 id="pk2">ずらすと、いちばん浮く宿</h2><span class="pkr"><span class="prt">PR</span><b class="top5">TOP5</b></span></div>
+    <div class="rhd"><h2 id="pk2">ずらすと、超お得に泊まれる宿</h2><span class="pkr"><span class="prt">PR</span><b class="top5">TOP5</b></span></div>
     <p class="rnote">土曜泊の平均と、その月の神日の差。</p>
     <ol class="rlist" id="p-gap"></ol>
     <a class="pmore" href="{base}ranking/">ランキングをもっと見る ›</a>

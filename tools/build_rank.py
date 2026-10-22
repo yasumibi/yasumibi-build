@@ -132,7 +132,21 @@ def when_block(nos):
 </section>"""
 
 
-def page(path, title, desc, crumb, h1, lead, body, base):
+AREA_IMG = {"hakone": "hakone-fuji-ship.jpg", "atami": "atami-panorama.jpg", "kusatsu": "kusatsu-yubatake.jpg",
+            "yufuin": "yufuin-kinrinko.jpg", "beppu": "beppu-chinoike.jpg"}
+try: CREDITS = json.load(open(f"{OUT}/assets/img/credits.json"))
+except Exception: CREDITS = {}
+
+
+def cover(key, base):
+    img = AREA_IMG.get(key)
+    if not img: return ""
+    c = CREDITS.get(img)
+    cr = f'<span class="cv-cr">写真：{esc(c["artist"] or "Wikimedia Commons")}（{esc(c["license"])}・Wikimedia Commons）</span>' if c else ""
+    return f'<figure class="cv"><img src="{base}assets/img/{img}" alt="" width="960" height="540">{cr}</figure>'
+
+
+def page(path, title, desc, crumb, h1, lead, body, base, cv=""):
     v = ver("site.css"), ver("hotel.css"), ver("top.css", "otoku.css", "rank.css")
     return f"""<!doctype html>
 <html lang="ja">
@@ -158,7 +172,7 @@ def page(path, title, desc, crumb, h1, lead, body, base):
 {site_header(base, "features")}
 <main class="gin ok rkp">
   <nav class="crumb" aria-label="現在地">{crumb}</nav>
-  <header class="ok-hd"><h1>{h1}</h1><p>{lead}</p></header>
+  {cv}<header class="ok-hd"><h1>{h1}</h1><p>{lead}</p></header>
   {body}
   <p class="fine">※大人2名・1室・1泊2食付きの最安プラン（2名合計・税込）。{KY}年{KM}月泊の料金で計算（年末年始・過ぎた日は除く）。料金は楽天トラベルの{esc(ASOF)}時点のもので、毎日更新しています。宿の写真：楽天トラベル</p>
 </main>
@@ -189,7 +203,7 @@ for a in AREAS:
     desc = f"{nm}の人気宿{len(nos)}軒の料金を全日調べて、日をずらすと安くなる宿、土曜でも高くならない宿をランキング。毎日更新。"
     crumb = f'<a href="{base}">ホーム</a><span aria-hidden="true">›</span><a href="{base}ranking/">ランキング</a><span aria-hidden="true">›</span><span>{esc(nm)}</span>'
     write(f"{OUT}/areas/{a['key']}/index.html", page(f"areas/{a['key']}/", title, desc, crumb, f"{esc(nm)}、どの日に泊まる？",
-                                                    f"{esc(nm)}の人気宿{len(nos)}軒、{KM}月の料金で比べました。毎日更新。", body, base))
+                                                    f"{esc(nm)}の人気宿{len(nos)}軒、{KM}月の料金で比べました。毎日更新。", body, base, cover(a["key"], base)))
     made.append((a, len(nos), gap[:1]))
 
 # 全国版
