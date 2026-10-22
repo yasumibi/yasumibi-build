@@ -93,7 +93,7 @@ page = f"""<!doctype html>
 <section class="hero" id="search">
   <div class="gin">
     <h1>泊まるなら、いちばん安い日に。</h1>
-    <p class="kexp"><span class="star">★4.3以上の宿だけ。</span><b>神日</b>＝その宿がその月でいちばん安い日</p>
+    <p class="kexp"><span class="star"><i aria-hidden="true">★</i>口コミ4.3以上の宿だけ</span><span class="kd"><b>神日</b>＝その宿がその月でいちばん安い日</span></p>
     <div class="sbox">
       <div class="stabs" role="tablist" aria-label="探し方">
         <button type="button" role="tab" id="t-free" aria-selected="true" aria-controls="p-search">日付はまだ決めていない</button>
