@@ -114,7 +114,7 @@ page = f"""<!doctype html>
 <section class="hero" id="search">
   <div class="gin">
     <div class="shift"><div class="o"><small>これまで</small>休みの日に、安い宿を探す。</div><h1 class="n"><small>これから</small><b>安い日に、休みを合わせる。</b></h1></div>
-    <p class="kexp"><span class="star"><i aria-hidden="true">★</i>口コミ4.3以上の宿だけ</span><span class="kd"><b>神日</b>＝その宿がその月でいちばん安い日</span></p>
+    <p class="kexp"><span class="star"><i aria-hidden="true">★</i>口コミ4.3以上の宿だけ</span><span class="kd"><b>神日</b>＝その月いちばん安い日</span></p>
     <div class="sbox">
       <div class="stabs" role="tablist" aria-label="探し方">
         <button type="button" role="tab" id="t-free" aria-selected="true" aria-controls="p-search">日付はまだ決めていない</button>
@@ -154,31 +154,20 @@ page = f"""<!doctype html>
   <section class="pick" aria-labelledby="pk1">
     <div class="rhd"><h2 id="pk1"><span id="pk-m" class="pkm"></span>いちばん安い<span class="kw">神日</span></h2><span class="pkr"><span class="prt">PR</span><b class="top5">TOP5</b></span></div>
     <ol class="rlist" id="p-cheap"></ol>
+    <button type="button" class="pkmore" data-open="p-cheap">4位・5位も見る</button>
   </section>
   <section class="pick" aria-labelledby="pk2">
     <div class="rhd"><h2 id="pk2">ずらすと、超お得に泊まれる宿</h2><span class="pkr"><span class="prt">PR</span><b class="top5">TOP5</b></span></div>
     <p class="rnote">土曜泊の平均と、その月の神日の差。</p>
     <ol class="rlist" id="p-gap"></ol>
+    <button type="button" class="pkmore" data-open="p-gap">4位・5位も見る</button>
     <a class="pmore" href="{base}ranking/">ランキングをもっと見る ›</a>
   </section>
   <p class="cond">※★4.3以上＝楽天トラベルの口コミ評価4.3以上（口コミ50件以上）の宿。大人2名・1室・1泊2食付きの最安プラン（2名合計・税込）。{ASOF}時点の楽天トラベルの料金。予約前に最新の料金をご確認ください。宿の写真：楽天トラベル</p>
 
-  <a class="rcb" href="{base}rakuten-card/">
-    <span class="pr">PR</span>
-    <span class="t">楽天トラベルは、楽天カードで払うとポイント2.5倍</span>
-    <span class="s">エントリーして事前決済すると、国内宿泊のポイントが2.5倍。神日と組み合わせて、旅費をもう一段下げる。</span>
-    <span class="b">実際の宿で試算を見る →</span>
-  </a>
-
   <section class="areas" id="areas" aria-labelledby="ah">
     <div class="rhd"><h2 id="ah">エリアから探す</h2><span>エリアは順次ふやしていきます</span></div>
     {area_blocks}
-  </section>
-
-  <section class="feats" id="features" aria-labelledby="fh">
-    <div class="rhd"><h2 id="fh">特集</h2><span>エリアと予算ごとの神日を、読み物で</span></div>
-    <ul class="flist">{feat_html}</ul>
-    {f'<a class="fall" href="{base}features/">特集をすべて見る（{len(FEATURES)}本）<span aria-hidden="true">›</span></a>' if len(FEATURES) > TOP_N else ''}
   </section>
 
 </main>
