@@ -137,10 +137,11 @@ for f in FEATURES:
         for d in range(1, ND + 1):
             v = h["p"][d - 1]
             t = "so" if not v else ("t0" if v <= mn else "t1" if v / mn <= 1.15 else "t2" if v / mn <= 1.35 else "t3")
-            cells += f'<td class="c {t}" title="{lab(d)} {yen(v) if v else "満室"}"></td>'
+            sat = " sat" if wd(d) == "土" else ""
+            cells += f'<td class="c {t}{sat}" title="{lab(d)} {yen(v) if v else "満室"}">{f"{v/10000:.1f}" if v else ""}</td>'
         rows += f'<tr><th scope="row">{esc(h["name"].replace("小田急 ","").replace("箱根仙石原プリンスホテル","仙石原プリンス").replace("ホテルグランバッハ熱海クレッシェンド","グランバッハ熱海"))}</th>{cells}</tr>'
-    head = "".join(f"<td>{d if d in (1, 6, 10, 15, 20, 25, ND) else ''}</td>" for d in range(1, ND + 1))
-    foot = "".join(f"<td>{'土' if wd(d) == '土' else ''}</td>" for d in range(1, ND + 1))
+    head = "".join(f'<td class="{ {"土": "sa", "日": "su"}.get(wd(d), "") }">{d}<small>{wd(d)}</small></td>' for d in range(1, ND + 1))
+    foot = ""
     data = {"year": Y, "month": M, "days": ND, "hotels": [dict(no=h["no"], name=h["name"], loc=h["loc"], avg=h["avg"], cnt=h["cnt"], p=h["p"], img=img_of(h["no"])) for h in hs]}
     base = "../../"
     title = f"{AREA_JA[f['area']]}の神日カレンダー（{TIER_JA[f['tier']]}・{Y}年{M}月）｜YASUMIBI"
@@ -162,13 +163,12 @@ for f in FEATURES:
 </div>
 
 <section class="blk" aria-labelledby="mh">
-  <div class="sh"><h2 id="mh">料金マップ</h2><span class="j">5軒×{ND}日の料金（宿ごとの最安を基準に色分け）</span></div>
+  <div class="sh"><h2 id="mh">料金マップ</h2><span class="j">数字は1泊2名の料金（万円）。色は宿ごとの最安が基準</span></div>
   <div class="mx"><table>
     <thead><tr><th></th>{head}</tr></thead>
     <tbody>{rows}</tbody>
-    <tfoot><tr><th></th>{foot}</tr></tfoot>
   </table></div>
-  <div class="legend"><span><i style="background:var(--cheap)"></i>神日（その宿の最安）</span><span><i style="background:var(--near)"></i>+15%まで</span><span><i style="background:var(--warm)"></i>+35%まで</span><span><i style="background:var(--high-bar)"></i>それ以上</span><span><i style="background:repeating-linear-gradient(135deg,var(--sold) 0 3px,transparent 3px 6px)"></i>満室・プランなし</span></div>
+  <div class="legend mxl"><span><i class="t0"></i>神日（その宿の最安）</span><span><i class="t1"></i>+15%まで</span><span><i class="t2"></i>+35%まで</span><span><i class="t3"></i>それ以上</span><span><i style="background:repeating-linear-gradient(135deg,var(--sold) 0 3px,transparent 3px 6px)"></i>満室・プランなし</span></div>
 </section>
 
 <section class="blk" aria-labelledby="hh">
