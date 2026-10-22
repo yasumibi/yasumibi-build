@@ -88,7 +88,7 @@ ex_html = "".join(ex_card(r) for r in ex)
 best = max(ex, key=lambda r: r["save"])
 base = "../"
 title = "楽天カードで旅費はいくら下がる？楽天トラベルのポイントと入会特典｜YASUMIBI"
-desc = "楽天トラベルを楽天カードで事前決済するとポイント2.5倍。箱根・熱海の宿の実際の料金で、神日と組み合わせた節約額を試算。入会特典や上位カードとの違いも。"
+desc = "楽天トラベルを楽天カードで事前決済するとポイント2.5倍。温泉宿の実際の料金で、神日と組み合わせた節約額を試算。入会特典や上位カードとの違いも。"
 v1 = ver("site.css"); v2 = ver("hotel.css"); v3 = ver("top.css", "otoku.css")
 apply = f'<a class="c-apply" href="{CARD_AFF}" target="_blank" rel="nofollow sponsored noopener">楽天カードを申し込む（年会費無料）</a>'
 tiles = (card_tile("card", "楽天カード", "永年無料", "2.5倍", "年に数回の旅行なら、これで十分") +

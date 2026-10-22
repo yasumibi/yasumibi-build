@@ -41,6 +41,10 @@ for h in AREA["hotels"]:
 CNT = {}
 for h in hotels: CNT[h["area"]] = CNT.get(h["area"], 0) + 1
 LIVE = [a for a in AREAS if CNT.get(a["key"])]       # 宿が1軒以上あるエリアだけ出す
+_big = [a["name"] for a in sorted(LIVE, key=lambda a: -CNT[a["key"]])][:5]
+TOP_T = "YASUMIBI｜温泉宿がいちばん安い日（神日）がわかる｜神日カレンダー"
+TOP_D = (f"{'・'.join(_big)}など{len(LIVE)}エリア、口コミ★4.3以上の温泉宿{sum(CNT[a['key']] for a in LIVE)}軒の料金を毎日全日調べて、"
+         "いちばん安く泊まれる日（神日）を表示。安い日に、休みを合わせる。")
 DATA = dict(months=months, asof=ASOF, aff=AFF, hotels=hotels, areas={a["key"]: a["name"] for a in LIVE})
 DEF_MI = next((i for i, mm in enumerate(months) if (mm["y"], mm["m"]) == DEFAULT_YM), 0)
 REGIONS = []
@@ -91,10 +95,10 @@ page = f"""<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>神日カレンダー｜箱根・熱海の宿の安い日がわかる｜YASUMIBI</title>
-<meta name="description" content="箱根・熱海の人気宿の料金を全日調べ、いちばん安い日（神日）を表示。エリアと予算を選ぶだけで、安い日と料金がすぐわかる。">
+<title>{TOP_T}</title>
+<meta name="description" content="{TOP_D}">
 <link rel="canonical" href="https://yasumibi.com/">
-{og_meta("神日カレンダー｜箱根・熱海の宿の安い日がわかる｜YASUMIBI", "箱根・熱海の人気宿の料金を全日調べ、いちばん安い日（神日）を表示。エリアと予算を選ぶだけで、安い日と料金がすぐわかる。", "")}
+{og_meta(TOP_T, TOP_D, "")}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,600..900&display=swap">
