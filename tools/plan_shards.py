@@ -3,7 +3,7 @@ import json, os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import DATA
 
-LIMIT = int(os.environ.get("YB_SHARD_HOTELS", "250"))   # 1回の実行で扱う宿の数の目安
+LIMIT = int(os.environ.get("YB_SHARD_HOTELS", "600"))   # 1回の実行で扱う宿の数の目安
 cnt = {}
 for h in json.load(open(f"{DATA}/hotels.json")):
     cnt[h["area"]] = cnt.get(h["area"], 0) + 1

@@ -19,6 +19,15 @@ ACCESS_KEY = os.environ.get("RAKUTEN_ACCESS_KEY", "")
 REFERER = os.environ.get("YB_REFERER", "https://yasumibi.com/")
 WAIT = float(os.environ.get("YB_WAIT", "1.1"))      # 1回ごとの待ち時間（秒）
 GROUP = 15                                          # 1回に問い合わせる宿の数（APIの上限）
+PATTERN = int(os.environ.get("YB_PATTERN", "0"))    # 0＝宿ごと（速い）／1＝プランごと（従来）
+_LAST = [0.0]
+
+
+def pace():
+    """前回の問い合わせから WAIT 秒たつまで待つ（通信にかかった時間も含めて1秒1回以下）。"""
+    dt_ = time.time() - _LAST[0]
+    if dt_ < WAIT: time.sleep(WAIT - dt_)
+    _LAST[0] = time.time()
 JST = datetime.timezone(datetime.timedelta(hours=9))
 T0 = time.time()
 BUDGET = float(os.environ.get("YB_BUDGET_MIN", "0") or 0) * 60   # これを超えたら、取れた分だけ保存して終える（0＝制限なし）
@@ -43,7 +52,7 @@ def call(params, tries=4):
     if SQUEEZE["on"] and "checkinDate" in params: params = dict(params, squeezeCondition="breakfast,dinner")
     q = dict(params, applicationId=APP_ID, accessKey=ACCESS_KEY, format="json", formatVersion=2)
     url = API + "?" + urllib.parse.urlencode(q)
-    STAT["calls"] += 1
+    STAT["calls"] += 1; pace()
     req = urllib.request.Request(url, headers={"Referer": REFERER, "Origin": REFERER.rstrip("/"), "User-Agent": "yasumibi-price-fetch/1.0"})
     for i in range(tries):
         try:
@@ -84,32 +93,48 @@ def cheapest_two_meal(resp):
     return out
 
 
-def fetch_date(nos, d):
-    """1日分。成功したら {hotelNo: 価格 or 0}、失敗した宿は含めない。"""
+def _query(grp, d, pattern):
+    """宿のまとまり1つ・1日分。{hotelNo: 最安}、返ってきた宿の番号の集合。失敗は None。"""
     nd = d + datetime.timedelta(days=1)
+    best = {}; seen = set(); page = 1
+    while True:
+        resp = call(dict(hotelNo=",".join(map(str, grp)), checkinDate=d.isoformat(), checkoutDate=nd.isoformat(),
+                         adultNum=2, roomNum=1, searchPattern=pattern, hits=30, page=page, sort="+roomCharge"))
+        if resp is None: return None, None
+        for h in resp.get("hotels", []):
+            for part in (h if isinstance(h, list) else [h]):
+                if "hotelBasicInfo" in part: seen.add(part["hotelBasicInfo"]["hotelNo"])
+        for no, v in cheapest_two_meal(resp).items():
+            if no not in best or v < best[no]: best[no] = v
+        pc = (resp.get("pagingInfo") or {}).get("pageCount", 1)
+        if page >= pc: break
+        page += 1
+    return best, seen
+
+
+def fetch_date(nos, d):
+    """1日分。成功したら {hotelNo: 価格 or 0}、失敗した宿は含めない。
+    宿ごと（pattern 0）で取り、空室はあるのに2食付きの値段が出なかった宿だけ、プランごと（pattern 1）で取り直す。"""
     result = {}
     for i in range(0, len(nos), GROUP):
         grp = nos[i:i + GROUP]
-        best = {}; page = 1; ok = True
-        while True:
-            resp = call(dict(hotelNo=",".join(map(str, grp)), checkinDate=d.isoformat(), checkoutDate=nd.isoformat(),
-                             adultNum=2, roomNum=1, searchPattern=1, hits=30, page=page, sort="+roomCharge"))
-            time.sleep(WAIT)
-            if resp is None: ok = False; break
-            for no, v in cheapest_two_meal(resp).items():
-                if no not in best or v < best[no]: best[no] = v
-            pc = (resp.get("pagingInfo") or {}).get("pageCount", 1)
-            if page >= pc: break
-            page += 1
-        if ok:
-            for no in grp: result[no] = best.get(no, 0)
+        best, seen = _query(grp, d, PATTERN)
+        if best is None: continue
+        if PATTERN == 0:
+            miss = [n for n in grp if n in seen and n not in best]
+            if miss:
+                STAT["fallback"] = STAT.get("fallback", 0) + len(miss)
+                b1, _ = _query(miss, d, 1)
+                if b1 is None: continue
+                best.update(b1)
+        for no in grp: result[no] = best.get(no, 0)
     return result
 
 
 def due(d, today):
     """その日付を今日取り直すか。近い日ほど頻繁に。"""
     gap = (d - today).days
-    near = int(os.environ.get("YB_NEAR", "45"))      # ここまでは毎日
+    near = int(os.environ.get("YB_NEAR", "30"))      # ここまでは毎日
     mid = int(os.environ.get("YB_MID", "90"))        # ここまでは YB_EVERY 日に1回
     every = int(os.environ.get("YB_EVERY", "3"))
     far = int(os.environ.get("YB_FAR_EVERY", "7"))   # それより先は週1回
@@ -179,6 +204,7 @@ def main():
     by = hotels_by_area()
     want = [a for a in (os.environ.get("YB_AREAS") or ",".join(by)).split(",") if a in by]
     ok = [a for a in want if not out_of_time() and run_area(a, by[a], today, lim, force)]
+    print(f"API 合計 {STAT['calls']}回・{(time.time()-T0)/60:.1f}分／取り直し {STAT.get('fallback', 0)}軒×日", flush=True)
     print(f"保存したエリア：{','.join(ok) or 'なし'}（対象 {len(want)}）")
     if want and not ok:
         raise SystemExit("どのエリアも保存できませんでした。公開を止めます。")
