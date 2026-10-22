@@ -77,6 +77,9 @@ def fcard(s, t, sub, img):
     vis = TILE.get(s) or f'<img src="{base}assets/img/{img}" alt="" loading="lazy">'
     return f'<li><a href="{base}{s}">{vis}<span class="ft">{esc(t)}</span><span class="fs">{esc(sub)}</span></a></li>'
 strip_html = "".join(fcard(*f) for f in FEATURES)
+_tg = json.load(open(f"{OUT}/tags/tags.json")) if os.path.exists(f"{OUT}/tags/tags.json") else []
+tag_html = ('<nav class="tgc tgc-top" aria-label="こだわりで探す"><span class="tgc-l">こだわりで探す</span><ul>'
+            + "".join(f'<li><a href="tags/{t["slug"]}/">{esc(t["name"])}</a></li>' for t in _tg) + "</ul></nav>") if _tg else ""
 TOP_N = 8   # トップの下に出す特集の数（残りは /features/ へ）
 _tx = [f for f in FEATURES if f[3] is None]; _ph = [f for f in FEATURES if f[3]]
 FEATURES = [x for pair in zip(_tx, _ph) for x in pair] + _tx[len(_ph):] + _ph[len(_tx):]   # 文字と写真を交互に
@@ -126,6 +129,7 @@ page = f"""<!doctype html>
           <select id="f-wd"><option value="all">こだわらない</option><option value="sat">土曜泊</option><option value="wk">日〜木泊</option></select></label>
         <button type="submit" class="go" id="f-go">神日を探す</button>
       </form>
+      {tag_html}
     </div>
   </div>
 </section>
