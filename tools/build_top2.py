@@ -69,7 +69,7 @@ base = ""
 v1 = ver("site.css"); v2 = ver("hotel.css", "hotel.js"); v3 = ver("top.css", "top.js")
 TILE = {"renkyu": '<span class="tile t-ren">有給1日で<b>何連休？</b></span>', "ranking": '<span class="tile t-rank">ずらすと<b>いくら浮く？</b></span>'}
 strip_html = "".join(f'<li><a href="{base}{s if s in TILE else "features/" + s}/">' + (TILE.get(s) or f'<img src="{base}assets/img/{img}" alt="" loading="lazy">') + f'<span class="ft">{esc(t)}</span><span class="fs">{esc(sub)}</span></a></li>' for s, t, sub, img in FEATURES)
-feat_html = "".join(f'<li><a href="{base}{s if s in ('renkyu', 'ranking') else 'features/' + s}/"><img src="{base}assets/img/{img}" alt="" loading="lazy"><span class="ft">{esc(t)}</span><span class="fs">{esc(sub)}</span></a></li>' for s, t, sub, img in FEATURES)
+feat_html = "".join(f'<li><a href="{base}{s if s in TILE else "features/" + s}/">' + (TILE.get(s) or f'<img src="{base}assets/img/{img}" alt="" loading="lazy">') + f'<span class="ft">{esc(t)}</span><span class="fs">{esc(sub)}</span></a></li>' for s, t, sub, img in FEATURES)
 
 page = f"""<!doctype html>
 <html lang="ja">
