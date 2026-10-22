@@ -132,11 +132,11 @@ page = f"""<!doctype html>
   </section>
 
   <section class="pick" aria-labelledby="pk1">
-    <div class="rhd"><h2 id="pk1"><span id="pk-m"></span>いちばん安い神日</h2><span><span class="prt">PR</span>TOP5</span></div>
+    <div class="rhd"><h2 id="pk1"><span id="pk-m" class="pkm"></span>いちばん安い<span class="kw">神日</span></h2><span class="pkr"><span class="prt">PR</span><b class="top5">TOP5</b></span></div>
     <ol class="rlist" id="p-cheap"></ol>
   </section>
   <section class="pick" aria-labelledby="pk2">
-    <div class="rhd"><h2 id="pk2">ずらすと、いちばん浮く宿</h2><span><span class="prt">PR</span>TOP5</span></div>
+    <div class="rhd"><h2 id="pk2">ずらすと、いちばん浮く宿</h2><span class="pkr"><span class="prt">PR</span><b class="top5">TOP5</b></span></div>
     <p class="rnote">土曜泊の平均と、その月の神日の差。</p>
     <ol class="rlist" id="p-gap"></ol>
     <a class="pmore" href="{base}ranking/">ランキングをもっと見る ›</a>
