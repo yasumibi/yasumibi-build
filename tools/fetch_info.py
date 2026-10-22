@@ -29,7 +29,7 @@ def clean(s):
 
 
 def get(no):
-    q = dict(hotelNo=no, responseType="large")
+    q = dict(hotelNo=no, responseType="large", datumType=1)   # 緯度経度は世界測地系・度で
     old = fp.API; fp.API = API
     try:
         r = fp.call(q)
@@ -53,7 +53,7 @@ def main():
         if ln.strip(): det[int(ln.split("\t", 1)[0])] = ln.rstrip("\n")
     all_ = os.environ.get("YB_INFO_ALL") == "1"
     areas = [x for x in (os.environ.get("YB_AREAS") or "").split(",") if x]
-    todo = [h for h in hotels if (not areas or h["area"] in areas) and (all_ or str(h["no"]) not in info["hotels"] or h["no"] not in det)]
+    todo = [h for h in hotels if (not areas or h["area"] in areas) and (all_ or str(h["no"]) not in info["hotels"] or h["no"] not in det or "lat" not in info["hotels"][str(h["no"])])]
     print(f"施設情報を取得：{len(todo)}軒", flush=True)
     changed = False
     for h in todo:
@@ -63,7 +63,8 @@ def main():
         b, rt, d, f = got
         thumb = (b.get("hotelThumbnailUrl") or "").replace("/HIMG/90/", "/HIMG/300/") or b.get("hotelImageUrl", "")
         info["hotels"][str(h["no"])] = {k: v for k, v in dict(img=b.get("hotelImageUrl", ""), room=b.get("roomImageUrl") or None,
-                                         station=b.get("nearestStation", ""), access=clean(b.get("access", "")), thumb=thumb).items() if v}
+                                         station=b.get("nearestStation", ""), access=clean(b.get("access", "")), thumb=thumb,
+                                         lat=b.get("latitude"), lng=b.get("longitude")).items() if v}
         rts = ",".join(str(rt.get(k, 0) or 0) for k in ("serviceAverage", "locationAverage", "roomAverage", "equipmentAverage", "bathAverage", "mealAverage"))
         fac = "、".join(x.get("item", "") for x in (f.get("hotelFacilities") or []))
         det[h["no"]] = "\t".join(map(str, [h["no"], b.get("reviewAverage") or 0, b.get("reviewCount") or 0, rts, d.get("checkinTime", ""), d.get("checkoutTime", ""),

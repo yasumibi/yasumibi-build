@@ -143,6 +143,32 @@ def due(d, today):
     return d.toordinal() % far == today.toordinal() % far
 
 
+HIST_DIR = f"{DATA}/history"
+
+
+def save_history(area, old, new, today):
+    """料金の履歴：前回から変わった値だけを、日付ごとのファイルに残す（0＝満室・プランなしになった）。
+    history/<取得日>/<エリア>.json.gz に {宿番号: {泊まる日: 料金}}。初めてのエリアは全部を入れる。
+    """
+    import gzip
+    first = not any(os.path.exists(f"{HIST_DIR}/{d}/{area}.json.gz") for d in (os.listdir(HIST_DIR) if os.path.isdir(HIST_DIR) else []))
+    diff = {}
+    for no in set(old) | set(new):
+        a, b = old.get(no, {}), new.get(no, {})
+        for k in set(a) | set(b):
+            if k < today.isoformat(): continue
+            if first or a.get(k) != b.get(k): diff.setdefault(no, {})[k] = int(b.get(k) or 0)
+    if not diff: return
+    os.makedirs(f"{HIST_DIR}/{today.isoformat()}", exist_ok=True)
+    f = f"{HIST_DIR}/{today.isoformat()}/{area}.json.gz"
+    if os.path.exists(f):                        # 同じ日に2回取ったら重ねる
+        prev = json.load(gzip.open(f, "rt"))
+        for no, v in diff.items(): prev.setdefault(no, {}).update(v)
+        diff = prev
+    with gzip.open(f, "wt") as g: json.dump(diff, g, separators=(",", ":"))
+    print(f"[{area}] 料金の履歴：{sum(len(v) for v in diff.values())}件の変化を記録", flush=True)
+
+
 def run_area(area, nos, today, lim, force):
     f = price_file(area)
     pr = json.load(open(f)) if os.path.exists(f) else {"hotels": {}}
@@ -187,6 +213,7 @@ def run_area(area, nos, today, lim, force):
         print(f"[{area}] 取れた料金が前回の半分未満です。APIの異常の可能性があるため、このエリアは保存しません。"); return False
     if tried and fails > tried * 0.1:
         print(f"[{area}] 取得できなかった日が多すぎます（{fails}/{tried}）。このエリアは保存しません。"); return False
+    save_history(area, old, hotels, today)
     pr["asof"] = f"{today.year}年{today.month}月{today.day}日"; pr["asof_date"] = today.isoformat()
     if lim == 0 and not cut: pr["hotel_set"] = sorted(set(nos)); pr.pop("new_upto", None)
     pr["source"] = "楽天トラベル 空室検索API（VacantHotelSearch）"
