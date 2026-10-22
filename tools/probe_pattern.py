@@ -43,7 +43,7 @@ for a in areas:
                 else: diff += 1; samples.append((a, str(d), no, v1, v0))
             elif v1: only1 += 1
             elif v0: only0 += 1
-        m=f"{a} {d} calls p1={c1} p0={c0} found p1={len(b1)} p0={len(b0)}"; print(m, flush=True); print("::notice title=row::"+m)
+        m=f"{a} {d} calls p1={c1} p0={c0} found p1={len(b1)} p0={len(b0)}"; print(m, flush=True); pass
 msg=f"TOTAL calls p1={tot[1]} p0={tot[0]} / same={same} diff={diff} only_p1={only1} only_p0={only0}"
-print(msg); print("::notice title=TOTAL::"+msg)
+print(msg); print("::warning title=TOTAL::"+msg)
 for x in samples[:20]: print("diff", x); print("::notice title=diff::"+str(x))
