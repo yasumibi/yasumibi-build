@@ -114,7 +114,9 @@ def month_prices(no, y, m):
     return [int(src.get(f"{y}-{m:02d}-{d:02d}", 0) or 0) for d in range(1, calendar.monthrange(y, m)[1] + 1)]
 
 
-HOTELS = json.load(open(f"{DATA}/hotels.json"))       # 掲載する宿の一覧（ここに足すと全ページに出る）
+HOTELS_ALL = json.load(open(f"{DATA}/hotels.json"))   # 宿の一覧（料金を取る対象）
+# 掲載するのは「★4.3以上・口コミ50件以上」の宿だけ（毎週の評価の取り直しで下回ったら自動で外れる）
+HOTELS = [h for h in HOTELS_ALL if (h.get("avg") or 0) >= 4.3 and (h.get("cnt") or 0) >= 50]
 SLUG = {h["no"]: (h["slug"], h["name"], h["full"]) for h in HOTELS}
 
 
