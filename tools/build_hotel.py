@@ -317,9 +317,8 @@ otoku = ohead + f"""
       <span class="sn">03</span>
       <div class="sb">
         <h2>2枚目のカードを選ぶ</h2>
-        <p>旅以外の支払いにも、合うカードは人によって違います。目的別に比べられるページを準備しています。</p>
-        <ul class="tags"><li>マイルを貯めたい</li><li>支払いを1枚にまとめたい</li><li>予備の1枚がほしい</li></ul>
-        <span class="c-soon">カード比較は準備中です</span>
+        <p>旅以外の支払いにも、合うカードは人によって違います。宿の予約は楽天カード、ふだんの支払いはもう1枚、という分け方がおすすめです。</p>
+        <a class="lk" href="{ob}cards/">カードを見る<span aria-hidden="true">→</span></a>
       </div>
     </li>
   </ol>

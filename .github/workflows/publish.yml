@@ -25,6 +25,7 @@ jobs:
         run: |
           python3 tools/build_hotel.py
           python3 tools/build_card.py
+          python3 tools/build_cards.py
           python3 tools/build_rank.py
           python3 tools/build_renkyu.py
           python3 tools/build_site.py
