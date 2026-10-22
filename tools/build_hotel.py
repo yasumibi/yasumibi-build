@@ -114,6 +114,20 @@ for ln in open(f"{ROOT}/data/hotel_detail_20261021.tsv", encoding="utf-8"):
     DET[no] = dict(ra=float(c[1] or 0), rc=int(c[2] or 0), rt=rt, ci=c[4], co=c[5], rn=int(c[6] or 0), intro=INTRO.get(no, promo_clean(c[7])),
                    rev=body, rdate=(f"{int(dm.group(2))}月{int(dm.group(3))}日" if dm else ""), fac=fac, hi=HILITE.get(no, ""))
 RT_LABEL = ["サービス", "立地", "部屋", "設備・アメニティ", "風呂", "食事"]
+NO_AREA = {h["no"]: h["area"] for h in AREA["hotels"]}
+AREA_RT = {}
+for _a in set(NO_AREA.values()):
+    _rs = [DET[n]["rt"] for n, a in NO_AREA.items() if a == _a and n in DET]
+    AREA_RT[_a] = [round(sum(r[i] for r in _rs if r[i]) / max(1, sum(1 for r in _rs if r[i])), 2) for i in range(6)] if _rs else [0] * 6
+
+
+def strengths(no):
+    """エリアの★4.3以上の宿の平均より0.1以上高い項目（高い順に2つまで）。"""
+    d = DET.get(no); a = NO_AREA.get(no)
+    if not d or not a: return []
+    av = AREA_RT[a]
+    gap = sorted(((d["rt"][i] - av[i], RT_LABEL[i]) for i in range(6) if d["rt"][i] and av[i]), reverse=True)
+    return [l for g, l in gap if g >= 0.1][:2]
 
 def feat_html(no, name, base_link_aff):
     d = DET.get(no)
@@ -121,7 +135,11 @@ def feat_html(no, name, base_link_aff):
     rv_u = f"https://review.travel.rakuten.co.jp/hotel/voice/{no}/"
     rv_link = f"https://hb.afl.rakuten.co.jp/hgc/{AFF}/?pc={urllib.parse.quote(rv_u, safe='')}&m={urllib.parse.quote(rv_u, safe='')}"
     top = max(d["rt"])
-    bars = "".join(f'<li{" class=\"tp\"" if v == top else ""}><span class="rl">{l}</span><span class="rb"><i style="width:{v/5*100:.1f}%"></i></span><span class="rv">{v:.2f}</span></li>' for l, v in zip(RT_LABEL, d["rt"]) if v)
+    av = AREA_RT.get(NO_AREA.get(no), [0] * 6)
+    bars = "".join(f'<li{" class=\"tp\"" if v == top else ""}><span class="rl">{l}</span><span class="rb"><i style="width:{v/5*100:.1f}%"></i>{f'<em style="left:{a/5*100:.1f}%" title="エリア平均 {a:.2f}"></em>' if a else ''}</span><span class="rv">{v:.2f}</span></li>' for l, v, a in zip(RT_LABEL, d["rt"], av) if v)
+    st = strengths(no); an = AREA_JA.get(NO_AREA.get(no), "")
+    st_html = (f'<p class="strong"><b>この宿の強み</b>{"・".join(st)}が、{an}の★4.3以上の宿の平均より高い</p>' if st
+               else f'<p class="strong"><b>この宿の評価</b>どの項目も、{an}の★4.3以上の宿の平均に近い</p>')
     hi = f'<span class="hi">{esc(d["hi"])}</span>' if d["hi"] else ""
     fac = "".join(f"<li>{esc(x)}</li>" for x in d["fac"])
     rev_html = (f"""<figure class="rev">
@@ -134,7 +152,9 @@ def feat_html(no, name, base_link_aff):
         <ul class="facts">{('<li>' + hi + '</li>') if hi else ''}<li><span>客室数</span><b>{d['rn']}室</b></li><li><span>チェックイン</span><b>{d['ci']}</b></li><li><span>チェックアウト</span><b>{d['co']}</b></li></ul>
         <div class="rate">
           <div class="rate-hd"><h3>泊まった人の評価</h3><span><b>{d['ra']:.2f}</b>／5（{d['rc']:,}件）</span></div>
+          {st_html}
           <ul class="bars">{bars}</ul>
+          <p class="bars-lg"><i></i>{an}の★4.3以上の宿の平均</p>
         </div>
 {rev_html}
         {('<div class="fac"><h3>館内の施設</h3><ul>' + fac + '</ul></div>') if fac else ''}"""
@@ -147,6 +167,12 @@ for meta in AREA["hotels"]:
     H = dict(slug=slug, no=meta["no"], name=name, full=full, area=AREA_JA[meta["area"]], sub=meta["loc"], tier=TIER_JA[meta["tier"]],
              avg=meta["avg"], cnt=meta["cnt"], asof=asof, aff=AFF, months=months)
     info = INFO[str(meta["no"])]
+    H["thumb"] = info.get("thumb", ""); H["areaKey"] = meta["area"]; H["loc"] = meta["loc"]
+    # 同じ日なら、こっちも安い：同じエリアで★が近い（−0.1まで）宿
+    _al = [h for h in AREA["hotels"] if h["area"] == meta["area"] and h["no"] != meta["no"] and str(h["no"]) in INFO and h["avg"] >= meta["avg"] - 0.1]
+    _al.sort(key=lambda h: abs(h["avg"] - meta["avg"]))
+    H["alts"] = [dict(no=h["no"], slug=SLUG[h["no"]][0], name=SLUG[h["no"]][1], loc=h["loc"], avg=h["avg"],
+                      thumb=INFO[str(h["no"])].get("thumb", ""), p=[month_prices(h["no"], mm["y"], mm["m"]) for mm in months]) for h in _al[:15]]
     _iu = f"https://travel.rakuten.co.jp/HOTEL/{meta['no']}/{meta['no']}.html"
     info_link = f"https://hb.afl.rakuten.co.jp/hgc/{AFF}/?pc={urllib.parse.quote(_iu, safe='')}&m={urllib.parse.quote(_iu, safe='')}"
     dmi = next((i for i, mm in enumerate(months) if (mm["y"], mm["m"]) == DEFAULT_YM), 0)
@@ -187,6 +213,10 @@ for meta in AREA["hotels"]:
             <div class="kp"><span id="k-price" class="num"></span><span class="u">2名1泊2食・税込</span></div>
             <div class="kr" id="k-real" hidden></div>
           </div>
+          <div class="hact">
+            <button type="button" class="fav" id="fav" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.2-9.3C1.6 7.8 3.9 4.5 7.3 4.5c2 0 3.6 1.1 4.7 2.7 1.1-1.6 2.7-2.7 4.7-2.7 3.4 0 5.7 3.3 4.5 6.7-1.7 4.7-9.2 9.3-9.2 9.3z"/></svg><span>お気に入り</span></button>
+            <a class="line" id="line-share" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c-5 0-9 3.2-9 7.2 0 3.6 3.2 6.6 7.5 7.1.3.1.7.2.8.5.1.2.1.6 0 .8l-.1.8c0 .2-.2.9.8.5s5.3-3.1 7.2-5.3c1.3-1.4 1.8-2.9 1.8-4.4 0-4-4-7.2-9-7.2z"/></svg><span>LINEで相談</span></a>
+          </div>
           <label class="sw"><input type="checkbox" id="card-sw"><span class="track" aria-hidden="true"><span class="knob"></span></span><span class="swl">楽天カード払いで見る<small>ポイントを引いた実質の目安</small></span></label>
         </div>
       </div>
@@ -213,6 +243,12 @@ for meta in AREA["hotels"]:
         <div class="cardnote" id="cardnote" hidden>表示中：楽天カードで事前決済した場合の実質（ポイント2.5%を引いた目安・万円）</div>
         <div class="hcal" id="hcal"></div>
         <div class="legend"><span><i style="background:var(--cheap)"></i>神日</span><span><i style="background:var(--near)"></i>+15%まで</span><span><i style="background:var(--warm)"></i>+35%まで</span><span><i style="background:var(--high-bar)"></i>それ以上</span><span><i style="background:repeating-linear-gradient(135deg,var(--sold) 0 3px,transparent 3px 6px)"></i>満室</span></div>
+      </section>
+
+      <section class="blk alt" aria-labelledby="alth" id="alt" hidden>
+        <div class="sh"><h2 id="alth">同じ日なら、こっちも安い</h2><span class="j" id="alt-j"></span></div>
+        <ul class="peers" id="alt-list"></ul>
+        <p class="note" id="alt-note"></p>
       </section>
 
       <section class="blk" aria-labelledby="rgh">
@@ -260,12 +296,15 @@ for meta in AREA["hotels"]:
       <button type="button" class="bs-x" id="bs-x" aria-label="閉じる">×</button>
     </section>
 
-    <script>window.HOTEL = {json.dumps(H, ensure_ascii=False)};</script>
+    <script>window.HOTEL = {json.dumps(H, ensure_ascii=False, separators=(",", ":"))};</script>
     <script src="{base}assets/hotel.js?v={v2}"></script>
     </body></html>
     """
     os.makedirs(f"{OUT}/hotels/{slug}", exist_ok=True)
     open(f"{OUT}/hotels/{slug}/index.html", "w", encoding="utf-8").write(page)
+    # お気に入りの比較ページ用（その宿の料金だけの小さなデータ）
+    json.dump({k: H[k] for k in ("slug", "no", "name", "area", "areaKey", "loc", "avg", "cnt", "thumb", "months", "aff")},
+              open(f"{OUT}/hotels/{slug}/data.json", "w"), ensure_ascii=False, separators=(",", ":"))
     built += 1
 mn0 = built; kd = []; pts0 = diff0 = 0
 

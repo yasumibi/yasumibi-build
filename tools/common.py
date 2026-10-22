@@ -18,7 +18,7 @@ def site_header(base, cur=""):
     def a(key, href, label, extra=""):
         return f'<a href="{href}"{extra}{" aria-current=\"page\"" if key == cur else ""}>{label}</a>'
     nav = (a("areas", f"{base}#areas", "エリアから探す") + a("date", f"{base}#date", "日付から探す")
-           + a("features", f"{base}features/", "特集") + a("otoku", f"{base}otoku/", "さらに安く", ' class="ot"'))
+           + a("features", f"{base}features/", "特集") + a("fav", f"{base}favorites/", "お気に入り") + a("otoku", f"{base}otoku/", "さらに安く", ' class="ot"'))
     return f"""<header class="gh">
   <div class="gin">
     {logo_html(base)}
@@ -33,6 +33,7 @@ def tabbar(base, cur):
     items = [("home", "ホーム", f"{base}", '<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>'),
              ("area", "エリア", f"{base}#areas", '<path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>'),
              ("date", "日付", f"{base}#date", '<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>'),
+             ("fav", "お気に入り", f"{base}favorites/", '<path d="M12 20.5s-7.5-4.6-9.2-9.3C1.6 7.8 3.9 4.5 7.3 4.5c2 0 3.6 1.1 4.7 2.7 1.1-1.6 2.7-2.7 4.7-2.7 3.4 0 5.7 3.3 4.5 6.7-1.7 4.7-9.2 9.3-9.2 9.3z"/>'),
              ("otoku", "さらに安く", f"{base}otoku/", '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v9M9.5 9.5h4a1.8 1.8 0 0 1 0 3.6h-3a1.8 1.8 0 0 0 0 3.6h4"/>')]
     a = "".join(f'<a href="{h}"{" aria-current=\"page\"" if k == cur else ""} class="t-{k}"{" data-tab=\"date\"" if k == "date" else ""}><svg viewBox="0 0 24 24" aria-hidden="true">{p}</svg><span>{t}</span></a>' for k, t, h, p in items)
     return f'<nav class="tabbar" aria-label="メニュー">{a}</nav>'
