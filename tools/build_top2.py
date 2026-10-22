@@ -93,7 +93,7 @@ page = f"""<!doctype html>
 <section class="hero" id="search">
   <div class="gin">
     <h1>泊まるなら、いちばん安い日に。</h1>
-    <p class="kexp"><b>神日</b>＝その宿がその月でいちばん安い日</p>
+    <p class="kexp"><span class="star">★4.3以上の宿だけ。</span><b>神日</b>＝その宿がその月でいちばん安い日</p>
     <div class="sbox">
       <div class="stabs" role="tablist" aria-label="探し方">
         <button type="button" role="tab" id="t-free" aria-selected="true" aria-controls="p-search">日付はまだ決めていない</button>
@@ -117,12 +117,24 @@ page = f"""<!doctype html>
 </section>
 
 <main class="gin">
-  <section class="res" aria-labelledby="rh" id="results">
+  <section class="res" aria-labelledby="rh" id="results" hidden>
     <div class="rhd"><h2 id="rh">今月の神日</h2><span><span class="prt">PR</span><span id="rc"></span></span></div>
     <p class="rnote" id="rnote"></p>
     <ol class="rlist" id="rlist"></ol>
-    <p class="cond">※大人2名・1室・1泊2食付きの最安プラン（2名合計・税込）。{ASOF}時点の楽天トラベルの料金。予約前に最新の料金をご確認ください。宿の写真：楽天トラベル</p>
+    <button type="button" class="rmorebtn" id="rmore" hidden>もっと見る</button>
   </section>
+
+  <section class="pick" aria-labelledby="pk1">
+    <div class="rhd"><h2 id="pk1"><span id="pk-m"></span>いちばん安い神日</h2><span><span class="prt">PR</span>TOP5</span></div>
+    <ol class="rlist" id="p-cheap"></ol>
+  </section>
+  <section class="pick" aria-labelledby="pk2">
+    <div class="rhd"><h2 id="pk2">ずらすと、いちばん浮く宿</h2><span><span class="prt">PR</span>TOP5</span></div>
+    <p class="rnote">土曜泊の平均と、その月の神日の差。</p>
+    <ol class="rlist" id="p-gap"></ol>
+    <a class="pmore" href="{base}ranking/">ランキングをもっと見る ›</a>
+  </section>
+  <p class="cond">※★4.3以上＝楽天トラベルの口コミ評価4.3以上（口コミ50件以上）の宿。大人2名・1室・1泊2食付きの最安プラン（2名合計・税込）。{ASOF}時点の楽天トラベルの料金。予約前に最新の料金をご確認ください。宿の写真：楽天トラベル</p>
 
   <a class="rcb" href="{base}rakuten-card/">
     <span class="pr">PR</span>
