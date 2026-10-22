@@ -29,6 +29,7 @@ jobs:
           python3 tools/build_rank.py
           python3 tools/build_renkyu.py
           python3 tools/build_site.py
+          python3 tools/build_specials.py
           python3 tools/build_top2.py
           python3 tools/build_404.py
       - name: 公開

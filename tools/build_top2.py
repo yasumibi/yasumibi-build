@@ -60,15 +60,14 @@ max_opts = '<option value="0" selected>こだわらない</option>' + "".join(f'
 
 FEATURES = [("renkyu/", "有給1日で、何連休？", "連休のいちばん安い夜を毎日計算", None),
             ("ranking/", "日をずらすと、いくら浮く？", "全国の宿ランキング・毎日更新", None),
-            ("features/hakone-5man/", "箱根の神日。", "2人で5万円前後の人気宿5軒", "hakone-fuji-ship.jpg"),
-            ("features/hakone-10man/", "箱根、10万円の夜。", "天悠、富士屋ホテルほか5軒", "hakone-torii.jpg"),
-            ("features/atami-5man/", "熱海の神日。", "2人で5万円前後の人気宿5軒", "atami-panorama.jpg"),
-            ("features/atami-10man/", "熱海、10万円の夜。", "迎賓館、大観荘ほか5軒", "atami-fireworks.jpg")]
-AREA_FEAT = {"kusatsu": ("草津、どの日に泊まる？", "kusatsu-yubatake.jpg"), "yufuin": ("由布院、どの日に泊まる？", "yufuin-kinrinko.jpg"),
-             "beppu": ("別府、どの日に泊まる？", "beppu-chinoike.jpg")}
-for k, (t, img) in AREA_FEAT.items():
-    if CNT.get(k, 0) >= 5 and os.path.isdir(f"{OUT}/areas/{k}"):
-        FEATURES.append((f"areas/{k}/", t, f"人気宿{CNT[k]}軒・いつ行く？とランキング", img))
+            ("features/hakone-5man/", "同じ5万円で、いちばん良い宿。", "箱根・予算を固定して★の高い順", "hakone-fuji-ship.jpg"),
+            ("features/hakone-10man/", "10万円の宿が、手の届く日。", "箱根・高級宿の値下がり幅", "hakone-torii.jpg"),
+            ("features/atami-5man/", "金曜の夜に、熱海へ。", "熱海・金曜泊がいちばん安い日", "atami-panorama.jpg"),
+            ("features/atami-10man/", "海が見える宿の、神日。", "熱海・ご褒美の一泊", "atami-fireworks.jpg"),
+            ("features/kusatsu-winter/", "冬の草津、いちばん安い週。", "草津・12〜3月を週ごとに", "kusatsu-yubatake.jpg"),
+            ("features/yufuin-2haku/", "由布院、2泊するならこの2日。", "由布院・連泊の合計が安い2日", "yufuin-kinrinko-2.jpg"),
+            ("features/beppu-1man/", "1人1万円台で泊まれる別府。", "別府・1人2万円未満の日がある宿", "beppu-umijigoku.jpg")]
+FEATURES = [f for f in FEATURES if f[3] is None or os.path.isdir(f"{OUT}/{f[0]}")]
 TILE = {"renkyu/": '<span class="tile t-ren">有給1日で<b>何連休？</b></span>', "ranking/": '<span class="tile t-rank">ずらすと<b>いくら浮く？</b></span>'}
 base = ""
 def fcard(s, t, sub, img):
