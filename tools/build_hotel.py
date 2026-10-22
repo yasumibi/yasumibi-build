@@ -55,7 +55,7 @@ def tabbar(base, cur):
     items = [("home", "ホーム", f"{base}", '<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>'),
              ("area", "エリア", f"{base}#kamibi", '<path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>'),
              ("date", "日付", f"{base}#kamibi", '<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>'),
-             ("otoku", "おトク", f"{base}otoku/", '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v9M9.5 9.5h4a1.8 1.8 0 0 1 0 3.6h-3a1.8 1.8 0 0 0 0 3.6h4"/>')]
+             ("otoku", "さらに安く", f"{base}otoku/", '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v9M9.5 9.5h4a1.8 1.8 0 0 1 0 3.6h-3a1.8 1.8 0 0 0 0 3.6h4"/>')]
     a = "".join(f'<a href="{h}"{" aria-current=\"page\"" if k == cur else ""} class="t-{k}"><svg viewBox="0 0 24 24" aria-hidden="true">{p}</svg><span>{t}</span></a>' for k, t, h, p in items)
     return f'<nav class="tabbar" aria-label="メニュー">{a}</nav>'
 
@@ -281,7 +281,7 @@ otoku = ohead + f"""
 {site_header(ob, "otoku")}
 
 <main class="gin ok">
-  <nav class="crumb" aria-label="現在地"><a href="{TOPU}">ホーム</a><span aria-hidden="true">›</span><span>おトク</span></nav>
+  <nav class="crumb" aria-label="現在地"><a href="{TOPU}">ホーム</a><span aria-hidden="true">›</span><span>さらに安く</span></nav>
   <header class="ok-hd">
     <h1>旅費を、もう一段下げる。</h1>
     <p>同じ宿でも、泊まる日と払い方で旅費は変わります。YASUMIBIがすすめるのは、この3つの順番です。</p>

@@ -116,7 +116,7 @@ page = f"""<!doctype html>
 <body class="app top2 otk">
 {site_header(base, "otoku")}
 <main class="gin ok rcp">
-  <nav class="crumb" aria-label="現在地"><a href="{base}">ホーム</a><span aria-hidden="true">›</span><a href="{base}otoku/">おトク</a><span aria-hidden="true">›</span><span>楽天カード</span></nav>
+  <nav class="crumb" aria-label="現在地"><a href="{base}">ホーム</a><span aria-hidden="true">›</span><a href="{base}otoku/">さらに安く</a><span aria-hidden="true">›</span><span>楽天カード</span></nav>
 
   <header class="rc-hero">
     <p class="eb">神日 × 楽天カード</p>
