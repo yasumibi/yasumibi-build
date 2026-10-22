@@ -180,7 +180,7 @@ for meta in AREA["hotels"]:
       </a>
       <div class="wrap">
         <div class="hcard">
-          <div class="chips"><span>{H['area']}・{esc(H['sub'])}</span><span>口コミ {H['avg']:.2f}（{H['cnt']:,}件）</span></div>
+          <div class="chips"><span>{H['area']}・{esc(H['sub'])}</span><span class="star43"><i aria-hidden="true">★</i>{H['avg']:.2f}<small>口コミ{H['cnt']:,}件</small></span></div>
           <h1>{esc(H['name'])}<small>{esc(H['full'])}</small></h1>
           <div class="hk">
             <div class="kl"><span class="tag">神日</span><span id="k-days"></span></div>
