@@ -90,6 +90,46 @@ FEATURES = [x for pair in zip(_tx, _ph) for x in pair] + _tx[len(_ph):] + _ph[le
 feat_html = "".join(fcard(*f) for f in FEATURES[:TOP_N])
 v1 = ver("site.css"); v2 = ver("hotel.css", "hotel.js"); v3 = ver("top.css", "top.js")
 
+# ---- TOP5の2つを、はじめからHTMLに書いておく（あとからJSで入れると、下の段がずれる＝CLS）
+#      assets/top.js の card()・picks() と同じ中身。JSは読み込み後に同じものを描き直すだけ。
+_WD = "日月火水木金土"
+def _lab(m, d): return f'{m["m"]}/{d}({_WD[(datetime.date(m["y"], m["m"], d).weekday() + 1) % 7]})'
+def _plink(no, m, d):
+    a = datetime.date(m["y"], m["m"], d); b = a + datetime.timedelta(days=1)
+    u = (f"https://hotel.travel.rakuten.co.jp/hotelinfo/plan/{no}?f_nen1={a.year}&f_tuki1={a.month}&f_hi1={a.day}"
+         f"&f_nen2={b.year}&f_tuki2={b.month}&f_hi2={b.day}&f_heya_su=1&f_otona_su=2")
+    q = urllib.parse.quote(u, safe="-_.!~*'()")   # JSの encodeURIComponent と同じ
+    return f"https://hb.afl.rakuten.co.jp/hgc/{AFF}/?pc={q}&m={q}"
+def _pcard(h, i, m, v, days, gap):
+    dl = "・".join(_lab(m, d) for d in days[:3]) + (f" ほか{len(days) - 3}日" if len(days) > 3 else "")
+    body = (f'<div class="pr"><span class="tg">神日</span><span class="d">{dl}</span><span class="v">¥{v:,}</span></div>'
+            + (f'<div class="gap">土曜泊の平均より <b>−{gap:,}円</b></div>' if gap
+               else f'<div class="pt">楽天カードなら +{int(v * 0.025):,}pt</div>'))
+    return (f'<li class="rc"><a class="ph" href="../hotels/{h["slug"]}/"><img src="{h["thumb"]}" alt="" loading="lazy" width="300" height="200"></a>'
+            f'<div class="inf"><span class="rk">{i + 1}</span><a class="nm" href="../hotels/{h["slug"]}/">{h["name"]}</a>'
+            f'<span class="meta">{DATA["areas"][h["area"]]}・{h["loc"]}｜★{h["avg"]:.2f}</span>{body}</div>'
+            f'<div class="acts"><a class="cal" href="../hotels/{h["slug"]}/">神日カレンダー<span aria-hidden="true">›</span></a>'
+            f'<a class="bk" href="{_plink(h["no"], m, days[0])}" target="_blank" rel="noopener sponsored">楽天で見る</a></div></li>')
+def _picks(mi):
+    m = months[mi]; k = f"{m['y']}-{m['m']:02d}"
+    past = m["days"] if (m["y"], m["m"]) < (TODAY.year, TODAY.month) else (TODAY.day - 1 if (m["y"], m["m"]) == (TODAY.year, TODAY.month) else 0)
+    nyr = lambda d: (m["m"] == 12 and d >= 29) or (m["m"] == 1 and d <= 3)
+    rows = []
+    for h in hotels:
+        p = [0 if d < past else x for d, x in enumerate(h["p"].get(k, []))]
+        vs = [p[d - 1] for d in range(1, m["days"] + 1) if p[d - 1] and not nyr(d)]
+        if not vs: continue
+        sat = [p[d - 1] for d in range(1, m["days"] + 1) if p[d - 1] and not nyr(d) and datetime.date(m["y"], m["m"], d).weekday() == 5]
+        v = min(vs); days = [d for d in range(1, m["days"] + 1) if p[d - 1] == v and not nyr(d)]
+        sa = sum(sat) / len(sat) if len(sat) >= 2 else 0
+        gap = int(round((sa - v) / 10)) * 10 if sa else 0   # JSの Math.round とほぼ同じ（.5ちょうどはまず出ない）
+        rows.append((h, v, days, gap))
+    cheap = sorted(rows, key=lambda r: r[1])[:5]          # Pythonのsortも安定ソート＝JSと同じ順
+    gapr = sorted([r for r in rows if r[3] > 0], key=lambda r: -r[3])[:5]
+    return (f'{m["m"]}月泊で', "".join(_pcard(h, i, m, v, d, 0) for i, (h, v, d, g) in enumerate(cheap)),
+            "".join(_pcard(h, i, m, v, d, g) for i, (h, v, d, g) in enumerate(gapr)))
+pk_m, pk_cheap, pk_gap = _picks(DEF_MI)
+
 page = f"""<!doctype html>
 <html lang="ja">
 <head>
@@ -155,13 +195,13 @@ page = f"""<!doctype html>
   </section>
 
   <section class="pick" aria-labelledby="pk1">
-    <div class="rhd"><h2 id="pk1"><span id="pk-m" class="pkm"></span>いちばん安い<span class="kw">神日</span></h2><span class="pkr"><span class="prt">PR</span><b class="top5">TOP5</b></span></div>
-    <ol class="rlist" id="p-cheap"></ol>
+    <div class="rhd"><h2 id="pk1"><span id="pk-m" class="pkm">{pk_m}</span>いちばん安い<span class="kw">神日</span></h2><span class="pkr"><span class="prt">PR</span><b class="top5">TOP5</b></span></div>
+    <ol class="rlist" id="p-cheap">{pk_cheap}</ol>
   </section>
   <section class="pick" aria-labelledby="pk2">
     <div class="rhd"><h2 id="pk2">ずらすと、超お得に泊まれる宿</h2><span class="pkr"><span class="prt">PR</span><b class="top5">TOP5</b></span></div>
     <p class="rnote">土曜泊の平均と、その月の神日の差。</p>
-    <ol class="rlist" id="p-gap"></ol>
+    <ol class="rlist" id="p-gap">{pk_gap}</ol>
     <a class="pmore" href="{base}ranking/">ランキングをもっと見る ›</a>
   </section>
   <p class="cond">※★4.3以上＝楽天トラベルの口コミ評価4.3以上（口コミ50件以上）の宿。大人2名・1室・1泊2食付きの最安プラン（2名合計・税込）。{ASOF}時点の楽天トラベルの料金。予約前に最新の料金をご確認ください。宿の写真：楽天トラベル</p>

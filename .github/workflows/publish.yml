@@ -39,6 +39,7 @@ jobs:
           python3 tools/build_specials.py
           python3 tools/build_top2.py
           python3 tools/build_404.py
+          python3 tools/add_analytics.py   # 全ページにアクセス解析（GA4）を入れる。いちばん最後に動かす
       - name: 公開
         working-directory: site
         run: |

@@ -1,0 +1,45 @@
+name: 週1回のアクセス集計
+
+on:
+  schedule:
+    - cron: "7 22 * * 0"   # 毎週月曜 7:07（日本時間）。先週（月〜日）の分
+  workflow_dispatch:
+    inputs:
+      day:
+        description: "集計する週に入る日（空欄＝先週。例: 2026-10-19）"
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/checkout@v5
+        with: { repository: yasumibi/yasumibi-data, token: "${{ secrets.SITE_PUSH_TOKEN }}", path: data }
+      - uses: actions/setup-python@v6
+        with: { python-version: "3.12" }
+      - name: GA4 と Cloudflare から取り出す
+        env:
+          GA4_PROPERTY_ID: "${{ vars.GA4_PROPERTY_ID }}"
+          GA4_SA_KEY: ${{ secrets.GA4_SA_KEY }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          YB_DATA: ${{ github.workspace }}/data
+        run: |
+          pip install -q google-auth requests
+          python3 tools/fetch_analytics.py ${{ github.event.inputs.day }}
+      - name: 非公開の yasumibi-data に保存
+        working-directory: data
+        run: |
+          git config user.name "yasumibi-bot"; git config user.email "yasumibi@users.noreply.github.com"
+          git add analytics/
+          git diff --cached --quiet || git commit -m "アクセス集計 $(ls -t analytics | head -1 | sed 's/.json//')"
+          for i in 1 2 3; do git pull --rebase origin main && git push && break; sleep 5; done
