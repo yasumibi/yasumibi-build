@@ -213,15 +213,21 @@ page = f"""<!doctype html>
 </section>
 
 <main class="gin">
-  <section class="fstrip" aria-labelledby="fsh">
-    <div class="fs-hd"><h2 id="fsh">特集</h2><a href="{base}features/">すべて見る ›</a></div>
-    <div class="fs-wrap"><button type="button" class="fs-ar prev" aria-label="前へ" hidden>‹</button><ul class="fs-row" id="fs-row">{strip_html}</ul><button type="button" class="fs-ar next" aria-label="次へ">›</button></div>
+
+  <section class="areas" id="areas" aria-labelledby="ah">
+    <div class="rhd"><h2 id="ah">エリアから探す</h2></div>
+    {L.tiles_by_region(base)}
   </section>
 
   <section class="pick" aria-labelledby="pk1">
     <div class="rhd"><h2 id="pk1"><span class="pkl" id="pk-lane">2食付きの宿</span><span id="pk-m" class="pkm">{pk_m}</span>いちばん安い<span class="kw">神日</span></h2><span class="pkr"><span class="prt">PR</span><b class="top5">TOP5</b></span></div>
     <ol class="rlist" id="p-cheap">{pk_cheap}</ol>
   </section>
+  <section class="fstrip" aria-labelledby="fsh">
+    <div class="fs-hd"><h2 id="fsh">特集</h2><a href="{base}features/">すべて見る ›</a></div>
+    <div class="fs-wrap"><button type="button" class="fs-ar prev" aria-label="前へ" hidden>‹</button><ul class="fs-row" id="fs-row">{strip_html}</ul><button type="button" class="fs-ar next" aria-label="次へ">›</button></div>
+  </section>
+
   <section class="pick" aria-labelledby="pk2">
     <div class="rhd"><h2 id="pk2">ずらすと、超お得に泊まれる宿</h2><span class="pkr"><span class="prt">PR</span><b class="top5">TOP5</b></span></div>
     <p class="rnote">土曜泊の平均と、その月の神日の差。</p>
@@ -230,10 +236,6 @@ page = f"""<!doctype html>
   </section>
   <p class="cond">※★4.3以上＝楽天トラベルの口コミ評価4.3以上（口コミ50件以上）の宿。{COND_PLAN}（2名合計・税込）。{ASOF}時点の楽天トラベルの料金。予約前に最新の料金をご確認ください。宿の写真：楽天トラベル</p>
 
-  <section class="areas" id="areas" aria-labelledby="ah">
-    <div class="rhd"><h2 id="ah">エリアから探す</h2></div>
-    {L.tiles_by_region(base)}
-  </section>
 
 </main>
 
