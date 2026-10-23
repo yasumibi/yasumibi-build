@@ -169,3 +169,27 @@ def load_area():
 
 # 楽天カード（楽天アフィリエイト・リンクのみ／2026-10-21取得）
 CARD_AFF = "https://hb.afl.rakuten.co.jp/hsc/58ad7ff1.00560306.58ad7ff2.3c792b49/?link_type=hybrid_url&ut=eyJwYWdlIjoic2hvcCIsInR5cGUiOiJoeWJyaWRfdXJsIiwiY29sIjoxLCJjYXQiOjEsImJhbiI6MTY3NDAxLCJhbXAiOmZhbHNlfQ%3D%3D"
+
+# ---- 楽天トラベル×楽天カードのポイント（2026年10月23日に公式ページで確認）
+# https://travel.rakuten.co.jp/card/campaign/ ：エントリー＆楽天カードで事前決済で合計2.5倍
+#   通常1倍（税抜100円につき1pt・誰でも）＋楽天カード通常分1倍（カード利用100円につき1pt）＋特典0.5倍（税抜200円につき1pt）
+#   予約 2026/8/31 10:00〜2026/11/30 9:59、宿泊 チェックアウト2027/1/31まで。国内宿泊のみ。
+# https://www.rakuten-card.co.jp/campaign/rakuten_card/corp/ ：新規入会で2,000pt＋3回利用などで3,000pt（期間限定）
+# 「実質◯円」とは書かない。ポイントは宿代とは別に「◯円分戻る」と書き、楽天カードを使って増える分だけを示す。
+# キャンペーンが変わったら、ここを直す（hotel.js・top.js はページに埋めたこの値を使う）。
+CARD_CAMP = {"book_end": "2026-11-30T09:59:00+09:00", "out_last": "2027-01-31", "checked": "2026年10月23日",
+             "book_end_ja": "2026年11月30日9:59", "out_last_ja": "2027年1月31日"}
+CARD_BONUS = 5000  # 新規入会特典（2,000＋3,000・うち3,000は期間限定）
+
+
+def camp_ok(checkin):
+    """その日に泊まる予約が、楽天カードの2.5倍の対象か（いま予約する場合）。"""
+    now = _dt.datetime.now(JST)
+    end = _dt.datetime.fromisoformat(CARD_CAMP["book_end"])
+    out = checkin + _dt.timedelta(days=1)
+    return now < end and out <= _dt.date.fromisoformat(CARD_CAMP["out_last"])
+
+
+def card_extra(v, checkin):
+    """楽天カードで事前決済すると、楽天カード以外で払うより多くもらえるポイント（目安）。"""
+    return v // 100 + ((v * 10 // 11) // 200 if camp_ok(checkin) else 0)

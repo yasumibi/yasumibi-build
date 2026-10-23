@@ -4,8 +4,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import is_b, plan_s, plan_l, COND_PLAN
 from common import site_header, tabbar, footer, og_meta, load_area, OUT, ASOF, CARD_AFF, KY, KM, AREA_JA
 
-CHECKED = "2026年10月21日"  # 楽天カード公式ページで条件を確認した日
+CHECKED = "2026年10月23日"  # 楽天カード・楽天トラベルの公式ページで条件を確認した日
 from common import SLUG
+from common import CARD_CAMP, CARD_BONUS, card_extra
 WD = "日月火水木金土"
 
 
@@ -18,7 +19,7 @@ def ver(*files):
     return h.hexdigest()[:8]
 
 
-# ---- 実際の宿で試算（1月・土曜平均 → 神日 → 2.5% → 入会と利用の特典5,000pt）
+# ---- 実際の宿で試算（土曜平均 → 神日にずらす差）。ポイントは宿代から引かず「戻ってくる分」として別に出す（実質◯円とは書かない）
 area = load_area()
 _INFO = json.load(open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "hotel_info_20261021.json")))["hotels"]
 area["hotels"] = [h for h in area["hotels"] if str(h["no"]) in _INFO]
@@ -32,8 +33,8 @@ for h in area["hotels"]:
     if not sat: continue
     sa = round(sum(sat) / len(sat))
     if sa <= mn: continue
-    pts = mn * 25 // 1000
-    rows.append(dict(h=h, mn=mn, d=d, sa=sa, pts=pts, real=mn - pts - 5000, save=sa - (mn - pts - 5000)))
+    pts = card_extra(mn, datetime.date(KY, KM, d))   # 楽天カード以外で払うより多い分
+    rows.append(dict(h=h, mn=mn, d=d, sa=sa, pts=pts, save=sa - mn))
 ex = []
 for tier in ("mid", "high"):
     c = sorted([r for r in rows if r["h"]["tier"] == tier], key=lambda r: -r["save"])
@@ -50,8 +51,8 @@ CARD_IMG = {
 
 
 def bar(r):
-    """土曜平均を100%とした横棒：実質（黒）＋特典（黄）＋ポイント（黄）＋神日の差（緑）"""
-    sa = r["sa"]; seg = [("s-real", r["real"]), ("s-bonus", 5000), ("s-pts", r["pts"]), ("s-day", sa - r["mn"])]
+    """土曜平均を100%とした横棒：神日の宿代（黒）＋神日にずらした差（緑）"""
+    sa = r["sa"]; seg = [("s-real", r["mn"]), ("s-day", sa - r["mn"])]
     return '<div class="sbar" aria-hidden="true">' + "".join(f'<i class="{k}" style="width:{v / sa * 100:.2f}%"></i>' for k, v in seg) + "</div>"
 
 
@@ -63,9 +64,9 @@ def ex_card(r):
   {bar(r)}
   <ul class="lg">
     <li><i class="s-day"></i>神日（{lab(r['d'])}）にずらす <b>−{r['sa'] - r['mn']:,}円</b></li>
-    <li><i class="s-pts"></i>カード払いのポイント <b>−{r['pts']:,}pt</b></li>
-    <li><i class="s-bonus"></i>入会と利用の特典 <b>−5,000pt</b></li>
-    <li><i class="s-real"></i>実質 <b>{yen(r['real'])}</b><span class="from">（土曜の平均 {yen(r['sa'])}）</span></li>
+    <li><i class="s-real"></i>神日の宿代 <b>{yen(r['mn'])}</b><span class="from">（土曜の平均 {yen(r['sa'])}）</span></li>
+    <li class="ptl">楽天カードで払うと、宿代とは別に <b>+{r['pts']:,}円分</b><span class="from">（楽天カード以外より多い分）</span></li>
+    <li class="ptl">はじめての方は、入会特典 <b>+{CARD_BONUS:,}円分</b></li>
   </ul>
 </article>"""
 
@@ -86,6 +87,8 @@ def card_tile(key, name, fee, rate, who, extra=""):
 
 
 ex_html = "".join(ex_card(r) for r in ex)
+_tb = 100000 * 10 // 11
+P10 = (_tb // 100, _tb // 100 + 1000 + _tb // 200, _tb // 100 + 1000 + _tb // 100 + _tb // 200)  # 以外・楽天カード・プレミアム
 best = max(ex, key=lambda r: r["save"])
 base = "../"
 title = "楽天カードで旅費はいくら下がる？楽天トラベルのポイントと入会特典｜YASUMIBI"
@@ -137,12 +140,13 @@ page = f"""<!doctype html>
   </section>
 
   <section class="sec" aria-labelledby="s2">
-    <h2 id="s2">10万円の宿で、もらえるポイント</h2>
+    <h2 id="s2">税込10万円の宿で、もらえるポイント（目安）</h2>
     <ul class="pbars">
-      <li><span class="pl">楽天カード以外</span><span class="pb"><i style="width:28.6%"></i></span><b>1,000pt</b></li>
-      <li class="hl"><span class="pl">楽天カード</span><span class="pb"><i style="width:71.4%"></i></span><b>2,500pt</b></li>
-      <li><span class="pl">プレミアム</span><span class="pb"><i style="width:100%"></i></span><b>3,500pt</b></li>
+      <li><span class="pl">楽天カード以外</span><span class="pb"><i style="width:{P10[0] / P10[2] * 100:.1f}%"></i></span><b>{P10[0]:,}pt</b></li>
+      <li class="hl"><span class="pl">楽天カード</span><span class="pb"><i style="width:{P10[1] / P10[2] * 100:.1f}%"></i></span><b>{P10[1]:,}pt</b></li>
+      <li><span class="pl">プレミアム</span><span class="pb"><i style="width:100%"></i></span><b>{P10[2]:,}pt</b></li>
     </ul>
+    <p class="fine">通常分と特典分は税抜料金で、楽天カードの通常分はカードの利用額で計算した目安です。2.5倍・3.5倍は{CARD_CAMP["book_end_ja"]}までの予約・{CARD_CAMP["out_last_ja"]}チェックアウトまでの宿泊が対象です。</p>
     <details class="more"><summary>2.5倍になる条件</summary>
       <ul class="notes">
         <li>楽天トラベルのキャンペーンページで、チェックアウトより前にエントリー</li>
@@ -189,7 +193,7 @@ page = f"""<!doctype html>
     <ul class="notes small">
       <li>申し込みには審査があります。事前決済はカード払いに対応したプランで使えます。</li>
       <li>ポイント倍率・特典は時期によって変わります。{CHECKED}時点で楽天カードの公式ページを確認した内容です。</li>
-      <li>試算は{ASOF}時点の楽天トラベルの料金。土曜泊の平均は年末年始を除き、1ポイント＝1円で計算。</li>
+      <li>試算は{ASOF}時点の楽天トラベルの料金。土曜泊の平均は年末年始を除きます。ポイントは1ポイント＝1円分として表示しています（宿代から引いた金額ではありません）。</li>
     </ul>
   </section>
 </main>

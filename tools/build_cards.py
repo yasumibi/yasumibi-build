@@ -10,6 +10,7 @@ import os, sys, html, hashlib
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import is_b, plan_s, plan_l, COND_PLAN
 from common import site_header, tabbar, footer, og_meta, OUT, CARD_AFF
+from common import CARD_CAMP, CARD_BONUS
 
 CHECKED = "2026年10月23日"
 # 提携が通るまでは公式ページへのふつうのリンク。提携後にアフィリエイトリンクへ差し替える。
@@ -52,11 +53,12 @@ rakuten = f"""<article class="cd" id="rakuten">
   <p class="role">楽天トラベルの予約に</p>
   <div class="cd-hd">
     <a class="cd-face" href="{RK_IMG[1]}" target="_blank" rel="nofollow sponsored noopener"><img src="{RK_IMG[0]}" alt="楽天カードの券面" width="200" height="200" loading="lazy"></a>
-    <div><h2>楽天カード</h2><p class="cd-lead">楽天トラベルでエントリーして事前決済すると、国内宿泊のポイントが2.5倍。</p></div>
+    <div><h2>楽天カード</h2><p class="cd-lead">はじめての方は、入会と3回の利用で<b class="big">{CARD_BONUS:,}円分</b>のポイント。</p></div>
   </div>
-  {spec([("年会費", "永年無料"), ("楽天トラベル", "ポイント2.5倍（エントリー・事前決済）"), ("海外旅行傷害保険", "最高2,000万円（利用条件あり）")])}
+  {spec([("年会費", "永年無料"), ("入会特典", "5,000ポイント<small>うち3,000は期間限定ポイント・3回以上の利用などの条件あり</small>"),
+         ("楽天トラベル", f"ポイント2.5倍<small>エントリー・事前決済が必要。{CARD_CAMP['out_last_ja']}チェックアウトまでの宿泊</small>")])}
   <a class="c-apply" href="{CARD_AFF}" target="_blank" rel="nofollow sponsored noopener">楽天カードを申し込む（年会費無料）</a>
-  <a class="ok-more" href="{base}rakuten-card/">実際の宿で、いくら下がるかを見る →</a>
+  <a class="ok-more" href="{base}rakuten-card/">実際の宿で、いくら戻るかを見る →</a>
 </article>"""
 
 nl = f"""<article class="cd" id="nl">
@@ -76,7 +78,7 @@ nl = f"""<article class="cd" id="nl">
 epos = f"""<article class="cd" id="epos">
   <p class="role">海外旅行の保険に</p>
   <div class="cd-hd">
-    <a class="cd-face" href="{esc(EPOS_FACE[0])}" target="_blank" rel="nofollow sponsored noopener"><img src="{esc(EPOS_FACE[1])}" alt="エポスカードの券面" width="745" height="1180" loading="lazy" style="width:auto;height:96px;border-radius:6px"></a><img src="{esc(EPOS_FACE[2])}" width="1" height="1" alt="" style="position:absolute;width:1px;height:1px;border:0">
+    <a class="cd-face" href="{esc(EPOS_FACE[0])}" target="_blank" rel="nofollow sponsored noopener"><img src="{esc(EPOS_FACE[1])}" alt="エポスカードの券面" class="tall" width="745" height="1180" loading="lazy"></a><img src="{esc(EPOS_FACE[2])}" width="1" height="1" alt="" style="position:absolute;width:1px;height:1px;border:0">
     <div><h2>エポスカード</h2><p class="cd-lead">空港までの電車・バス代などをこのカードで払うと、海外旅行の保険が付きます。</p></div>
   </div>
   {spec([("年会費", "入会金・年会費とも永年無料"), ("海外旅行傷害保険", "傷害死亡・後遺傷害 最高3,000万円（利用付帯）"),
@@ -111,8 +113,8 @@ page = f"""<!doctype html>
   <p class="prtop"><span>PR</span></p>
   <nav class="crumb" aria-label="現在地"><a href="{base}">ホーム</a><span aria-hidden="true">›</span><a href="{base}otoku/">さらに安く</a><span aria-hidden="true">›</span><span>カード</span></nav>
   <header class="ok-hd">
-    <h1>旅の支払いに、カードは2枚。</h1>
-    <p>宿の予約は楽天カード。ふだんの支払いは、使い方に合うもう1枚。条件は各社の公式ページのとおりにまとめています。</p>
+    <h1>神日に泊まって、楽天カードで払う。</h1>
+    <p>楽天トラベルの予約は楽天カード。ふだんの支払いには、使い方に合うもう1枚。条件は各社の公式ページのとおりにまとめています。</p>
   </header>
   {rakuten}
   {nl}

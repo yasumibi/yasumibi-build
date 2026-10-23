@@ -12,6 +12,7 @@ AFF = "589faade.b97f81b7.589faadf.010fa421"
 
 # slug/name map shared with build_hotel
 from common import SLUG
+from common import CARD_CAMP, card_extra
 
 
 def logo_html(base, href=None):
@@ -47,7 +48,8 @@ _big = [a["name"] for a in sorted(LIVE, key=lambda a: -CNT[a["key"]])][:5]
 TOP_T = "YASUMIBI｜温泉宿がいちばん安い日（神日）がわかる｜神日カレンダー"
 TOP_D = (f"{'・'.join(_big)}など{len(LIVE)}エリア、口コミ★4.3以上の温泉宿{sum(CNT[a['key']] for a in LIVE)}軒の料金を毎日全日調べて、"
          "いちばん安く泊まれる日（神日）を表示。安い日に、休みを合わせる。")
-DATA = dict(months=months, asof=ASOF, aff=AFF, hotels=hotels, areas={a["key"]: a["name"] for a in LIVE})
+DATA = dict(months=months, asof=ASOF, aff=AFF, hotels=hotels, areas={a["key"]: a["name"] for a in LIVE},
+            camp=dict(bookEnd=CARD_CAMP["book_end"], outLast=CARD_CAMP["out_last"]))
 DEF_MI = next((i for i, mm in enumerate(months) if (mm["y"], mm["m"]) == DEFAULT_YM), 0)
 REGIONS = []
 for a in LIVE:
@@ -110,7 +112,7 @@ def _pcard(h, i, m, v, days, gap):
     dl = "・".join(_lab(m, d) for d in days[:3]) + (f" ほか{len(days) - 3}日" if len(days) > 3 else "")
     body = (f'<div class="pr"><span class="tg">神日</span><span class="d">{dl}</span><span class="v">¥{v:,}</span></div>'
             + (f'<div class="gap">土曜泊の平均より <b>−{gap:,}円</b></div>' if gap
-               else f'<div class="pt">楽天カードなら +{int(v * 0.025):,}pt</div>'))
+               else f'<div class="pt">楽天カードなら +{card_extra(v, datetime.date(m["y"], m["m"], days[0])):,}円分</div>'))
     return (f'<li class="rc"><a class="ph" href="../hotels/{h["slug"]}/"><img src="{h["thumb"]}" alt="" loading="lazy" width="300" height="200"></a>'
             f'<div class="inf"><span class="rk">{i + 1}</span><a class="nm" href="../hotels/{h["slug"]}/">{h["name"]}</a>'
             f'<span class="meta">{DATA["areas"][h["area"]]}・{h["loc"]}｜★{h["avg"]:.2f}</span>{body}</div>'

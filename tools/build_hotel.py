@@ -6,6 +6,9 @@ OUT = os.environ.get("YB_OUT", os.path.join(os.path.dirname(ROOT), "yasumibi-sit
 INFO = json.load(open(f"{ROOT}/data/hotel_info_20261021.json"))["hotels"]
 WD = "日月火水木金土"
 AFF = "589faade.b97f81b7.589faadf.010fa421"
+# 楽天アフィリエイトの公式素材（楽天カードの券面だけ・200x200）。加工せず縮めて表示する。
+RK_FACE = ("https://hbb.afl.rakuten.co.jp/hsb/58adb89a.1783e5b6.58ad7ff2.3c792b49/?me_id=2101008&me_adv_id=373425&t=pict",
+           "https://hb.afl.rakuten.co.jp/hsc/58adb89a.1783e5b6.58ad7ff2.3c792b49/?link_type=pict&ut=eyJwYWdlIjoic2hvcCIsInR5cGUiOiJwaWN0IiwiY29sIjoxLCJjYXQiOiIxIiwiYmFuIjozNzM0MjUsImFtcCI6ZmFsc2V9")
 
 
 def logo_html(base, href=None):
@@ -61,6 +64,7 @@ def tabbar(base, cur):
 
 import sys as _sys; _sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import is_b, plan_s, plan_l, COND_PLAN
+from common import CARD_CAMP, CARD_BONUS
 from common import tabbar, footer, site_header, og_meta, load_area, logo_html, CARD_AFF, SLUG, jan_min, MONTHS, DEFAULT_YM, KY, KM, ASOF_BY_AREA, ASOF, AREA_JA, month_prices
 AREA = load_area()
 
@@ -179,6 +183,7 @@ for meta in AREA["hotels"]:
     info_link = f"https://hb.afl.rakuten.co.jp/hgc/{AFF}/?pc={urllib.parse.quote(_iu, safe='')}&m={urllib.parse.quote(_iu, safe='')}"
     dmi = next((i for i, mm in enumerate(months) if (mm["y"], mm["m"]) == DEFAULT_YM), 0)
     H["dm"] = dmi
+    H["camp"] = dict(bookEnd=CARD_CAMP["book_end"], outLast=CARD_CAMP["out_last"], bonus=CARD_BONUS)
     m0 = months[dmi]
     mn0 = min([v for v in m0["p"] if v] or [0])
     kd = [i + 1 for i, v in enumerate(m0["p"]) if v == mn0]
@@ -214,12 +219,10 @@ for meta in AREA["hotels"]:
           <div class="hk">
             <div class="kl"><span class="tag">神日</span><span id="k-days"></span></div>
             <div class="kp"><span id="k-price" class="num"></span><span class="u">2名{PS}・税込</span></div>
-            <div class="kr" id="k-real" hidden></div>
           </div>
           <div class="hact">
             <button type="button" class="fav" id="fav" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.2-9.3C1.6 7.8 3.9 4.5 7.3 4.5c2 0 3.6 1.1 4.7 2.7 1.1-1.6 2.7-2.7 4.7-2.7 3.4 0 5.7 3.3 4.5 6.7-1.7 4.7-9.2 9.3-9.2 9.3z"/></svg><span>お気に入り</span></button>
           </div>
-          <label class="sw"><input type="checkbox" id="card-sw"><span class="track" aria-hidden="true"><span class="knob"></span></span><span class="swl">楽天カード払いで見る<small>ポイントを引いた実質の目安</small></span></label>
         </div>
       </div>
     </header>
@@ -228,8 +231,14 @@ for meta in AREA["hotels"]:
       <section class="sv" aria-labelledby="sv-h">
     <div class="sv-hd"><h2 id="sv-h">この宿をいちばん安く泊まるには</h2><span class="pr">PR</span></div>
     <ol class="sv-rows" id="sv-rows"></ol>
-    <div class="sv-total"><span>実質の目安</span><b id="sv-total"></b></div>
-    <p class="sv-note">楽天カードで事前決済した場合のポイント（2.5%・事前のエントリーが必要）と、新規入会の特典（入会で2,000ポイント、3回の利用などの条件で3,000ポイント・期間限定ポイント・初回のみ）を引いた目安です。特典の内容は時期や申し込みページによって変わります。</p>
+    <div class="sv-total"><span id="sv-tl">神日の宿代</span><b id="sv-total"></b></div>
+    <div class="sv-card">
+      <a href="{esc(RK_FACE[1])}" target="_blank" rel="nofollow sponsored noopener"><img src="{esc(RK_FACE[0])}" alt="楽天カードの券面" width="200" height="200" loading="lazy"></a>
+      <div><b>楽天カードで払うと</b><small>年会費永年無料<br>ポイントは宿代とは別に戻ってきます</small></div>
+    </div>
+    <ol class="sv-rows sv-pts" id="sv-pts"></ol>
+    <div class="sv-total"><span>戻ってくるポイント</span><b id="sv-ptotal"></b></div>
+    <p class="sv-note" id="sv-note">ポイントは目安です。2.5倍は予約前のエントリーと楽天カードでの事前決済が条件で、{CARD_CAMP["book_end_ja"]}までの予約・{CARD_CAMP["out_last_ja"]}チェックアウトまでの宿泊が対象です（楽天トラベルのキャンペーン）。特典分は税抜料金で計算されます。入会特典は初めて楽天カードを作る方が対象で、3,000ポイントは期間限定・3回以上の利用などの条件があります（{CARD_CAMP["checked"]}時点）。</p>
     <a class="sv-apply" href="{CARD_AFF}" target="_blank" rel="nofollow sponsored noopener">楽天カードを申し込む（年会費無料）</a>
     <a class="sv-go" href="{base}rakuten-card/">楽天カードについて詳しく見る <span aria-hidden="true">→</span></a>
   </section>
@@ -242,7 +251,6 @@ for meta in AREA["hotels"]:
           <button type="button" data-wd="sat" aria-pressed="false">土曜泊</button>
           <button type="button" data-wd="wk" aria-pressed="false">日〜木泊</button>
         </div>
-        <div class="cardnote" id="cardnote" hidden>表示中：楽天カードで事前決済した場合の実質（ポイント2.5%を引いた目安・万円）</div>
         <div class="hcal" id="hcal"></div>
         <div class="legend"><span><i style="background:var(--marker);border:1px solid var(--ink)"></i>神日</span><span><i style="background:var(--near)"></i>+15%まで</span><span><i style="background:var(--warm)"></i>+35%まで</span><span><i style="background:var(--high-bar)"></i>それ以上</span><span><i style="background:repeating-linear-gradient(135deg,var(--sold) 0 3px,transparent 3px 6px)"></i>満室</span></div>
       </section>
@@ -271,7 +279,7 @@ for meta in AREA["hotels"]:
         <ul class="peers">{peer_html}</ul>
       </section>
 
-      <div class="cond">※大人2名・1室・{PL}の最安プラン（2名合計・税込）。{H['asof']}時点の楽天トラベルの料金。予約前に最新の料金をご確認ください。ポイントは楽天カードで事前決済した場合（エントリーが必要）の2.5%の目安です。条件は楽天トラベルのキャンペーンページでご確認ください。宿の写真：楽天トラベル</div>
+      <div class="cond">※大人2名・1室・{PL}の最安プラン（2名合計・税込）。{H['asof']}時点の楽天トラベルの料金。予約前に最新の料金をご確認ください。ポイントは、楽天カードで事前決済すると楽天カード以外で払うより多くもらえる分の目安です（エントリーが必要。2.5倍は{CARD_CAMP["out_last_ja"]}チェックアウトまでの宿泊）。条件は楽天トラベルのキャンペーンページでご確認ください。宿の写真：楽天トラベル</div>
     </div>
     """ + footer(base) + f"""
     <div class="bar" id="bar">
@@ -341,13 +349,13 @@ otoku = ohead + f"""
       <span class="sn">02</span>
       <div class="sb">
         <h2>楽天カードで払う</h2>
-        <p>楽天トラベルでエントリーして楽天カードで事前決済すると、国内宿泊のポイントは2.5倍（2.5%）。楽天カード以外で払うと1倍（1%）です。はじめての方は、入会と利用で合計5,000ポイントの特典もあります。</p>
+        <p>楽天トラベルでエントリーして楽天カードで事前決済すると、国内宿泊のポイントは2.5倍。楽天カード以外で払うと1倍です（2.5倍は{CARD_CAMP["out_last_ja"]}チェックアウトまでの宿泊）。はじめての方は、入会と利用で合計5,000ポイントの特典もあります。ポイントは宿代とは別に戻ってきます。</p>
         <section class="calc2" aria-labelledby="ch">
-          <div class="c-hd"><h3 id="ch">還元の目安を計算する</h3><span class="pr">PR</span></div>
+          <div class="c-hd"><h3 id="ch">戻ってくるポイントを計算する</h3><span class="pr">PR</span></div>
           <label class="c-in" for="cv"><span>宿代（2名分・税込）</span><span class="ci"><span aria-hidden="true">¥</span><input id="cv" inputmode="numeric" value="50,000" autocomplete="off"></span></label>
           <ol class="c-rows" id="cr" aria-live="polite"></ol>
-          <div class="c-total"><span>実質の目安</span><b id="ct"></b></div>
-          <p class="c-note">事前決済のポイント（2.5%・エントリーが必要）と、新規入会の特典（入会で2,000ポイント＋3回の利用などの条件で3,000ポイント・期間限定ポイント・初回のみ）を引いた目安です。特典の内容は時期や申し込みページによって変わります。</p>
+          <div class="c-total"><span>戻ってくるポイント</span><b id="ct"></b></div>
+          <p class="c-note">楽天カードで事前決済した場合（エントリーが必要・2.5倍）の目安です。特典分は税抜料金で計算されます。入会特典は初めて楽天カードを作る方が対象で、3,000ポイントは期間限定・3回以上の利用などの条件があります（{CARD_CAMP["checked"]}時点）。</p>
           <a class="c-apply" href="{CARD_AFF}" target="_blank" rel="nofollow sponsored noopener">楽天カードを申し込む（年会費無料）</a>
           <p class="c-fine">申し込み・審査・特典の条件は、楽天カードの公式ページでご確認ください。</p>
           <a class="ok-more" href="{ob}rakuten-card/">実際の宿での試算と、上位カードとの違いを見る →</a>
@@ -370,13 +378,13 @@ otoku = ohead + f"""
 <script>
 (function(){const i=document.getElementById('cv'),r=document.getElementById('cr'),t=document.getElementById('ct');
 const n=(v)=>v.toLocaleString('ja-JP');
-function f(){const v=parseInt((i.value||'').replace(/[^0-9]/g,''),10)||0;const a=Math.floor(v*0.025),b=Math.floor(v*0.01);
+function f(){const v=parseInt((i.value||'').replace(/[^0-9]/g,''),10)||0;const tb=Math.floor(v*10/11),b=Math.floor(tb/100),x=Math.floor(v/100)+Math.floor(tb/200);
 if(!v){r.innerHTML='<li><span>金額を入れてください</span></li>';t.textContent='—';return;}
-r.innerHTML='<li><span>宿代</span><b>¥'+n(v)+'</b></li>'+
-'<li class="dn"><span>楽天カードで事前決済（2.5%）<small>楽天カード以外で払うより +'+n(a-b)+'pt</small></span><b>−'+n(a)+'pt</b></li>'+
-'<li class="dn"><span>入会特典（初回のみ）</span><b>−2,000pt</b></li>'+
-'<li class="dn"><span>3回利用の特典（期間限定）</span><b>−3,000pt</b></li>';
-t.textContent='¥'+n(Math.max(0,v-a-5000));}
+r.innerHTML='<li><span>楽天カード以外で払っても（1倍）</span><b>'+n(b)+'円分</b></li>'+
+'<li class="dn"><span>楽天カードで事前決済すると増える分</span><b>+'+n(x)+'円分</b></li>'+
+'<li class="dn"><span>はじめての方：入会特典</span><b>+2,000円分</b></li>'+
+'<li class="dn"><span>はじめての方：3回利用の特典（期間限定）</span><b>+3,000円分</b></li>';
+t.textContent=n(b+x+5000)+'円分';}
 i.addEventListener('input',f);i.addEventListener('blur',()=>{const v=parseInt((i.value||'').replace(/[^0-9]/g,''),10);if(v)i.value=n(v);});f();})();
 </script>
 </body></html>
