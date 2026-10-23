@@ -8,6 +8,9 @@ on:
       day:
         description: "集計する週に入る日（空欄＝先週。例: 2026-10-19）"
         default: ""
+      save:
+        description: "yasumibi-data に保存する（yes / no。お試しは no）"
+        default: "yes"
 
 permissions:
   contents: read
@@ -35,7 +38,10 @@ jobs:
         run: |
           pip install -q google-auth requests
           python3 tools/fetch_analytics.py ${{ github.event.inputs.day }}
+      - name: 結果の概要（鍵は出さない）
+        run: python3 -c "import json,glob;f=sorted(glob.glob('data/analytics/*.json'))[-1];d=json.load(open(f));print(f);print('GA4:',list(d['ga4']),d['ga4'].get('totals'));print('Cloudflare:',list(d['cloudflare']),d['cloudflare'].get('totals'));[print('ERR',e['where'],e['error'][:300]) for e in d['errors']]"
       - name: 非公開の yasumibi-data に保存
+        if: ${{ github.event.inputs.save != 'no' }}
         working-directory: data
         run: |
           git config user.name "yasumibi-bot"; git config user.email "yasumibi@users.noreply.github.com"
