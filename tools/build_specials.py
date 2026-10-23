@@ -66,7 +66,7 @@ def item(i, no, big, small, sub, d, n=1):
     <div class="rv"><b>{big}</b><span>{small}</span></div>
     <div class="rk2">{sub}</div>
   </div>
-  <a class="rgo" href="{esc(rk_link(no, d, n))}" target="_blank" rel="noopener sponsored">楽天で見る</a>
+  <a class="rgo" href="{esc(rk_link(no, d, n))}" target="_blank" rel="noopener sponsored">楽天トラベルで見る</a>
 </li>"""
 
 

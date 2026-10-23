@@ -71,7 +71,7 @@ def item(i, s, big, small, base, show_area=False):
     <div class="rv"><b>{big}</b><span>{small}</span></div>
     <div class="rk2">神日 {kd} <b>{yen(s['mn'])}</b></div>
   </div>
-  <a class="rgo" href="{esc(rk_link(s['no'], KY, KM, s['kd'][0]))}" target="_blank" rel="noopener sponsored">楽天で見る</a>
+  <a class="rgo" href="{esc(rk_link(s['no'], KY, KM, s['kd'][0]))}" target="_blank" rel="noopener sponsored">楽天トラベルで見る</a>
 </li>"""
 
 

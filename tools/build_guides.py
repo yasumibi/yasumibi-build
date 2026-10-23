@@ -65,7 +65,7 @@ def item(i, no, d, p, base, sub):
     <div class="rv"><b>{yen(p)}</b><span>{lab(d)}泊・2名1泊2食</span></div>
     {sub}
   </div>
-  <a class="rgo" href="{esc(rk_link(no, d))}" target="_blank" rel="noopener sponsored">楽天で見る</a>
+  <a class="rgo" href="{esc(rk_link(no, d))}" target="_blank" rel="noopener sponsored">楽天トラベルで見る</a>
 </li>"""
 
 

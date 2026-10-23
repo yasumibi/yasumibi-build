@@ -242,7 +242,7 @@ for meta in AREA["hotels"]:
         </div>
         <div class="cardnote" id="cardnote" hidden>表示中：楽天カードで事前決済した場合の実質（ポイント2.5%を引いた目安・万円）</div>
         <div class="hcal" id="hcal"></div>
-        <div class="legend"><span><i style="background:var(--cheap)"></i>神日</span><span><i style="background:var(--near)"></i>+15%まで</span><span><i style="background:var(--warm)"></i>+35%まで</span><span><i style="background:var(--high-bar)"></i>それ以上</span><span><i style="background:repeating-linear-gradient(135deg,var(--sold) 0 3px,transparent 3px 6px)"></i>満室</span></div>
+        <div class="legend"><span><i style="background:var(--marker);border:1px solid var(--ink)"></i>神日</span><span><i style="background:var(--near)"></i>+15%まで</span><span><i style="background:var(--warm)"></i>+35%まで</span><span><i style="background:var(--high-bar)"></i>それ以上</span><span><i style="background:repeating-linear-gradient(135deg,var(--sold) 0 3px,transparent 3px 6px)"></i>満室</span></div>
       </section>
 
       <section class="blk alt" aria-labelledby="alth" id="alt" hidden>
