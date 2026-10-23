@@ -1,6 +1,7 @@
 """お気に入り（/favorites/）：この端末に保存した宿を並べて、神日カレンダーを比べる。中身は favs.js が作る。"""
 import os, sys, html, hashlib
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from common import is_b, plan_s, plan_l, COND_PLAN
 from common import site_header, tabbar, footer, og_meta, OUT
 
 
@@ -57,9 +58,9 @@ page = f"""<!doctype html>
     </div>
     <div class="fv-sum" id="fv-sum"></div>
     <div class="fv-tw"><table class="fv-t" id="fv-t"></table></div>
-    <p class="fv-lg"><span class="lo">その宿の神日</span><span class="best">その日いちばん安い宿</span>数字は2名1泊2食の料金（万円）</p>
+    <p class="fv-lg"><span class="lo">その宿の神日</span><span class="best">その日いちばん安い宿</span>数字は2名1泊の料金（万円）。朝食付きで比べている宿には「朝食付き」と表示</p>
   </section>
-  <p class="fine">※お気に入りは、この端末のブラウザに保存しています（ほかの端末とは共有されません）。大人2名・1室・1泊2食付きの最安プラン（2名合計・税込）。料金は楽天トラベルの料金で、毎日更新しています。</p>
+  <p class="fine">※お気に入りは、この端末のブラウザに保存しています（ほかの端末とは共有されません）。{COND_PLAN}（2名合計・税込）。料金は楽天トラベルの料金で、毎日更新しています。</p>
 </main>
 """ + footer(base) + tabbar(base, "fav") + f"""<script src="{base}assets/favs.js?v={v[3]}"></script>
 </body></html>

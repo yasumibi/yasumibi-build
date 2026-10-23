@@ -128,6 +128,7 @@ def main():
             allh = [o for o in allh if any(x in o.get("addr", "") for x in a["addr"])]
         print(f"[{key}] 楽天に登録 {len(allh)}軒（エリアコード {codes}）", flush=True)
         cand = [o for o in allh if o["rc"] >= MIN_RC and o["ra"] >= MIN_RA]
+        fp.MEAL_NOW["v"] = int(a.get("meal", 2))      # 京都・沖縄・北海道の街などは1泊朝食付きで調べる
         best = {}
         nos = [o["no"] for o in cand]
         seen_any = set()
@@ -140,7 +141,7 @@ def main():
             reason = ""
             if o["rc"] < MIN_RC: reason = f"口コミ{MIN_RC}件未満"
             elif o["ra"] < MIN_RA: reason = f"評価{MIN_RA}未満"
-            elif not best.get(o["no"]): reason = "2食付きの空きが見つからない"
+            elif not best.get(o["no"]): reason = ("2食付き" if fp.MEAL_NOW["v"] == 2 else "朝食付き") + "の空きが見つからない"
             elif any(x in unicodedata.normalize("NFKC", o["name"]).lower() for x in EXCL): reason = "民宿・ペンション・ペット特化・グランピングなど"
             o["price"] = best.get(o["no"], 0)
             o["score"] = (o["ra"] * o["rc"] + 4.4 * 150) / (o["rc"] + 150)

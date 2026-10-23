@@ -6,6 +6,7 @@
 """
 import os, sys, json, html, hashlib, statistics, datetime as dt, urllib.parse, calendar
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from common import is_b, plan_s, plan_l, COND_PLAN
 from common import (site_header, tabbar, footer, og_meta, OUT, DATA, AREA_JA, HOTELS, PRH, ASOF,
                     WINDOW_START, WINDOW_END, TODAY, CARD_AFF)
 import jp_holidays
@@ -62,7 +63,7 @@ def item(i, no, d, p, base, sub):
   <img class="rt" src="{esc(info.get('thumb',''))}" alt="" loading="lazy" width="96" height="64">
   <div class="rb">
     {name}<span class="rm">{esc(AREA_JA.get(h['area'], ''))}・{esc(h.get('loc',''))}｜★{h.get('avg',0):.2f}</span>
-    <div class="rv"><b>{yen(p)}</b><span>{lab(d)}泊・2名1泊2食</span></div>
+    <div class="rv"><b>{yen(p)}</b><span>{lab(d)}泊・2名{plan_s(h['area'])}</span></div>
     {sub}
   </div>
   <a class="rgo" href="{esc(rk_link(no, d))}" target="_blank" rel="noopener sponsored">楽天トラベルで見る</a>
@@ -273,7 +274,7 @@ def build_2027():
 <section class="rsec"><h2>2027年の祝日一覧（{len(hs)}日）</h2><table class="gd-t"><tbody>{tbl}</tbody></table>
   <p class="rnote2">内閣府「国民の祝日について」の令和9年の一覧と同じ日付です。お盆休み・年末年始は会社によって違うため、年末年始は12/29〜1/3を休みとして計算しています。</p></section>
 <p class="gd-next"><a href="{base}renkyu/">この先半年の「有給1日で何連休？」を見る →</a></p>
-<p class="fine">※★4.3以上＝楽天トラベルの口コミ評価4.3以上（口コミ50件以上）の宿。大人2名・1室・1泊2食付きの最安プラン（2名合計・税込）。料金は楽天トラベルの{esc(ASOF)}時点のもので、毎日更新しています。宿の料金は、今月から6か月先の分まで出しています。宿の写真：楽天トラベル</p>"""
+<p class="fine">※★4.3以上＝楽天トラベルの口コミ評価4.3以上（口コミ50件以上）の宿。{COND_PLAN}（2名合計・税込）。料金は楽天トラベルの{esc(ASOF)}時点のもので、毎日更新しています。宿の料金は、今月から6か月先の分まで出しています。宿の写真：楽天トラベル</p>"""
     t = "2027年の連休カレンダー｜祝日一覧と、有給で何連休になるか｜YASUMIBI"
     dsc = f"2027年の祝日{len(hs)}日と3連休・GW・シルバーウィーク・年末年始を一覧に。有給を何日足すと何連休になるかと、その連休でいちばん安く泊まれる夜（口コミ★4.3以上の宿）がわかります。"
     write("renkyu/2027/", page("renkyu/2027/", t, dsc, "2027年の連休カレンダー", body, base))
@@ -446,7 +447,7 @@ def build_weekend():
 <section class="rsec"><h2>平日に休めるなら（この先2週間）</h2>
   <p class="rlead">ふだんの料金と比べて、いちばん下がっている平日の夜です。</p>{wday}</section>
 <p class="gd-next"><a href="{base}renkyu/">有給1日で、何連休？を見る →</a>　<a href="{base}otoku-days/">さらに安くなる日を見る →</a></p>
-<p class="fine">※「いつもの土曜泊」＝その宿の、この先半年の土曜泊の料金の中央値。金曜・平日も同じように、その宿のふだんの料金と比べています。直前は空室が早く埋まります。予約の前に楽天トラベルで空室と料金を確認してください。★4.3以上＝楽天トラベルの口コミ評価4.3以上（口コミ50件以上）の宿。大人2名・1室・1泊2食付きの最安プラン（2名合計・税込）。料金は楽天トラベルの{esc(ASOF)}時点のものです。宿の写真：楽天トラベル</p>"""
+<p class="fine">※「いつもの土曜泊」＝その宿の、この先半年の土曜泊の料金の中央値。金曜・平日も同じように、その宿のふだんの料金と比べています。直前は空室が早く埋まります。予約の前に楽天トラベルで空室と料金を確認してください。★4.3以上＝楽天トラベルの口コミ評価4.3以上（口コミ50件以上）の宿。{COND_PLAN}（2名合計・税込）。料金は楽天トラベルの{esc(ASOF)}時点のものです。宿の写真：楽天トラベル</p>"""
     t = "今週末・来週末に泊まれる神日｜直前でも安い温泉宿｜YASUMIBI"
     dsc = "今週末・来週末に空室があって、いつもの週末より安くなっている口コミ★4.3以上の温泉宿を毎日更新。箱根・熱海・草津・由布院など、2名1泊2食付きの料金で比べられます。"
     write("weekend/", page("weekend/", t, dsc, "今週末・来週末の神日", body, base))

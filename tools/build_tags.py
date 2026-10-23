@@ -5,6 +5,7 @@
 """
 import os, sys, json, re, html, hashlib, statistics, datetime as dt, urllib.parse
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from common import is_b, plan_s, plan_l, COND_PLAN
 from common import (site_header, tabbar, footer, og_meta, OUT, DATA, AREA_JA, AREAS, HOTELS, PRH, ASOF,
                     WINDOW_START, WINDOW_END, TODAY)
 
@@ -98,6 +99,7 @@ def rows_for(t, area=None):
     out = []
     for no in H:
         if area and H[no]["area"] != area: continue
+        if is_b(H[no]["area"]) and (not area or t.get("sort") == "drop" or t.get("per")): continue   # 朝食付きの宿は、全国版と料金の基準があるタグには入れない
         if not t["f"](no): continue
         ns = nights(no)
         if not ns: continue
@@ -125,7 +127,7 @@ def item(i, r, base, t):
   <img class="rt" src="{esc(info.get('thumb',''))}" alt="" loading="lazy" width="96" height="64">
   <div class="rb">
     {name}<span class="rm">{esc(AREA_JA.get(h['area'], ''))}・{esc(h.get('loc',''))}｜★{h.get('avg',0):.2f}</span>
-    <div class="rv"><b>{big}</b><span><i class="kd">神日</i>{lab(r['d'])}泊{more}・2名1泊2食{'（2名で' + yen(r['p']) + '）' if t.get('per') else ''}</span></div>
+    <div class="rv"><b>{big}</b><span><i class="kd">神日</i>{lab(r['d'])}泊{more}・2名{plan_s(h['area'])}{'（2名で' + yen(r['p']) + '）' if t.get('per') else ''}</span></div>
     {sub_html}
   </div>
   <a class="rgo" href="{esc(rk_link(no, r['d']))}" target="_blank" rel="noopener sponsored">楽天トラベルで見る</a>
@@ -174,15 +176,14 @@ def write(path, s):
     open(f"{OUT}/{path}index.html", "w", encoding="utf-8").write(s)
 
 
-FINE = (f'<p class="fine">※★4.3以上＝楽天トラベルの口コミ評価4.3以上（口コミ50件以上）の宿。大人2名・1室・1泊2食付きの最安プラン（2名合計・税込）。'
+FINE = (f'<p class="fine">※★4.3以上＝楽天トラベルの口コミ評価4.3以上（口コミ50件以上）の宿。{COND_PLAN}（2名合計・税込）。'
         f'「いつもより」＝その宿の、この先半年の料金の中央値との差。料金は楽天トラベルの{esc(ASOF)}時点のもので、毎日更新しています。宿の写真：楽天トラベル</p>')
 
 LIVE = [t for t in TAGS if rows_for(t)]
 made = []
 for t in LIVE:
     rows = rows_for(t)
-    areas = {}
-    for r in rows: areas[H[r["no"]]["area"]] = areas.get(H[r["no"]]["area"], 0) + 1
+    areas = {a["key"]: len(rows_for(t, a["key"])) for a in AREAS}   # 朝食付きのエリアは全国版に入らないので、エリアごとに数える
     order = [a["key"] for a in AREAS if areas.get(a["key"], 0) >= 2]
     # 全エリア
     base = "../../"
@@ -215,5 +216,14 @@ for t in LIVE:
         write(f"tags/{t['slug']}/{a}/", page(f"tags/{t['slug']}/{a}/", title, desc, [(t["name"], f"{base}tags/{t['slug']}/"), (AREA_JA[a], None)], body, base))
         made.append(f"tags/{t['slug']}/{a}/")
 
+# 条件から外れたタグ・エリアのページ（古いデータのまま残るもの）を消す
+import shutil
+_keep = set(made)
+for _t in os.listdir(f"{OUT}/tags") if os.path.isdir(f"{OUT}/tags") else []:
+    _d = f"{OUT}/tags/{_t}"
+    if not os.path.isdir(_d): continue
+    if f"tags/{_t}/" not in _keep: shutil.rmtree(_d); continue
+    for _a in os.listdir(_d):
+        if os.path.isdir(f"{_d}/{_a}") and f"tags/{_t}/{_a}/" not in _keep: shutil.rmtree(f"{_d}/{_a}")
 json.dump([dict(slug=t["slug"], name=t["name"], n=len(rows_for(t))) for t in LIVE], open(f"{OUT}/tags/tags.json", "w"), ensure_ascii=False)
 print("tags built", [(t["slug"], len(rows_for(t))) for t in LIVE], len(made), "pages")

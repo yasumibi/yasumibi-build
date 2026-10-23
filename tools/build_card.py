@@ -1,6 +1,7 @@
 """/rakuten-card/ — 楽天カードの紹介ページ（実際の宿の料金で試算）。"""
 import os, sys, json, html, hashlib, datetime
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from common import is_b, plan_s, plan_l, COND_PLAN
 from common import site_header, tabbar, footer, og_meta, load_area, OUT, ASOF, CARD_AFF, KY, KM, AREA_JA
 
 CHECKED = "2026年10月21日"  # 楽天カード公式ページで条件を確認した日
@@ -57,7 +58,7 @@ def bar(r):
 def ex_card(r):
     h = r["h"]; slug, name, _ = SLUG[h["no"]]
     return f"""<article class="exc">
-  <div class="exh"><a href="../hotels/{slug}/">{esc(name)}</a><span>{AREA_JA[h['area']]}・{esc(h['loc'])}｜{KY}年{KM}月・2名1泊2食</span></div>
+  <div class="exh"><a href="../hotels/{slug}/">{esc(name)}</a><span>{AREA_JA[h['area']]}・{esc(h['loc'])}｜{KY}年{KM}月・2名{plan_s(h['area'])}</span></div>
   <div class="exn"><span>土曜泊の平均より</span><b>−{r['save']:,}<small>円</small></b></div>
   {bar(r)}
   <ul class="lg">
@@ -121,7 +122,7 @@ page = f"""<!doctype html>
   <header class="rc-hero">
     <p class="eb">神日 × 楽天カード</p>
     <h1>同じ宿が、<br>土曜より <em>−{best['save']:,}円</em>。</h1>
-    <p class="sub">{esc(SLUG[best['h']['no']][1])}（{KY}年{KM}月・2名1泊2食）の試算</p>
+    <p class="sub">{esc(SLUG[best['h']['no']][1])}（{KY}年{KM}月・2名{plan_s(best['h']['area'])}）の試算</p>
     <ol class="steps3">
       <li><b>1</b><span>神日に<br>泊まる</span></li>
       <li><b>2</b><span>楽天カードで<br>払う</span></li>

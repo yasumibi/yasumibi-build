@@ -11,7 +11,7 @@
 import json, os, sys, time, datetime, urllib.parse, urllib.request, urllib.error
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import ROOT, DATA, MONTHS, WINDOW_START, WINDOW_END, price_file, PRICE_DIR
+from common import ROOT, DATA, MONTHS, WINDOW_START, WINDOW_END, price_file, PRICE_DIR, MEAL
 
 API = "https://openapi.rakuten.co.jp/engine/api/Travel/VacantHotelSearch/20170426"
 APP_ID = os.environ.get("RAKUTEN_APP_ID", "")
@@ -46,10 +46,11 @@ def hotels_by_area():
 
 
 SQUEEZE = {"on": os.environ.get("YB_SQUEEZE", "1") == "1"}   # 朝食・夕食ありで絞って、返ってくるプランを減らす
+MEAL_NOW = {"v": 2}   # いま取っているエリアの食事の条件：2＝1泊2食付き、1＝1泊朝食付き（夕食なし）
 
 
 def call(params, tries=4):
-    if SQUEEZE["on"] and "checkinDate" in params: params = dict(params, squeezeCondition="breakfast,dinner")
+    if SQUEEZE["on"] and "checkinDate" in params: params = dict(params, squeezeCondition="breakfast,dinner" if MEAL_NOW["v"] == 2 else "breakfast")
     q = dict(params, applicationId=APP_ID, accessKey=ACCESS_KEY, format="json", formatVersion=2)
     url = API + "?" + urllib.parse.urlencode(q)
     STAT["calls"] += 1; pace()
@@ -86,7 +87,8 @@ def cheapest_two_meal(resp):
         for r in rooms:
             if "roomBasicInfo" in r: basic = r["roomBasicInfo"]
             elif "dailyCharge" in r and basic:
-                if basic.get("withDinnerFlag") == 1 and basic.get("withBreakfastFlag") == 1:
+                ok = (basic.get("withDinnerFlag") == 1) if MEAL_NOW["v"] == 2 else (basic.get("withDinnerFlag") != 1)
+                if ok and basic.get("withBreakfastFlag") == 1:
                     t = r["dailyCharge"].get("total")
                     if t and (no not in out or t < out[no]): out[no] = int(t)
                 basic = None
@@ -172,6 +174,9 @@ def save_history(area, old, new, today):
 def run_area(area, nos, today, lim, force):
     f = price_file(area)
     pr = json.load(open(f)) if os.path.exists(f) else {"hotels": {}}
+    MEAL_NOW["v"] = MEAL.get(area, 2)
+    if pr.get("meal", 2) != MEAL_NOW["v"]:              # 食事の条件が変わったら、前の料金は使わない
+        print(f"[{area}] 食事の条件が変わったため、料金を取り直します", flush=True); pr = {"hotels": {}}
     hotels = pr.setdefault("hotels", {})
     old = json.loads(json.dumps(hotels))
     known = set(pr.get("hotel_set", []))
@@ -217,7 +222,8 @@ def run_area(area, nos, today, lim, force):
     pr["asof"] = f"{today.year}年{today.month}月{today.day}日"; pr["asof_date"] = today.isoformat()
     if lim == 0 and not cut: pr["hotel_set"] = sorted(set(nos)); pr.pop("new_upto", None)
     pr["source"] = "楽天トラベル 空室検索API（VacantHotelSearch）"
-    pr["condition"] = "大人2名・1室・1泊2食付きプランの最安値（2名合計・税込）"
+    pr["meal"] = MEAL_NOW["v"]
+    pr["condition"] = f"大人2名・1室・{'1泊2食付き' if MEAL_NOW['v'] == 2 else '1泊朝食付き'}プランの最安値（2名合計・税込）"
     os.makedirs(PRICE_DIR, exist_ok=True)
     json.dump(pr, open(f, "w"), ensure_ascii=False, separators=(",", ":"))
     return True

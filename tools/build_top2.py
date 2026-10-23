@@ -4,6 +4,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # このリポジトリ
 OUT = os.environ.get("YB_OUT", os.path.join(os.path.dirname(ROOT), "yasumibi-site"))  # 公開用リポジトリ（隣に置く）
+from common import is_b, plan_s, plan_l, COND_PLAN
 from common import site_header, tabbar, footer, og_meta, load_area, AREAS, AREA_JA, MONTHS, DEFAULT_YM, ASOF, PRH, TODAY
 AREA = load_area()
 INFO = json.load(open(f"{ROOT}/data/hotel_info_20261021.json"))["hotels"]
@@ -38,6 +39,7 @@ for h in AREA["hotels"]:
         pm[k] = [int(src.get(f"{k}-{d:02d}", 0) or 0) for d in range(1, mm["days"] + 1)]
     hotels.append(dict(no=h["no"], slug=slug, name=name, area=h["area"], tier=h["tier"], loc=h["loc"], avg=h["avg"], cnt=h["cnt"],
                        thumb=INFO[str(h["no"])].get("thumb", ""), p=pm))
+    if is_b(h["area"]): hotels[-1]["b"] = 1           # 1泊朝食付きで比べる宿（TOP5には入れない）
 CNT = {}
 for h in hotels: CNT[h["area"]] = CNT.get(h["area"], 0) + 1
 LIVE = [a for a in AREAS if CNT.get(a["key"])]       # 宿が1軒以上あるエリアだけ出す
@@ -120,6 +122,7 @@ def _picks(mi):
     nyr = lambda d: (m["m"] == 12 and d >= 29) or (m["m"] == 1 and d <= 3)
     rows = []
     for h in hotels:
+        if h.get("b"): continue                       # 条件の違う（朝食付きの）宿は同じランキングに入れない
         p = [0 if d < past else x for d, x in enumerate(h["p"].get(k, []))]
         vs = [p[d - 1] for d in range(1, m["days"] + 1) if p[d - 1] and not nyr(d)]
         if not vs: continue
@@ -167,7 +170,7 @@ page = f"""<!doctype html>
       <form class="sform" id="p-search" role="tabpanel" aria-labelledby="t-free">
         <label class="fld"><span>エリア</span>
           <select id="f-area">{area_opts}</select></label>
-        <label class="fld"><span>予算（2名1泊2食）</span>
+        <label class="fld"><span>予算（2名1泊）</span>
           <select id="f-max">{max_opts}</select></label>
         <label class="fld" id="w-month"><span>泊まる月</span>
           <select id="f-month">{month_opts}</select></label>
@@ -208,7 +211,7 @@ page = f"""<!doctype html>
     <ol class="rlist" id="p-gap">{pk_gap}</ol>
     <a class="pmore" href="{base}ranking/">ランキングをもっと見る ›</a>
   </section>
-  <p class="cond">※★4.3以上＝楽天トラベルの口コミ評価4.3以上（口コミ50件以上）の宿。大人2名・1室・1泊2食付きの最安プラン（2名合計・税込）。{ASOF}時点の楽天トラベルの料金。予約前に最新の料金をご確認ください。宿の写真：楽天トラベル</p>
+  <p class="cond">※★4.3以上＝楽天トラベルの口コミ評価4.3以上（口コミ50件以上）の宿。{COND_PLAN}（2名合計・税込）。{ASOF}時点の楽天トラベルの料金。予約前に最新の料金をご確認ください。宿の写真：楽天トラベル</p>
 
   <section class="areas" id="areas" aria-labelledby="ah">
     <div class="rhd"><h2 id="ah">エリアから探す</h2><span>エリアは順次ふやしていきます</span></div>

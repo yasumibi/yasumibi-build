@@ -60,6 +60,7 @@ def tabbar(base, cur):
     return f'<nav class="tabbar" aria-label="メニュー">{a}</nav>'
 
 import sys as _sys; _sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from common import is_b, plan_s, plan_l, COND_PLAN
 from common import tabbar, footer, site_header, og_meta, load_area, logo_html, CARD_AFF, SLUG, jan_min, MONTHS, DEFAULT_YM, KY, KM, ASOF_BY_AREA, ASOF, AREA_JA, month_prices
 AREA = load_area()
 
@@ -168,6 +169,7 @@ for meta in AREA["hotels"]:
              avg=meta["avg"], cnt=meta["cnt"], asof=asof, aff=AFF, months=months)
     info = INFO[str(meta["no"])]
     H["thumb"] = info.get("thumb", ""); H["areaKey"] = meta["area"]; H["loc"] = meta["loc"]
+    PS, PL = plan_s(meta["area"]), plan_l(meta["area"]); H["plan"] = PS
     # 同じ日なら、こっちも安い：同じエリアで★が近い（−0.1まで）宿
     _al = [h for h in AREA["hotels"] if h["area"] == meta["area"] and h["no"] != meta["no"] and str(h["no"]) in INFO and h["avg"] >= meta["avg"] - 0.1]
     _al.sort(key=lambda h: abs(h["avg"] - meta["avg"]))
@@ -192,7 +194,7 @@ for meta in AREA["hotels"]:
     room_html = (f'<figure class="room"><a href="{esc(info_link)}" target="_blank" rel="noopener sponsored"><img src="{esc(info["room"])}" alt="{esc(name)}の客室（楽天トラベル掲載写真）" loading="lazy"></a><figcaption>客室の一例（写真：楽天トラベル）</figcaption></figure>' if info.get("room") else "")
     kdl = "・".join(f"{KM}/{d}({wd(KY,KM,d)})" for d in kd[:3])
     title = f"{name}（{H['area']}・{meta['loc']}）の神日カレンダー｜いちばん安い日と料金｜YASUMIBI"
-    desc = f"{full}の宿泊料金を全日調査。{KM}月の神日は{kdl}の{yen(mn0)}（2名1泊2食）。楽天カードで払った場合のポイントも試算。"
+    desc = f"{full}の宿泊料金を全日調査。{KM}月の神日は{kdl}の{yen(mn0)}（2名{PS}）。楽天カードで払った場合のポイントも試算。"
     page = HEAD.format(robots="index,follow", title=esc(title), desc=esc(desc), canon=f"hotels/{H['slug']}/", base=base, v1=v1, v2=v2, og=og_meta(esc(title), esc(desc), f"hotels/{H['slug']}/",
             f"https://yasumibi.com/assets/og/{slug}.jpg" if os.path.exists(f"{OUT}/assets/og/{slug}.jpg") else None)) + f"""
     {site_header(base)}
@@ -211,7 +213,7 @@ for meta in AREA["hotels"]:
           <h1>{esc(H['name'])}<small>{esc(H['full'])}</small></h1>
           <div class="hk">
             <div class="kl"><span class="tag">神日</span><span id="k-days"></span></div>
-            <div class="kp"><span id="k-price" class="num"></span><span class="u">2名1泊2食・税込</span></div>
+            <div class="kp"><span id="k-price" class="num"></span><span class="u">2名{PS}・税込</span></div>
             <div class="kr" id="k-real" hidden></div>
           </div>
           <div class="hact">
@@ -269,7 +271,7 @@ for meta in AREA["hotels"]:
         <ul class="peers">{peer_html}</ul>
       </section>
 
-      <div class="cond">※大人2名・1室・1泊2食付きの最安プラン（2名合計・税込）。{H['asof']}時点の楽天トラベルの料金。予約前に最新の料金をご確認ください。ポイントは楽天カードで事前決済した場合（エントリーが必要）の2.5%の目安です。条件は楽天トラベルのキャンペーンページでご確認ください。宿の写真：楽天トラベル</div>
+      <div class="cond">※大人2名・1室・{PL}の最安プラン（2名合計・税込）。{H['asof']}時点の楽天トラベルの料金。予約前に最新の料金をご確認ください。ポイントは楽天カードで事前決済した場合（エントリーが必要）の2.5%の目安です。条件は楽天トラベルのキャンペーンページでご確認ください。宿の写真：楽天トラベル</div>
     </div>
     """ + footer(base) + f"""
     <div class="bar" id="bar">
@@ -290,7 +292,7 @@ for meta in AREA["hotels"]:
         <li class="hot"><b>楽天カードで事前決済</b><span id="bs-2"></span></li>
         <li><b>普段の支払いは2枚目で</b><span>マイルや還元を、次の旅費に回す</span></li>
       </ol>
-      <p class="bs-note">楽天トラベルでは「1泊2食付き」のプランを選ぶと、表示の料金になります（素泊まりなど他のプランが先に表示されることがあります）。</p>
+      <p class="bs-note">楽天トラベルでは「{PL}」のプランを選ぶと、表示の料金になります（素泊まりなど他のプランが先に表示されることがあります）。</p>
       <a class="bs-main" href="{CARD_AFF}" target="_blank" rel="nofollow sponsored noopener">先に楽天カードを申し込む（年会費無料）</a>
       <a class="bs-skip" id="bs-skip" href="#" target="_blank" rel="noopener sponsored">このまま楽天トラベルで予約する →</a>
       <button type="button" class="bs-x" id="bs-x" aria-label="閉じる">×</button>
@@ -303,7 +305,7 @@ for meta in AREA["hotels"]:
     os.makedirs(f"{OUT}/hotels/{slug}", exist_ok=True)
     open(f"{OUT}/hotels/{slug}/index.html", "w", encoding="utf-8").write(page)
     # お気に入りの比較ページ用（その宿の料金だけの小さなデータ）
-    json.dump({k: H[k] for k in ("slug", "no", "name", "area", "areaKey", "loc", "avg", "cnt", "thumb", "months", "aff")},
+    json.dump({k: H[k] for k in ("slug", "no", "name", "area", "areaKey", "loc", "avg", "cnt", "thumb", "months", "aff", "plan")},
               open(f"{OUT}/hotels/{slug}/data.json", "w"), ensure_ascii=False, separators=(",", ":"))
     built += 1
 mn0 = built; kd = []; pts0 = diff0 = 0

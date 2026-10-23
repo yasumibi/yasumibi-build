@@ -4,6 +4,7 @@ import json, os, datetime, html
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # このリポジトリ
 OUT = os.environ.get("YB_OUT", os.path.join(os.path.dirname(ROOT), "yasumibi-site"))  # 公開用リポジトリ（隣に置く）
 import sys; sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from common import B_AREA_NAMES, is_b, plan_s, plan_l, COND_PLAN
 from common import site_header, tabbar, footer as cfooter, og_meta, load_area
 D = load_area()
 from common import month_prices
@@ -250,7 +251,7 @@ top = HEAD.format(ver=VER, canon="", title="神日カレンダー｜YASUMIBI 休
     </div>
     <ul class="board" id="b-hakone">{boards['hakone']}</ul>
     <ul class="board" id="b-atami" hidden>{boards['atami']}</ul>
-    <div class="cond">※大人2名・1室・1泊2食付きの最安プラン（2名合計・税込）。{ASOF}時点の楽天トラベルの料金。予約前に最新料金をご確認ください。宿の写真：楽天トラベル</div>
+    <div class="cond">※{COND_PLAN}（2名合計・税込）。{ASOF}時点の楽天トラベルの料金。予約前に最新料金をご確認ください。宿の写真：楽天トラベル</div>
   </section>
 
   <section class="blk" aria-labelledby="ch">
@@ -298,13 +299,13 @@ prose = {
 <p>載せるのは、次の3つをすべて満たす宿だけです。</p>
 <dl><dt>★4.3以上</dt><dd>楽天トラベルの口コミ評価が4.3以上。安くても満足できる宿だけ</dd>
 <dt>口コミ50件以上</dt><dd>身内の高評価だけで4.3、は除外。たくさんの人が泊まって、それでも高評価の宿</dd>
-<dt>1泊2食付き</dt><dd>同じ条件で比べるため。朝ごはんと夕ごはんまで込みの料金です</dd></dl>
+<dt>1泊2食付き</dt><dd>同じ条件で比べるため。朝ごはんと夕ごはんまで込みの料金です{("。ただし" + "・".join(B_AREA_NAMES) + "は、2食付きの宿が少ないため1泊朝食付きで比べます（ほかのエリアと同じランキングには入れません）") if B_AREA_NAMES else ""}</dd></dl>
 <p>口コミ評価は毎週取り直しています。基準を下回った宿は、掲載から外します。広告の有無で、載せる宿や順位を変えることはありません。</p>
 <h2>料金の調べ方</h2>
-<dl><dt>データ元</dt><dd>楽天トラベル（楽天ウェブサービス）の公開データ</dd><dt>条件</dt><dd>大人2名・1室・1泊2食付きの最安プラン（2名合計・税込）</dd><dt>対象</dt><dd>上の基準を満たす宿（全国の温泉地・観光地）</dd><dt>更新</dt><dd>毎日自動で再取得。近い日付ほど頻繁に取り直し、各ページに調査日を記載。過ぎた日の料金は表示しません</dd></dl>
+<dl><dt>データ元</dt><dd>楽天トラベル（楽天ウェブサービス）の公開データ</dd><dt>条件</dt><dd>{COND_PLAN}（2名合計・税込）</dd><dt>対象</dt><dd>上の基準を満たす宿（全国の温泉地・観光地）</dd><dt>更新</dt><dd>毎日自動で再取得。近い日付ほど頻繁に取り直し、各ページに調査日を記載。過ぎた日の料金は表示しません</dd></dl>
 <p>料金・空室は日々変動します。予約前に楽天トラベルで最新の料金をご確認ください。</p>
 <h2>用語</h2>
-<dl><dt>神日（かみび）</dt><dd>その宿の、その月の最安値の日</dd><dt>料金</dt><dd>大人2名・1泊2食付きの最安プランの2名合計（税込）</dd></dl>
+<dl><dt>神日（かみび）</dt><dd>その宿の、その月の最安値の日</dd><dt>料金</dt><dd>{COND_PLAN}の2名合計（税込）</dd></dl>
 <h2 id="operator">運営者情報</h2>
 <dl><dt>サイト名</dt><dd>YASUMIBI</dd><dt>運営者</dt><dd>{esc(OP_NAME)}</dd><dt>お問い合わせ</dt><dd>{esc(OP_MAIL)}</dd><dt>SNS</dt><dd><a href="https://www.instagram.com/yasumibi.travel/" target="_blank" rel="noopener">Instagram @yasumibi.travel</a><br><a href="https://www.tiktok.com/@yasumibi.travel" target="_blank" rel="noopener">TikTok @yasumibi.travel</a></dd></dl>
 """),

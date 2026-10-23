@@ -8,6 +8,7 @@
 """
 import os, sys, html, hashlib
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from common import is_b, plan_s, plan_l, COND_PLAN
 from common import site_header, tabbar, footer, og_meta, OUT, CARD_AFF
 
 CHECKED = "2026年10月22日"

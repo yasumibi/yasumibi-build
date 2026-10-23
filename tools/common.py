@@ -65,6 +65,28 @@ TODAY = _dt.datetime.now(JST).date()
 
 AREAS = json.load(open(f"{DATA}/areas.json"))            # エリアの一覧（key, name, region, 楽天のエリアコード）
 AREA_JA = {a["key"]: a["name"] for a in AREAS}
+# 食事の条件：基本は1泊2食付き。京都・沖縄・北海道の街など、2食付きの宿が少ないエリアは1泊朝食付きで比べる（areas.json の meal: 1）
+MEAL = {a["key"]: int(a.get("meal", 2)) for a in AREAS}
+B_AREA_NAMES = [a["name"] for a in AREAS if int(a.get("meal", 2)) == 1]
+
+
+def is_b(area):
+    """そのエリアが1泊朝食付きで比べるエリアか。"""
+    return MEAL.get(area, 2) == 1
+
+
+def plan_s(area):
+    """短い表記：1泊2食／1泊朝食"""
+    return "1泊朝食" if is_b(area) else "1泊2食"
+
+
+def plan_l(area):
+    """長い表記：1泊2食付き／1泊朝食付き"""
+    return "1泊朝食付き" if is_b(area) else "1泊2食付き"
+
+
+# 注記に使う条件の文（朝食付きのエリアがあれば、どこかを書き添える）
+COND_PLAN = ("大人2名・1室・1泊2食付き" + (f"（{'・'.join(B_AREA_NAMES)}は1泊朝食付き）" if B_AREA_NAMES else "") + "の最安プラン")
 
 
 def _add_months(y, m, k):

@@ -8,6 +8,7 @@
 """
 import os, sys, json, html, hashlib, datetime, calendar, statistics, urllib.parse
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from common import B_AREA_NAMES, is_b, plan_s, plan_l, COND_PLAN
 from common import (site_header, tabbar, footer, og_meta, OUT, DATA, AREAS, AREA_JA, HOTELS, MONTHS, KY, KM,
                     month_prices, ASOF_BY_AREA, ASOF, TODAY)
 
@@ -67,7 +68,7 @@ def item(i, s, big, small, base, show_area=False):
   <span class="rk">{i}</span>
   <img class="rt" src="{esc(info.get('thumb',''))}" alt="" loading="lazy" width="96" height="64">
   <div class="rb">
-    {name}<span class="rm">{area}{esc(h.get('loc',''))}｜口コミ {h.get('avg',0):.2f}</span>
+    {name}<span class="rm">{area}{esc(h.get('loc',''))}｜口コミ {h.get('avg',0):.2f}{'<i class="mb">朝食付き</i>' if is_b(h['area']) else ''}</span>
     <div class="rv"><b>{big}</b><span>{small}</span></div>
     <div class="rk2">神日 {kd} <b>{yen(s['mn'])}</b></div>
   </div>
@@ -187,7 +188,7 @@ def page(path, title, desc, crumb, h1, lead, body, base, cv=""):
   <nav class="crumb" aria-label="現在地">{crumb}</nav>
   {cv}<header class="ok-hd"><h1>{h1}</h1><p>{lead}</p></header>
   {body}
-  <p class="fine">※大人2名・1室・1泊2食付きの最安プラン（2名合計・税込）。{KY}年{KM}月泊の料金で計算（年末年始・過ぎた日は除く）。料金は楽天トラベルの{esc(ASOF)}時点のもので、毎日更新しています。宿の写真：楽天トラベル</p>
+  <p class="fine">※{COND_PLAN}（2名合計・税込）。{KY}年{KM}月泊の料金で計算（年末年始・過ぎた日は除く）。料金は楽天トラベルの{esc(ASOF)}時点のもので、毎日更新しています。宿の写真：楽天トラベル</p>
 </main>
 """ + footer(base) + tabbar(base, "") + "</body></html>\n"
 
@@ -221,14 +222,14 @@ for a in AREAS:
     made.append((a, len(nos), gap[:1]))
 
 # 全国版
-allnos = list(H)
+allnos = [no for no in H if not is_b(H[no]["area"])]   # 朝食付きで比べるエリアは、全国のランキングに混ぜない
 gap, pen, near = rank_sets(allnos)
 base = "../"
 links = "".join(f'<li><a href="{base}areas/{a["key"]}/">{esc(a["name"])}<small>{n}軒</small></a></li>' for a, n, _ in made)
 body = ranking_block("gap", "全国・ずらすだけで、浮く。", "土曜の予定を神日にずらしたときの差額。", gap, F_GAP, base, True, 5, quip=Q_GAP)
 body += ranking_block("pen", "全国・土曜でも、ほぼ平日。", "土曜の値上がりが小さい宿。", pen, F_PEN, base, True, 5, quip=Q_PEN)
 body += ranking_block("cospa", "全国・★4.5以上なのに、この値段。", "口コミ★4.5以上の宿を、神日の料金が安い順に。いわゆるコスパの良い宿。", cospa(allnos), F_COSPA, base, True, 5, quip=Q_COSPA)
-body += f'<section class="rsec"><h2>エリア別のランキング</h2><div class="reg"><ul>{links}</ul></div></section>'
+body += f'<section class="rsec"><h2>エリア別のランキング</h2>' + (f'<p class="rlead">{"・".join(B_AREA_NAMES)}は1泊朝食付きの料金で比べているため、全国のランキングには入れず、エリア別だけで並べています。</p>' if B_AREA_NAMES else '') + f'<div class="reg"><ul>{links}</ul></div></section>'
 write(f"{OUT}/ranking/index.html", page("ranking/", f"全国の宿ランキング｜ずらし甲斐・土曜ペナルティ・コスパ（{KY}年{KM}月）｜YASUMIBI",
       "全国の人気温泉地の宿の料金を全日調べて、日をずらすと安くなる宿、土曜でも高くならない宿をランキング。毎日更新。",
       f'<a href="{base}">ホーム</a><span aria-hidden="true">›</span><span>ランキング</span>', "日をずらすと、いくら浮く？",
