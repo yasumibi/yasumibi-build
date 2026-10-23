@@ -151,7 +151,8 @@ AREA_IMG = {"hakone": "hakone-fuji-ship.jpg", "atami": "atami-panorama.jpg", "ku
             "kyoto": "kyoto-yasaka.jpg", "sapporo": "sapporo-odori.jpg", "jozankei": "jozankei-bridge.jpg", "otaru": "otaru-canal.jpg",
             "hakodate": "hakodate-night.jpg", "toya": "toya-lake.jpg", "akan": "akan-lake.jpg", "naha": "naha-shureimon.jpg",
             "onna": "onna-cape.jpg", "chatan": "chatan-village.jpg", "ishigaki": "ishigaki-kabira.jpg",
-            "ikaho": "ikaho-steps.jpg", "nikko": "nikko-toshogu.jpg", "shima": "shima-river.jpg", "yugawara": "yugawara-river.jpg"}
+            "ikaho": "ikaho-steps.jpg", "nikko": "nikko-toshogu.jpg", "shima": "shima-river.jpg", "yugawara": "yugawara-river.jpg",
+            "shirahama": "shirahama-beach.jpg", "okuhida": "okuhida-shinhotaka.jpg"}
 try: CREDITS = json.load(open(f"{OUT}/assets/img/credits.json"))
 except Exception: CREDITS = {}
 
