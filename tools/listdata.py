@@ -5,6 +5,7 @@
 """
 import os, sys, json, html, datetime, calendar, urllib.parse
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from common import img_v
 from common import (AREAS, MONTHS, DEFAULT_YM, PRH, SLUG, TODAY, CARD_CAMP, is_b, load_area, OUT)
 from tagdefs import tags_of, INFO, TAGS
 
@@ -99,7 +100,7 @@ def data(area=None):
 # ---- エリアのタイル（写真＋地名＋いちばん安い料金）。トップは地方のタブで切り替え、エリア・検索のページは横スクロールの1列。
 def tile(a, base):
     k = a["key"]; img = AREA_IMG.get(k)
-    vis = (f'<img src="{base}assets/img/{img}" alt="" loading="lazy" width="480" height="300">' if img
+    vis = (f'<img src="{base}assets/img/{img}?v={img_v(img)}" alt="" loading="lazy" width="480" height="300">' if img
            else f'<span class="at-nt">{esc(a["name"])}</span>')
     pr = f'<em>¥{AREA_MIN[k]:,}〜</em>' if AREA_MIN.get(k) else ""
     return (f'<li><a class="at" href="{base}areas/{k}/">{vis}<i class="at-ml">{meal_ja(k)}</i>'

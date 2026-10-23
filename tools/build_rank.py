@@ -8,6 +8,7 @@
 """
 import os, sys, json, html, hashlib, datetime, calendar, statistics, urllib.parse
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from common import img_v
 from common import B_AREA_NAMES, B_AREA_LABEL, is_b, plan_s, plan_l, COND_PLAN
 from common import (site_header, tabbar, footer, og_meta, OUT, DATA, AREAS, AREA_JA, HOTELS, MONTHS, KY, KM,
                     month_prices, ASOF_BY_AREA, ASOF, TODAY)
@@ -154,7 +155,7 @@ def cover(key, base):
     if not img: return ""
     c = CREDITS.get(img)
     cr = f'<span class="cv-cr">写真：{esc(c["artist"] or "Wikimedia Commons")}（{esc(c["license"])}・Wikimedia Commons{"・" + esc(c["edit"]) if c.get("edit") else ""}）</span>' if c else ""
-    return f'<figure class="cv"><img src="{base}assets/img/{img}" alt="" width="960" height="540">{cr}</figure>'
+    return f'<figure class="cv"><img src="{base}assets/img/{img}?v={img_v(img)}" alt="" width="960" height="540">{cr}</figure>'
 
 
 def page(path, title, desc, crumb, h1, lead, body, base, cv="", js="", cur="features"):

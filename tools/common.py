@@ -200,3 +200,13 @@ def camp_ok(checkin):
 def card_extra(v, checkin):
     """楽天カードで事前決済すると、楽天カード以外で払うより多くもらえるポイント（目安）。"""
     return v // 100 + ((v * 10 // 11) // 200 if camp_ok(checkin) else 0)
+
+
+# 写真のURLに中身のハッシュを付ける（同じ名前の写真を差し替えても、ブラウザが古い写真を使い続けないように）
+import hashlib as _hl
+_IMGV = {}
+def img_v(name):
+    if name not in _IMGV:
+        try: _IMGV[name] = _hl.md5(open(f"{OUT}/assets/img/{name}", "rb").read()).hexdigest()[:8]
+        except Exception: _IMGV[name] = "0"
+    return _IMGV[name]

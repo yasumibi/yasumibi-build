@@ -4,6 +4,7 @@ import json, os, datetime, html
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # このリポジトリ
 OUT = os.environ.get("YB_OUT", os.path.join(os.path.dirname(ROOT), "yasumibi-site"))  # 公開用リポジトリ（隣に置く）
 import sys; sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from common import img_v
 from common import B_AREA_NAMES, B_AREA_LABEL, is_b, plan_s, plan_l, COND_PLAN
 from common import site_header, tabbar, footer as cfooter, og_meta, load_area
 D = load_area()
@@ -110,7 +111,7 @@ def write(path, s):
     open(path, "w", encoding="utf-8").write(s)
 
 def photo_block(f, base, seal=None):
-    style = f' style="background-image:url({base}assets/img/{f["img"]})"' if f["img"] else ""
+    style = f' style="background-image:url({base}assets/img/{f["img"]}?v={img_v(f["img"])})"' if f["img"] else ""
     cr = f'<span class="credit">{esc(f["credit"])}</span>' if f["credit"] else ""
     sl = f'<div class="stat">{seal}</div>' if seal else ""
     t = f["title"]

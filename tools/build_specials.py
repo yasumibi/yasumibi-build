@@ -10,6 +10,7 @@
 """
 import os, sys, json, html, hashlib, datetime as dt, statistics, urllib.parse
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from common import img_v
 from common import is_b, plan_s, plan_l, COND_PLAN
 from common import site_header, tabbar, footer, og_meta, OUT, DATA, AREA_JA, HOTELS, PRH, ASOF, TODAY, WINDOW_START, WINDOW_END, KY, KM
 
@@ -110,7 +111,7 @@ def cover(img):
     if not img or not os.path.exists(f"{OUT}/assets/img/{img}"): return ""
     c = CREDITS.get(img)
     cr = f'<span class="cv-cr">写真：{esc(c["artist"] or "Wikimedia Commons")}（{esc(c["license"])}・Wikimedia Commons{"・" + esc(c["edit"]) if c.get("edit") else ""}）</span>' if c else ""
-    return f'<figure class="cv"><img src="../../assets/img/{img}" alt="" width="960" height="540">{cr}</figure>'
+    return f'<figure class="cv"><img src="../../assets/img/{img}?v={img_v(img)}" alt="" width="960" height="540">{cr}</figure>'
 
 
 def page(slug, area, img, eyebrow, h1, lead, body, note, place=None, place_href=None):
@@ -234,7 +235,7 @@ for no in area_nos("atami"):
         rows.append((H[no]["avg"], no, d, v))
 rows.sort(key=lambda r: -r[0])
 its = [item(i + 1, no, yen(v), f"{KM}月の神日 {lab(d)}", f"★{a:.2f}・宿の紹介文に海の眺め", d) for i, (a, no, d, v) in enumerate(rows)]
-write("atami-10man", page("atami-10man", "atami", "atami-fireworks.jpg", "熱海・ご褒美の一泊", "海が見える宿の、神日。",
+write("atami-10man", page("atami-10man", "atami", "atami-panorama.jpg", "熱海・ご褒美の一泊", "海が見える宿の、神日。",
       f"宿の紹介文や設備に「オーシャンビュー」「相模湾一望」などの言葉がある宿だけ。★の高い順に、{KM}月の神日を並べました。",
       sec("★の高い順", "特別な一泊こそ、安い日に。", ol(its, 6), f"{len(rows)}軒、どれも海の見える宿。神日なら、ご褒美の値段が少しやさしくなる。" if rows else ""),
       "「海が見える」は楽天トラベルの宿の紹介文・設備情報をもとにしています。部屋によって眺めは異なります。"))
@@ -286,7 +287,7 @@ its = [item(i + 1, no, yen(t), f"{lab(d)}〜2泊（2名合計）", (f"金・土�
 q = ""
 if rows and rows[0][3] and rows[0][3] > rows[0][0]:
     q = f"1位の{esc(H[rows[0][1]]['name'])}は、金土の2泊と比べて{rows[0][3] - rows[0][0]:,}円安い。浮いたお金で、湯の坪街道を食べ歩き。"
-write("yufuin-2haku", page("yufuin-2haku", "yufuin", "yufuin-kinrinko-2.jpg", "由布院・連泊", "由布院、2泊するならこの2日。",
+write("yufuin-2haku", page("yufuin-2haku", "yufuin", "yufuin-kinrinko-sunny.jpg", "由布院・連泊", "由布院、2泊するならこの2日。",
       "せっかくの由布院は、ゆっくり2泊。2泊の合計がいちばん安くなる2日を、宿ごとに探しました。",
       sec("2泊の合計が安い順", "続けて2泊できる日だけで計算しています。", ol(its), q), "2泊とも同じ最安プランで計算した目安です（実際は連泊プランで変わることがあります）。"))
 made.append("yufuin-2haku")
@@ -299,7 +300,7 @@ for no in area_nos("beppu"):
         d, v = min(ns, key=lambda x: (x[1], x[0])); rows.append((v, no, d, len(ns)))
 rows.sort()
 its = [item(i + 1, no, f"1人 {yen(v // 2)}", f"2名合計 {yen(v)}・{lab(d)}", f"1人2万円未満の日 {k}日・★{H[no]['avg']:.2f}", d) for i, (v, no, d, k) in enumerate(rows)]
-write("beppu-1man", page("beppu-1man", "beppu", "beppu-umijigoku.jpg", "別府・1人1万円台", "1人1万円台で泊まれる別府。",
+write("beppu-1man", page("beppu-1man", "beppu", "beppu-chinoike.jpg", "別府・1人1万円台", "1人1万円台で泊まれる別府。",
       "★4.3以上で、2食付き。それでも1人2万円を切る日がある宿を、安い順に並べました。",
       sec("1人あたりが安い順", f"{len(rows)}軒が、1人1万円台の日あり。", ol(its, 8), "温泉の湧出量は日本一。宿代は、日本一じゃなくていい。"), "1人あたり＝2名合計÷2。"))
 made.append("beppu-1man")
@@ -362,7 +363,7 @@ if len(rows) >= 4:
                     bars([("100室以上", mb, ""), ("100室未満", ms, "")]))
 its = [item(i + 1, no, f"{r}室", f"神日 {lab(d)}", f"<b>{yen(v)}</b>・★{H[no]['avg']:.2f}", d) for i, (r, no, d, v) in enumerate(rows)]
 body += sec("客室数の多い順", "宿の大きさと、それぞれの神日。", ol(its, 9), "大きな宿は大浴場が広く、小さな宿は静か。値段だけで決めなくていい。")
-write("noboribetsu-size", page("noboribetsu-size", "noboribetsu", "noboribetsu-cover.jpg", "登別・宿の大きさ", "大きな宿ほど、安い？",
+write("noboribetsu-size", page("noboribetsu-size", "noboribetsu", "noboribetsu-jigokudani-day.jpg", "登別・宿の大きさ", "大きな宿ほど、安い？",
       "地獄谷の湯けむりの町、登別。客室の数と神日の料金に関係があるのか、★4.3以上の宿で比べました。宿の数が少ないので、傾向の目安です。", body, "客室数は楽天トラベルの施設情報です。"))
 made.append("noboribetsu-size")
 
@@ -431,7 +432,7 @@ rows.sort(key=lambda r: -r[0])
 its = [item(i + 1, no, f"−{g:,}円", f"11月の神日 {yen(a)} → 1月", f"1月の神日 {lab(db)} <b>{yen(b)}</b>", db) for i, (g, no, a, b, db) in enumerate(rows)]
 body += sec("11月と1月で、差が大きい宿", "同じ宿の、11月の神日と1月の神日の差。", ol(its),
             f"1位の{esc(H[rows[0][1]]['name'])}は、1月にずらすだけで{rows[0][0]:,}円。紅葉はないけれど、差額で京料理がもう一軒。" if rows else "")
-write("kyoto-koyo", page("kyoto-koyo", "kyoto", "kyoto-yasaka.jpg", "京都・紅葉と冬", "紅葉の11月と、1月。同じ宿でいくら違う？",
+write("kyoto-koyo", page("kyoto-koyo", "kyoto", "kyoto-kiyomizu-autumn.jpg", "京都・紅葉と冬", "紅葉の11月と、1月。同じ宿でいくら違う？",
       "京都がいちばん高いのは紅葉の11月。同じ宿に1月に泊まると、いくら安くなるのかを比べました。", body,
       "11月は残りの日、1月は料金を取れている日で比べた目安です。"))
 made.append("kyoto-koyo")
@@ -460,7 +461,7 @@ for no in KYO:
         d, v = min(ns, key=lambda x: (x[1], x[0])); rows.append((v, no, d, len(ns)))
 rows.sort()
 its = [item(i + 1, no, f"1人 {yen(v // 2)}", f"2名合計 {yen(v)}・{lab(d)}", f"★{H[no]['avg']:.2f}・1人2万円未満の日 {k}日", d) for i, (v, no, d, k) in enumerate(rows)]
-write("kyoto-46", page("kyoto-46", "kyoto", "kyoto-pagoda-night.jpg", "京都・★4.6以上", "★4.6以上の京都の宿に、1人1万円台で。",
+write("kyoto-46", page("kyoto-46", "kyoto", "kyoto-inari.jpg", "京都・★4.6以上", "★4.6以上の京都の宿に、1人1万円台で。",
       "口コミ★4.6以上は、京都でもひと握り。その中で、1人2万円を切る日がある宿を安い順に並べました。",
       sec("1人あたりが安い順", f"{len(rows)}軒に、1人1万円台の日があります。", ol(its, 8), f"★4.6以上は、京都の★4.3以上の宿{len(KYO)}軒のうち{sum(1 for no in KYO if H[no]['avg'] >= 4.6)}軒だけ。" if rows else ""),
       "1人あたり＝2名合計÷2。"))
@@ -553,7 +554,7 @@ for no in SP:
         d, v = min(ns, key=lambda x: (x[1], x[0])); rows.append((v, no, d, len(ns)))
 rows.sort()
 its = [item(i + 1, no, f"1人 {yen(v // 2)}", f"2名合計 {yen(v)}・{lab(d)}", f"★{H[no]['avg']:.2f}・1人7千円以下の日 {k}日", d) for i, (v, no, d, k) in enumerate(rows)]
-write("sapporo-1man", page("sapporo-1man", "sapporo", "sapporo-tower.jpg", "札幌・1人7千円以下", "1人7千円以下で泊まれる、札幌の宿。",
+write("sapporo-1man", page("sapporo-1man", "sapporo", "sapporo-odori-blue.jpg", "札幌・1人7千円以下", "1人7千円以下で泊まれる、札幌の宿。",
       f"★4.3以上・朝食付きで、1人7千円（2人で1万4千円）以下になる日がある宿を、安い順に並べました。札幌の★4.3以上の宿{len(SP)}軒のうち{len(rows)}軒です。",
       sec("1人あたりが安い順", f"{len(rows)}軒に、1人7千円以下の日があります。", ol(its, 8), "浮いたぶんで、スープカレーとジンギスカン。" if rows else ""),
       "1人あたり＝2名合計÷2。"))
@@ -680,7 +681,7 @@ for no in area_nos("karuizawa"):
     d, v = min(ns, key=lambda x: (x[1], x[0])); rows.append((1 - v / med, no, med, d, v))
 rows.sort(key=lambda r: -r[0])
 its = [item(i + 1, no, f"−{p * 100:.0f}%", f"いつもは {yen(med)}（中央値）", f"神日 {lab(d)} <b>{yen(v)}</b>", d) for i, (p, no, med, d, v) in enumerate(rows)]
-write("karuizawa-luxury", page("karuizawa-luxury", "karuizawa", "karuizawa-forest.jpg", "軽井沢・高級ホテル", "軽井沢の高級ホテルが、下がる日。",
+write("karuizawa-luxury", page("karuizawa-luxury", "karuizawa", "karuizawa-kumoba-pond.jpg", "軽井沢・高級ホテル", "軽井沢の高級ホテルが、下がる日。",
       "ふだんは2人で6万円を超える軽井沢のホテル・旅館。その宿がいちばん下がる日と、いつもとの差を並べました。",
       sec("いつもより下がる順", f"この先半年の料金の中央値が6万円以上の宿{len(rows)}軒。", ol(its),
           f"1位の{esc(H[rows[0][1]]['name'])}は、神日にいつもより{rows[0][0] * 100:.0f}%安い。" if rows else ""), "「いつも」＝この先半年の料金の中央値。"))
@@ -701,7 +702,7 @@ for no in KNOS:
 rows.sort()
 its = [item(i + 1, no, yen(v), f"かにの季節の神日 {lab(d)}", f"★{H[no]['avg']:.2f}・食事★{MEAL.get(no, 0):.2f}", d) for i, (v, no, d) in enumerate(rows)]
 body += sec("かにの季節に、いちばん安く泊まれる宿", "11〜3月だけで、宿ごとにいちばん安い日。", ol(its, 8))
-write("kinosaki-kani", page("kinosaki-kani", "kinosaki", "kinosaki-night.jpg", "城崎・かにの季節", "かにの季節の城崎、いちばん安い日。",
+write("kinosaki-kani", page("kinosaki-kani", "kinosaki", "kinosaki-willow-day.jpg", "城崎・かにの季節", "かにの季節の城崎、いちばん安い日。",
       "松葉がにの季節（11月〜3月）は、城崎がいちばんにぎわう時期。その中でいちばん安く泊まれる日を探しました。", body,
       "表示の料金は2食付きの最安プランで、かに料理のプランとは限りません。"))
 made.append("kinosaki-kani")
@@ -714,7 +715,7 @@ for no in area_nos("ito"):
         d, v = min(ns, key=lambda x: (x[1], x[0])); rows.append((v, no, d, len(ns)))
 rows.sort()
 its = [item(i + 1, no, f"1人 {yen(v // 2)}", f"2名合計 {yen(v)}・{lab(d)}", f"1人2万円未満の日 {k}日・★{H[no]['avg']:.2f}", d) for i, (v, no, d, k) in enumerate(rows)]
-write("ito-1man", page("ito-1man", "ito", "ito-matsukawa.jpg", "伊東・1人1万円台", "1人1万円台で泊まれる伊東。",
+write("ito-1man", page("ito-1man", "ito", "ito-okawa-river-day.jpg", "伊東・1人1万円台", "1人1万円台で泊まれる伊東。",
       "★4.3以上で、2食付き。それでも1人2万円を切る日がある伊東の宿を、安い順に並べました。",
       sec("1人あたりが安い順", f"伊東の★4.3以上の宿{len(area_nos('ito'))}軒のうち{len(rows)}軒に、1人1万円台の日があります。", ol(its, 8),
           "東京から特急踊り子で約1時間45分。近くて、安くて、温泉。" if rows else ""), "1人あたり＝2名合計÷2。"))
