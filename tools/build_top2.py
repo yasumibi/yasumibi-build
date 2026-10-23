@@ -73,7 +73,11 @@ FEATURES = [("weekend/", "今週末に泊まれる神日。", "直前でも、�
             ("features/atami-10man/", "海が見える宿の、神日。", "熱海・ご褒美の一泊", "atami-fireworks.jpg"),
             ("features/kusatsu-winter/", "冬の草津、いちばん安い週。", "草津・12〜3月を週ごとに", "kusatsu-yubatake.jpg"),
             ("features/yufuin-2haku/", "由布院、2泊するならこの2日。", "由布院・連泊の合計が安い2日", "yufuin-kinrinko-2.jpg"),
-            ("features/beppu-1man/", "1人1万円台で泊まれる別府。", "別府・1人2万円未満の日がある宿", "beppu-umijigoku.jpg")]
+            ("features/beppu-1man/", "1人1万円台で泊まれる別府。", "別府・1人2万円未満の日がある宿", "beppu-umijigoku.jpg"),
+            ("features/kinugawa-heijitsu/", "平日1泊、いちばん安い鬼怒川。", "鬼怒川・日〜木泊だけで", "kinugawa-cover.jpg"),
+            ("features/gero-gohan/", "ごはんの★が高い宿の、神日。", "下呂・食事の評価が高い順", "gero-cover.jpg"),
+            ("features/noboribetsu-size/", "大きな宿ほど、安い？", "登別・客室数と神日", "noboribetsu-cover.jpg"),
+            ("features/arima-renkyu/", "有馬、連休でも安い日。", "有馬・3連休以上の夜だけで", "arima-view.jpg")]
 FEATURES = [f for f in FEATURES if f[3] is None or os.path.isdir(f"{OUT}/{f[0]}")]
 TILE = {"weekend/": '<span class="tile">直前でも<b>今週末</b></span>', "renkyu/2027/": '<span class="tile">2027年の<b>連休</b></span>', "otoku-days/": '<span class="tile">予約は<b>5と0の日</b></span>', "renkyu/": '<span class="tile t-ren">有給1日で<b>何連休？</b></span>', "ranking/": '<span class="tile t-rank">ずらすと<b>いくら浮く？</b></span>'}
 base = ""
@@ -109,7 +113,7 @@ def _pcard(h, i, m, v, days, gap):
             f'<div class="inf"><span class="rk">{i + 1}</span><a class="nm" href="../hotels/{h["slug"]}/">{h["name"]}</a>'
             f'<span class="meta">{DATA["areas"][h["area"]]}・{h["loc"]}｜★{h["avg"]:.2f}</span>{body}</div>'
             f'<div class="acts"><a class="cal" href="../hotels/{h["slug"]}/">神日カレンダー<span aria-hidden="true">›</span></a>'
-            f'<a class="bk" href="{_plink(h["no"], m, days[0])}" target="_blank" rel="noopener sponsored">楽天で見る</a></div></li>')
+            f'<a class="bk" href="{_plink(h["no"], m, days[0])}" target="_blank" rel="noopener sponsored">楽天トラベルで見る</a></div></li>')
 def _picks(mi):
     m = months[mi]; k = f"{m['y']}-{m['m']:02d}"
     past = m["days"] if (m["y"], m["m"]) < (TODAY.year, TODAY.month) else (TODAY.day - 1 if (m["y"], m["m"]) == (TODAY.year, TODAY.month) else 0)

@@ -14,10 +14,15 @@ from common import site_header, tabbar, footer, og_meta, OUT, DATA, AREA_JA, HOT
 
 AFF = "589faade.b97f81b7.589faadf.010fa421"
 INFO = json.load(open(f"{DATA}/hotel_info_20261021.json"))["hotels"]
-DET = {}
+DET = {}; MEAL = {}; ROOMS = {}
 for ln in open(f"{DATA}/hotel_detail_20261021.tsv", encoding="utf-8"):
     c = ln.rstrip("\n").split("\t")
-    if len(c) >= 10: DET[int(c[0])] = c[7] + " " + c[9]
+    if len(c) >= 10:
+        DET[int(c[0])] = c[7] + " " + c[9]
+        try: MEAL[int(c[0])] = float(c[3].split(",")[5])
+        except Exception: pass
+        try: ROOMS[int(c[0])] = int(c[6] or 0)
+        except Exception: pass
 try: CREDITS = json.load(open(f"{OUT}/assets/img/credits.json"))
 except Exception: CREDITS = {}
 WD = "月火水木金土日"
@@ -66,7 +71,7 @@ def item(i, no, big, small, sub, d, n=1):
     <div class="rv"><b>{big}</b><span>{small}</span></div>
     <div class="rk2">{sub}</div>
   </div>
-  <a class="rgo" href="{esc(rk_link(no, d, n))}" target="_blank" rel="noopener sponsored">楽天で見る</a>
+  <a class="rgo" href="{esc(rk_link(no, d, n))}" target="_blank" rel="noopener sponsored">楽天トラベルで見る</a>
 </li>"""
 
 
@@ -91,6 +96,7 @@ def bars(rows, fmt=yen):
 
 
 def cover(img):
+    if not img or not os.path.exists(f"{OUT}/assets/img/{img}"): return ""
     c = CREDITS.get(img)
     cr = f'<span class="cv-cr">写真：{esc(c["artist"] or "Wikimedia Commons")}（{esc(c["license"])}・Wikimedia Commons）</span>' if c else ""
     return f'<figure class="cv"><img src="../../assets/img/{img}" alt="" width="960" height="540">{cr}</figure>'
@@ -285,5 +291,99 @@ write("beppu-1man", page("beppu-1man", "beppu", "beppu-umijigoku.jpg", "別府�
       "★4.3以上で、2食付き。それでも1人2万円を切る日がある宿を、安い順に並べました。",
       sec("1人あたりが安い順", f"{len(rows)}軒が、1人1万円台の日あり。", ol(its, 8), "温泉の湧出量は日本一。宿代は、日本一じゃなくていい。"), "1人あたり＝2名合計÷2。"))
 made.append("beppu-1man")
+
+# 8. 鬼怒川・平日1泊、いちばん安い鬼怒川。
+import jp_holidays
+def rest(d): return d.weekday() >= 5 or bool(jp_holidays.name(d)) or nyr(d)
+wd = {}
+rows = []
+for no in area_nos("kinugawa"):
+    ns = [x for x in nights(no) if x[0].weekday() in (6, 0, 1, 2, 3)]
+    for d, v in ns: wd.setdefault(WD[d.weekday()], []).append(v)
+    sat = [x[1] for x in nights(no) if x[0].weekday() == 5]
+    if ns:
+        d, v = min(ns, key=lambda x: (x[1], x[0]))
+        rows.append((v, no, d, round(statistics.mean(sat)) if sat else 0))
+rows.sort()
+body = ""
+wr = [(f"{k}曜泊", statistics.median(wd[k]), "") for k in "日月火水木" if len(wd.get(k, [])) >= 5]
+if wr:
+    bk = min(wr, key=lambda r: r[1])
+    body += sec("何曜日に泊まると安い？", f"鬼怒川の宿の、日〜木泊の料金の中央値。いちばん安いのは<b>{bk[0]}</b>。", bars(wr))
+its = [item(i + 1, no, yen(v), f"平日の神日 {lab(d)}", (f"土曜泊の平均より <b>−{sa - v:,}円</b>" if sa > v else f"★{H[no]['avg']:.2f}"), d) for i, (v, no, d, sa) in enumerate(rows)]
+body += sec("平日に泊まるなら、この宿・この日", "日〜木泊だけで、宿ごとにいちばん安い日。", ol(its),
+            f"1位の{esc(H[rows[0][1]]['name'])}は、平日なら{yen(rows[0][0])}。東京から特急で約2時間、休みを1日取る価値はある。" if rows else "")
+write("kinugawa-heijitsu", page("kinugawa-heijitsu", "kinugawa", "kinugawa-cover.jpg", "鬼怒川・平日", "平日1泊、いちばん安い鬼怒川。",
+      "週末は混む鬼怒川も、平日はぐっと安くなる。日曜〜木曜の夜だけで、いちばん安い日を探しました。", body, "日〜木泊のみ。"))
+made.append("kinugawa-heijitsu")
+
+# 9. 下呂・ごはんの★が高い宿の、神日。
+rows = []
+for no in area_nos("gero"):
+    ns = nights(no)
+    if ns and MEAL.get(no):
+        d, v = min(ns, key=lambda x: (x[1], x[0])); rows.append((MEAL[no], no, d, v))
+rows.sort(key=lambda r: (-r[0], r[3]))
+its = [item(i + 1, no, f"食事 ★{m:.2f}", f"神日 {lab(d)}", f"<b>{yen(v)}</b>・総合★{H[no]['avg']:.2f}", d) for i, (m, no, d, v) in enumerate(rows)]
+write("gero-gohan", page("gero-gohan", "gero", "gero-cover.jpg", "下呂・ごはん", "ごはんの★が高い宿の、神日。",
+      "飛騨牛の宿が多い下呂。楽天トラベルの口コミで「食事」の評価が高い順に、それぞれの神日を並べました。",
+      sec("食事の評価が高い順", "口コミの「食事」の点数（5点満点）。", ol(its, 6),
+          f"1位の{esc(H[rows[0][1]]['name'])}は、食事★{rows[0][0]:.2f}。神日なら{yen(rows[0][3])}で、このごはん。" if rows else ""),
+      "食事の評価は楽天トラベルの口コミの「食事」の平均点です。"))
+made.append("gero-gohan")
+
+# 10. 登別・大きな宿ほど、安い？
+rows = []
+for no in area_nos("noboribetsu"):
+    ns = nights(no)
+    if ns and ROOMS.get(no):
+        d, v = min(ns, key=lambda x: (x[1], x[0])); rows.append((ROOMS[no], no, d, v))
+rows.sort(key=lambda r: -r[0])
+body = ""
+if len(rows) >= 4:
+    big = [r[3] for r in rows if r[0] >= 100]; small = [r[3] for r in rows if r[0] < 100]
+    if big and small:
+        mb, ms = statistics.median(big), statistics.median(small)
+        gap = abs(mb - ms) / max(mb, ms)
+        ans = ("ほとんど変わらない" if gap < 0.05 else ("大きな宿のほうが安い" if mb < ms else "小さな宿のほうが安い"))
+        body += sec("答え：" + ans, f"客室100室以上の宿{len(big)}軒と、100室未満の宿{len(small)}軒の、神日の料金の中央値。差は{abs(mb - ms):,.0f}円。",
+                    bars([("100室以上", mb, ""), ("100室未満", ms, "")]))
+its = [item(i + 1, no, f"{r}室", f"神日 {lab(d)}", f"<b>{yen(v)}</b>・★{H[no]['avg']:.2f}", d) for i, (r, no, d, v) in enumerate(rows)]
+body += sec("客室数の多い順", "宿の大きさと、それぞれの神日。", ol(its, 9), "大きな宿は大浴場が広く、小さな宿は静か。値段だけで決めなくていい。")
+write("noboribetsu-size", page("noboribetsu-size", "noboribetsu", "noboribetsu-cover.jpg", "登別・宿の大きさ", "大きな宿ほど、安い？",
+      "地獄谷の湯けむりの町、登別。客室の数と神日の料金に関係があるのか、★4.3以上の宿で比べました。宿の数が少ないので、傾向の目安です。", body, "客室数は楽天トラベルの施設情報です。"))
+made.append("noboribetsu-size")
+
+# 11. 有馬・連休でも安い日。
+def in_long(d):
+    """d泊が、3日以上続く休み（土日・祝日）の中の夜か。"""
+    if not (rest(d) and rest(d + dt.timedelta(days=1))): return None
+    a = b = d
+    while rest(a - dt.timedelta(days=1)): a -= dt.timedelta(days=1)
+    while rest(b + dt.timedelta(days=1)): b += dt.timedelta(days=1)
+    return (a, b) if (b - a).days >= 2 else None
+blocks = {}
+rows = []
+for no in area_nos("arima"):
+    best = None
+    for d, v in nights(no):
+        bl = in_long(d)
+        if not bl: continue
+        blocks.setdefault(bl, []).append(v)
+        if best is None or v < best[1]: best = (d, v, bl)
+    if best: rows.append((best[1], no, best[0], best[2]))
+rows.sort()
+body = ""
+br = [(f"{a.month}/{a.day}〜{b.month}/{b.day}", statistics.median(v), "") for (a, b), v in sorted(blocks.items()) if len(v) >= 5]
+if br:
+    bb = min(br, key=lambda r: r[1])
+    body += sec("いちばん安い連休は？", f"この先の連休ごとに、有馬の宿の料金の中央値。いちばん安いのは<b>{bb[0]}</b>の連休。", bars(br))
+its = [item(i + 1, no, yen(v), f"連休中の神日 {lab(d)}", f"{a.month}/{a.day}〜{b.month}/{b.day}の連休・★{H[no]['avg']:.2f}", d) for i, (v, no, d, (a, b)) in enumerate(rows)]
+body += sec("連休でも安い宿", "3日以上続く休みの中の夜だけで、宿ごとにいちばん安い日。", ol(its),
+            f"1位の{esc(H[rows[0][1]]['name'])}は、連休中でも{yen(rows[0][0])}。金泉・銀泉は、連休でも逃げない。" if rows else "")
+write("arima-renkyu", page("arima-renkyu", "arima", "arima-view.jpg", "有馬・連休", "有馬、連休でも安い日。",
+      "連休はどこも高い。それでも、有馬には連休中に安くなる夜がある。3連休以上の夜だけで、いちばん安い日を探しました。", body,
+      "連休＝土日・祝日が3日以上続く休み。年末年始は除きます。"))
+made.append("arima-renkyu")
 
 print("specials built", made)

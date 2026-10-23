@@ -128,7 +128,7 @@ def item(i, r, base, t):
     <div class="rv"><b>{big}</b><span><i class="kd">神日</i>{lab(r['d'])}泊{more}・2名1泊2食{'（2名で' + yen(r['p']) + '）' if t.get('per') else ''}</span></div>
     {sub_html}
   </div>
-  <a class="rgo" href="{esc(rk_link(no, r['d']))}" target="_blank" rel="noopener sponsored">楽天で見る</a>
+  <a class="rgo" href="{esc(rk_link(no, r['d']))}" target="_blank" rel="noopener sponsored">楽天トラベルで見る</a>
 </li>"""
 
 
