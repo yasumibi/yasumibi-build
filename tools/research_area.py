@@ -118,51 +118,57 @@ def main():
     print("確認する日：", ", ".join(map(str, dates)), flush=True)
     added_total = 0
     for key in want:
-        a = areas[key]
-        codes = resolve(a)
-        if not codes:
-            print(f"[{key}] 楽天のエリアが見つかりません（match={a.get('match')}）"); continue
-        a["codes"] = codes
-        allh = list_hotels(codes)
-        if a.get("addr"):   # 楽天のエリアが広いときは、住所で絞る（例：草津町）
-            allh = [o for o in allh if any(x in o.get("addr", "") for x in a["addr"])]
-        print(f"[{key}] 楽天に登録 {len(allh)}軒（エリアコード {codes}）", flush=True)
-        cand = [o for o in allh if o["rc"] >= MIN_RC and o["ra"] >= MIN_RA]
-        fp.MEAL_NOW["v"] = int(a.get("meal", 2))      # 京都・沖縄・北海道の街などは1泊朝食付きで調べる
-        best = {}
-        nos = [o["no"] for o in cand]
-        seen_any = set()
-        for d in dates:
-            got = fp.fetch_date(nos, d)
-            for no, v in got.items():
-                if v and (no not in best or v < best[no]): best[no] = v
-        rows = []
-        for o in allh:
-            reason = ""
-            if o["rc"] < MIN_RC: reason = f"口コミ{MIN_RC}件未満"
-            elif o["ra"] < MIN_RA: reason = f"評価{MIN_RA}未満"
-            elif not best.get(o["no"]): reason = ("2食付き" if fp.MEAL_NOW["v"] == 2 else "朝食付き") + "の空きが見つからない"
-            elif any(x in unicodedata.normalize("NFKC", o["name"]).lower() for x in EXCL): reason = "民宿・ペンション・ペット特化・グランピングなど"
-            o["price"] = best.get(o["no"], 0)
-            o["score"] = (o["ra"] * o["rc"] + 4.4 * 150) / (o["rc"] + 150)
-            o["reason"] = reason
-            rows.append(o)
-        ok = sorted([o for o in rows if not o["reason"]], key=lambda o: -o["score"])
-        pick = ok[:MAX_ADD]
-        for o in ok[MAX_ADD:]: o["reason"] = f"上位{MAX_ADD}軒の外"
-        with open(f"{DATA}/candidates/{key}.tsv", "w", encoding="utf-8") as fh:
-            fh.write("採用\t施設番号\t宿名\t口コミ件数\t評価\t食事\t風呂\t客室数\t2食の目安\t補正スコア\t理由\n")
-            for o in sorted(rows, key=lambda o: (o["reason"] != "", -o["score"])):
-                fh.write("\t".join(map(str, ["○" if o in pick else "", o["no"], o["name"], o["rc"], f'{o["ra"]:.2f}', f'{o.get("meal", 0) or 0:.2f}', f'{o.get("bath", 0) or 0:.2f}', o.get("rn", 0),
-                                             o["price"], f"{o['score']:.3f}", o["reason"]])) + "\n")
-        print(f"[{key}] 基準を満たす {len(ok)}軒 → 採用 {len(pick)}軒（すでに掲載 {sum(1 for o in pick if o['no'] in have)}軒）", flush=True)
-        if os.environ.get("YB_ADD") == "1":
-            for o in pick:
-                if o["no"] in have: continue
-                hotels.append(dict(no=o["no"], area=key, slug=f"h{o['no']}", name=clean_name(o["name"]), full=unicodedata.normalize("NFKC", o["name"]),
-                                   loc=a["name"], tier="mid" if o["price"] < 70000 else "high", avg=o["ra"], cnt=o["rc"],
-                                   added=TODAY.isoformat(), ref_price=o["price"]))
-                have.add(o["no"]); added_total += 1
+        try:
+            a = areas[key]
+            codes = resolve(a)
+            if not codes:
+                print(f"[{key}] 楽天のエリアが見つかりません（match={a.get('match')}）"); continue
+            a["codes"] = codes
+            allh = list_hotels(codes)
+            if a.get("addr"):   # 楽天のエリアが広いときは、住所で絞る（例：草津町）
+                allh = [o for o in allh if any(x in o.get("addr", "") for x in a["addr"])]
+            print(f"[{key}] 楽天に登録 {len(allh)}軒（エリアコード {codes}）", flush=True)
+            cand = [o for o in allh if o["rc"] >= MIN_RC and o["ra"] >= MIN_RA]
+            fp.MEAL_NOW["v"] = int(a.get("meal", 2))      # 京都・沖縄・北海道の街などは1泊朝食付きで調べる
+            best = {}
+            nos = [o["no"] for o in cand]
+            seen_any = set()
+            for d in dates:
+                got = fp.fetch_date(nos, d)
+                for no, v in got.items():
+                    if v and (no not in best or v < best[no]): best[no] = v
+            rows = []
+            for o in allh:
+                reason = ""
+                if o["rc"] < MIN_RC: reason = f"口コミ{MIN_RC}件未満"
+                elif o["ra"] < MIN_RA: reason = f"評価{MIN_RA}未満"
+                elif not best.get(o["no"]): reason = ("2食付き" if fp.MEAL_NOW["v"] == 2 else "朝食付き") + "の空きが見つからない"
+                elif any(x in unicodedata.normalize("NFKC", o["name"]).lower() for x in EXCL): reason = "民宿・ペンション・ペット特化・グランピングなど"
+                o["price"] = best.get(o["no"], 0)
+                o["score"] = (o["ra"] * o["rc"] + 4.4 * 150) / (o["rc"] + 150)
+                o["reason"] = reason
+                rows.append(o)
+            ok = sorted([o for o in rows if not o["reason"]], key=lambda o: -o["score"])
+            pick = ok[:MAX_ADD]
+            for o in ok[MAX_ADD:]: o["reason"] = f"上位{MAX_ADD}軒の外"
+            with open(f"{DATA}/candidates/{key}.tsv", "w", encoding="utf-8") as fh:
+                fh.write("採用\t施設番号\t宿名\t口コミ件数\t評価\t食事\t風呂\t客室数\t2食の目安\t補正スコア\t理由\n")
+                for o in sorted(rows, key=lambda o: (o["reason"] != "", -o["score"])):
+                    fh.write("\t".join(map(str, ["○" if o in pick else "", o["no"], o["name"], o["rc"], f'{o["ra"]:.2f}', f'{o.get("meal", 0) or 0:.2f}', f'{o.get("bath", 0) or 0:.2f}', o.get("rn", 0),
+                                                 o["price"], f"{o['score']:.3f}", o["reason"]])) + "\n")
+            print(f"::notice::[{key}] 楽天{len(allh)}軒・口コミ基準{len(cand)}軒・基準を満たす {len(ok)}軒 → 採用 {len(pick)}軒（すでに掲載 {sum(1 for o in pick if o['no'] in have)}軒）", flush=True)
+            print(f"[{key}] 基準を満たす {len(ok)}軒 → 採用 {len(pick)}軒（すでに掲載 {sum(1 for o in pick if o['no'] in have)}軒）", flush=True)
+            if os.environ.get("YB_ADD") == "1":
+                for o in pick:
+                    if o["no"] in have: continue
+                    hotels.append(dict(no=o["no"], area=key, slug=f"h{o['no']}", name=clean_name(o["name"]), full=unicodedata.normalize("NFKC", o["name"]),
+                                       loc=a["name"], tier="mid" if o["price"] < 70000 else "high", avg=o["ra"], cnt=o["rc"],
+                                       added=TODAY.isoformat(), ref_price=o["price"]))
+                    have.add(o["no"]); added_total += 1
+        except BaseException as e:   # 1つのエリアで失敗しても、ほかのエリアは続ける（理由はGitHubの画面に出す）
+            import traceback
+            tb = traceback.format_exc().strip().splitlines()
+            print(f"::warning::[{key}] 調べられませんでした：{type(e).__name__}: {str(e)[:200]} ／ {tb[-3] if len(tb) >= 3 else ''}", flush=True)
     json.dump(list(areas.values()), open(f"{DATA}/areas.json", "w"), ensure_ascii=False, indent=1)
     if os.environ.get("YB_ADD") == "1":
         json.dump(hotels, open(f"{DATA}/hotels.json", "w"), ensure_ascii=False, indent=1)
