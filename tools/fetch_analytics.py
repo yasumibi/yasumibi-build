@@ -13,6 +13,7 @@ GA4_PROPERTY = os.environ.get("GA4_PROPERTY_ID") or "560462271"   # GA4のプロ
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.environ.get("YB_DATA", os.path.join(ROOT, "data"))
 JST = dt.timezone(dt.timedelta(hours=9))
+CF_SITE_TAG = os.environ.get("CF_SITE_TAG") or "0a93914d9d3d4e50838308c6548442f3"   # Cloudflare Web Analytics のサイト（yasumibi-site.pages.dev +2。秘密ではない）
 EVENTS = ["rakuten_travel", "rakuten_card", "other_card", "favorite_add", "search"]
 
 # ---- 対象の週
@@ -101,7 +102,8 @@ def cloudflare():
     c = out["cloudflare"]
     t0 = dt.datetime.combine(start, dt.time(0), JST).astimezone(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     t1 = dt.datetime.combine(end + dt.timedelta(days=1), dt.time(0), JST).astimezone(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    F = '{ AND: [{ datetime_geq: $t0, datetime_lt: $t1 }] }'
+    # 1つのサイトだけ・ボットを除く（Cloudflareの画面の「ボットを除外する」と同じ）
+    F = '{ AND: [{ datetime_geq: $t0, datetime_lt: $t1, siteTag: "' + CF_SITE_TAG + '", bot: 0 }] }'
     grp = lambda dim, n: f'{dim}: rumPageloadEventsAdaptiveGroups(filter: {F}, limit: {n}, orderBy: [count_DESC]) {{ count sum {{ visits }} dimensions {{ m: {dim} }} }}'
     q = ('query($acc: String!, $t0: Time!, $t1: Time!) { viewer { accounts(filter: { accountTag: $acc }) { '
          f'total: rumPageloadEventsAdaptiveGroups(filter: {F}, limit: 1) {{ count sum {{ visits }} }} '
@@ -110,6 +112,7 @@ def cloudflare():
     a = cf_query(q, {"t0": t0, "t1": t1})
     tot = a["total"][0] if a["total"] else {"count": 0, "sum": {"visits": 0}}
     c["totals"] = {"pageviews": tot["count"], "visits": tot["sum"]["visits"]}
+    c["site_tag"] = CF_SITE_TAG
     c["sites"] = [{"siteTag": r["dimensions"]["m"], "host": r["dimensions"]["h"], "pageviews": r["count"]} for r in a["site"]]
     for k in ("requestPath", "refererHost", "deviceType"):
         c[k] = [{"value": r["dimensions"]["m"], "pageviews": r["count"], "visits": r["sum"]["visits"]} for r in a[k]]
