@@ -661,7 +661,7 @@ pet.sort(); body = ""
 if pet and other:
     mp, mo = statistics.median(v for v, _, _ in pet), statistics.median(v for v, _, _ in other)
     body += sec("ペットと泊まれる宿は、高い？", f"伊豆高原の★4.3以上の宿で、ペットと泊まれる宿{len(pet)}軒と、そうでない宿{len(other)}軒の神日の中央値。",
-                bars([("ペット可", mp, ""), ("ペット不可", mo, "")]),
+                bars([("ペット可", mp, ""), ("それ以外", mo, "")]),
                 ("ほとんど変わらない。" if abs(mp - mo) / max(mp, mo) < 0.05 else (f"ペット可の宿のほうが{mp - mo:,.0f}円高い。" if mp > mo else f"ペット可の宿のほうが{mo - mp:,.0f}円安い。")))
 its = [item(i + 1, no, yen(v), f"神日 {lab(d)}", f"★{H[no]['avg']:.2f}・ペット同宿可", d) for i, (v, no, d) in enumerate(pet)]
 body += sec("ペットと泊まれる宿・神日の安い順", "楽天トラベルの設備に「ペット同宿可」がある宿。", ol(its, 8))
