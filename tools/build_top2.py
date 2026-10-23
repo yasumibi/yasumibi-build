@@ -81,7 +81,14 @@ FEATURES = [("weekend/", "今週末に泊まれる神日。", "直前でも、�
             ("features/kinugawa-heijitsu/", "平日1泊、いちばん安い鬼怒川。", "鬼怒川・日〜木泊だけで", "kinugawa-cover.jpg"),
             ("features/gero-gohan/", "ごはんの★が高い宿の、神日。", "下呂・食事の評価が高い順", "gero-cover.jpg"),
             ("features/noboribetsu-size/", "大きな宿ほど、安い？", "登別・客室数と神日", "noboribetsu-cover.jpg"),
-            ("features/arima-renkyu/", "有馬、連休でも安い日。", "有馬・3連休以上の夜だけで", "arima-view.jpg")]
+            ("features/arima-renkyu/", "有馬、連休でも安い日。", "有馬・3連休以上の夜だけで", "arima-view.jpg"),
+            ("features/kyoto-koyo/", "紅葉の11月と、1月。", "京都・同じ宿でいくら違う？", "kyoto-yasaka.jpg"),
+            ("features/kyoto-asagohan/", "朝ごはんで選ぶ、京都の宿。", "京都・食事の評価が高い順", "kyoto-inari.jpg"),
+            ("features/kyoto-46/", "★4.6以上の京都に、1人1万円台で。", "京都・★4.6以上の宿だけ", "kyoto-pagoda-night.jpg"),
+            ("features/okinawa-month/", "沖縄、いちばん安い月は？", "沖縄・月ごとの神日", "ishigaki-bay.jpg"),
+            ("features/okinawa-ritou/", "離島と本島、神日で比べると。", "沖縄・宮古島・石垣と本島", "ishigaki-kabira.jpg"),
+            ("features/sapporo-yukimatsuri/", "雪まつりの週と、前後の週。", "札幌・2027年2月4日〜11日", "sapporo-snow.jpg"),
+            ("features/sapporo-1man/", "1人7千円以下で泊まれる、札幌の宿。", "札幌・★4.3以上・朝食付き", "sapporo-tower.jpg")]
 FEATURES = [f for f in FEATURES if f[3] is None or os.path.isdir(f"{OUT}/{f[0]}")]
 TILE = {"weekend/": '<span class="tile">直前でも<b>今週末</b></span>', "renkyu/2027/": '<span class="tile">2027年の<b>連休</b></span>', "otoku-days/": '<span class="tile">予約は<b>5と0の日</b></span>', "renkyu/": '<span class="tile t-ren">有給1日で<b>何連休？</b></span>', "ranking/": '<span class="tile t-rank">ずらすと<b>いくら浮く？</b></span>'}
 base = ""
