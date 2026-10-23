@@ -28,7 +28,6 @@ jobs:
         with: { python-version: "3.12" }
       - name: GA4 と Cloudflare から取り出す
         env:
-          GA4_PROPERTY_ID: "${{ vars.GA4_PROPERTY_ID }}"
           GA4_SA_KEY: ${{ secrets.GA4_SA_KEY }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}

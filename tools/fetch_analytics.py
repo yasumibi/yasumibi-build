@@ -9,7 +9,7 @@
 """
 import datetime as dt, json, os, sys, urllib.request, urllib.error
 
-GA4_PROPERTY = os.environ.get("GA4_PROPERTY_ID", "")   # プロパティID（数字。秘密ではない）
+GA4_PROPERTY = os.environ.get("GA4_PROPERTY_ID") or "560462271"   # GA4のプロパティID（数字。秘密ではない）
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.environ.get("YB_DATA", os.path.join(ROOT, "data"))
 JST = dt.timezone(dt.timedelta(hours=9))
