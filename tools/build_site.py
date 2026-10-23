@@ -4,7 +4,7 @@ import json, os, datetime, html
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # このリポジトリ
 OUT = os.environ.get("YB_OUT", os.path.join(os.path.dirname(ROOT), "yasumibi-site"))  # 公開用リポジトリ（隣に置く）
 import sys; sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import B_AREA_NAMES, is_b, plan_s, plan_l, COND_PLAN
+from common import B_AREA_NAMES, B_AREA_LABEL, is_b, plan_s, plan_l, COND_PLAN
 from common import site_header, tabbar, footer as cfooter, og_meta, load_area
 D = load_area()
 from common import month_prices
@@ -299,7 +299,7 @@ prose = {
 <p>載せるのは、次の3つをすべて満たす宿だけです。</p>
 <dl><dt>★4.3以上</dt><dd>楽天トラベルの口コミ評価が4.3以上。安くても満足できる宿だけ</dd>
 <dt>口コミ50件以上</dt><dd>身内の高評価だけで4.3、は除外。たくさんの人が泊まって、それでも高評価の宿</dd>
-<dt>1泊2食付き</dt><dd>同じ条件で比べるため。朝ごはんと夕ごはんまで込みの料金です{("。ただし" + "・".join(B_AREA_NAMES) + "は、2食付きの宿が少ないため1泊朝食付きで比べます（ほかのエリアと同じランキングには入れません）") if B_AREA_NAMES else ""}</dd></dl>
+<dt>1泊2食付き</dt><dd>同じ条件で比べるため。朝ごはんと夕ごはんまで込みの料金です{("。ただし" + B_AREA_LABEL + "は、2食付きの宿が少ないため1泊朝食付きで比べます（ほかのエリアと同じランキングには入れません）") if B_AREA_NAMES else ""}</dd></dl>
 <p>口コミ評価は毎週取り直しています。基準を下回った宿は、掲載から外します。広告の有無で、載せる宿や順位を変えることはありません。</p>
 <h2>料金の調べ方</h2>
 <dl><dt>データ元</dt><dd>楽天トラベル（楽天ウェブサービス）の公開データ</dd><dt>条件</dt><dd>{COND_PLAN}（2名合計・税込）</dd><dt>対象</dt><dd>上の基準を満たす宿（全国の温泉地・観光地）</dd><dt>更新</dt><dd>毎日自動で再取得。近い日付ほど頻繁に取り直し、各ページに調査日を記載。過ぎた日の料金は表示しません</dd></dl>

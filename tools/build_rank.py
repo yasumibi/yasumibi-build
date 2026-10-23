@@ -8,7 +8,7 @@
 """
 import os, sys, json, html, hashlib, datetime, calendar, statistics, urllib.parse
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import B_AREA_NAMES, is_b, plan_s, plan_l, COND_PLAN
+from common import B_AREA_NAMES, B_AREA_LABEL, is_b, plan_s, plan_l, COND_PLAN
 from common import (site_header, tabbar, footer, og_meta, OUT, DATA, AREAS, AREA_JA, HOTELS, MONTHS, KY, KM,
                     month_prices, ASOF_BY_AREA, ASOF, TODAY)
 
@@ -232,7 +232,7 @@ links = "".join(f'<li><a href="{base}areas/{a["key"]}/">{esc(a["name"])}<small>{
 body = ranking_block("gap", "全国・ずらすだけで、浮く。", "土曜の予定を神日にずらしたときの差額。", gap, F_GAP, base, True, 5, quip=Q_GAP)
 body += ranking_block("pen", "全国・土曜でも、ほぼ平日。", "土曜の値上がりが小さい宿。", pen, F_PEN, base, True, 5, quip=Q_PEN)
 body += ranking_block("cospa", "全国・★4.5以上なのに、この値段。", "口コミ★4.5以上の宿を、神日の料金が安い順に。いわゆるコスパの良い宿。", cospa(allnos), F_COSPA, base, True, 5, quip=Q_COSPA)
-body += f'<section class="rsec"><h2>エリア別のランキング</h2>' + (f'<p class="rlead">{"・".join(B_AREA_NAMES)}は1泊朝食付きの料金で比べているため、全国のランキングには入れず、エリア別だけで並べています。</p>' if B_AREA_NAMES else '') + f'<div class="reg"><ul>{links}</ul></div></section>'
+body += f'<section class="rsec"><h2>エリア別のランキング</h2>' + (f'<p class="rlead">{B_AREA_LABEL}は1泊朝食付きの料金で比べているため、全国のランキングには入れず、エリア別だけで並べています。</p>' if B_AREA_NAMES else '') + f'<div class="reg"><ul>{links}</ul></div></section>'
 write(f"{OUT}/ranking/index.html", page("ranking/", f"全国の宿ランキング｜ずらし甲斐・土曜ペナルティ・コスパ（{KY}年{KM}月）｜YASUMIBI",
       "全国の人気温泉地の宿の料金を全日調べて、日をずらすと安くなる宿、土曜でも高くならない宿をランキング。毎日更新。",
       f'<a href="{base}">ホーム</a><span aria-hidden="true">›</span><span>ランキング</span>', "日をずらすと、いくら浮く？",

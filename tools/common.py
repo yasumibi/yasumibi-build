@@ -68,6 +68,13 @@ AREA_JA = {a["key"]: a["name"] for a in AREAS}
 # 食事の条件：基本は1泊2食付き。京都・沖縄・北海道の街など、2食付きの宿が少ないエリアは1泊朝食付きで比べる（areas.json の meal: 1）
 MEAL = {a["key"]: int(a.get("meal", 2)) for a in AREAS}
 B_AREA_NAMES = [a["name"] for a in AREAS if int(a.get("meal", 2)) == 1]
+# 書き添える用の短い表記：地方の全エリアが朝食付きなら地方名（沖縄）、そうでなければエリア名（京都、札幌…）を「、」でつなぐ
+_bl = []
+for _r in dict.fromkeys(x["region"] for x in AREAS):
+    _in = [x for x in AREAS if x["region"] == _r]
+    _b = [x["name"] for x in _in if int(x.get("meal", 2)) == 1]
+    if _b: _bl += [_r] if len(_b) == len(_in) else _b
+B_AREA_LABEL = "、".join(_bl)
 
 
 def is_b(area):
@@ -86,7 +93,7 @@ def plan_l(area):
 
 
 # 注記に使う条件の文（朝食付きのエリアがあれば、どこかを書き添える）
-COND_PLAN = ("大人2名・1室・1泊2食付き" + (f"（{'・'.join(B_AREA_NAMES)}は1泊朝食付き）" if B_AREA_NAMES else "") + "の最安プラン")
+COND_PLAN = ("大人2名・1室・1泊2食付き" + (f"（{B_AREA_LABEL}は1泊朝食付き）" if B_AREA_NAMES else "") + "の最安プラン")
 
 
 def _add_months(y, m, k):
