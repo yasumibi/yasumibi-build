@@ -24,6 +24,10 @@ NL_NOTE = ("※カード現物のタッチ決済、iD、カードの差し込み
 # エポスカード（A8.net・2026/10/23提携）。テキスト素材ID 001。計測用の1x1画像も一緒に置く。
 EPOS_URL = "https://px.a8.net/svt/ejp?a8mat=4BEMLP+7L9ZG2+38L8+5YJRM"
 EPOS_PX = "https://www18.a8.net/0.gif?a8mat=4BEMLP+7L9ZG2+38L8+5YJRM"
+# 券面だけの素材（素材ID 040・745×1180）。加工せず縮めて表示する。キャンペーン文字が入っていないので古くならない。
+EPOS_FACE = ("https://px.a8.net/svt/ejp?a8mat=4BEMLP+7L9ZG2+38L8+66WOX",
+             "https://www25.a8.net/svt/bgt?aid=261022957459&wid=001&eno=01&mid=s00000015110001040000&mc=1",
+             "https://www19.a8.net/0.gif?a8mat=4BEMLP+7L9ZG2+38L8+66WOX")
 RK_IMG = ("https://hbb.afl.rakuten.co.jp/hsb/58adb89a.1783e5b6.58ad7ff2.3c792b49/?me_id=2101008&me_adv_id=373425&t=pict",
           "https://hb.afl.rakuten.co.jp/hsc/58adb89a.1783e5b6.58ad7ff2.3c792b49/?link_type=pict&ut=eyJwYWdlIjoic2hvcCIsInR5cGUiOiJwaWN0IiwiY29sIjoxLCJjYXQiOiIxIiwiYmFuIjozNzM0MjUsImFtcCI6ZmFsc2V9")
 
@@ -71,8 +75,10 @@ nl = f"""<article class="cd" id="nl">
 
 epos = f"""<article class="cd" id="epos">
   <p class="role">海外旅行の保険に</p>
-  <div class="cd-hd"><div><h2>エポスカード</h2>
-    <p class="cd-lead">空港までの電車・バス代などをこのカードで払うと、海外旅行の保険が付きます。</p></div></div>
+  <div class="cd-hd">
+    <a class="cd-face" href="{esc(EPOS_FACE[0])}" target="_blank" rel="nofollow sponsored noopener"><img src="{esc(EPOS_FACE[1])}" alt="エポスカードの券面" width="745" height="1180" loading="lazy" style="width:auto;height:96px;border-radius:6px"></a><img src="{esc(EPOS_FACE[2])}" width="1" height="1" alt="" style="position:absolute;width:1px;height:1px;border:0">
+    <div><h2>エポスカード</h2><p class="cd-lead">空港までの電車・バス代などをこのカードで払うと、海外旅行の保険が付きます。</p></div>
+  </div>
   {spec([("年会費", "入会金・年会費とも永年無料"), ("海外旅行傷害保険", "傷害死亡・後遺傷害 最高3,000万円（利用付帯）"),
          ("病気の治療費用", "270万円まで（1疾病の限度額）"), ("けがの治療費用", "200万円まで（1事故の限度額）")])}
   <p class="cnote">※保険は、旅行代金（募集型企画旅行の代金、または航空券・電車・バス・タクシーなど公共交通の料金）をエポスカードで支払った場合に適用されます。個人で手配した宿泊料金だけの支払いでは適用されません。補償の詳細は公式ページでご確認ください。</p>
