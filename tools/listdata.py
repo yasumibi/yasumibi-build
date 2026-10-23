@@ -14,14 +14,15 @@ FIRST = 10          # はじめに見せる軒数（残りは「もっと見る�
 
 # 掲載するエリアの写真（Wikimedia Commons・credits.json にクレジット）。明るい昼の写真にそろえる。
 AREA_IMG = {"hakone": "hakone-fuji-ship.jpg", "atami": "atami-panorama.jpg", "kusatsu": "kusatsu-yubatake.jpg",
-            "yufuin": "yufuin-kinrinko.jpg", "beppu": "beppu-chinoike.jpg",
-            "arima": "arima-view.jpg", "kinugawa": "kinugawa-cover.jpg", "gero": "gero-cover.jpg", "noboribetsu": "noboribetsu-cover.jpg",
-            "ito": "ito-matsukawa.jpg", "izukogen": "izukogen-jogasaki.jpg", "shuzenji": "shuzenji-temple.jpg",
-            "karuizawa": "karuizawa-forest.jpg", "kawaguchiko": "kawaguchiko-fuji.jpg", "kinosaki": "kinosaki-night.jpg",
-            "kyoto": "kyoto-inari.jpg", "sapporo": "sapporo-odori.jpg", "jozankei": "jozankei-bridge.jpg", "otaru": "otaru-canal.jpg",
-            "hakodate": "hakodate-night.jpg", "toya": "toya-lake.jpg", "akan": "akan-lake.jpg", "naha": "naha-shureimon.jpg",
-            "onna": "onna-cape.jpg", "chatan": "chatan-village.jpg", "ishigaki": "ishigaki-kabira.jpg",
-            "ikaho": "ikaho-steps.jpg", "nikko": "nikko-toshogu.jpg", "shima": "shima-river.jpg", "yugawara": "yugawara-river.jpg"}
+            "yufuin": "yufuin-kinrinko-sunny.jpg", "beppu": "beppu-chinoike.jpg",
+            "arima": "arima-view.jpg", "kinugawa": "kinugawa-cover.jpg", "gero": "gero-cover.jpg", "noboribetsu": "noboribetsu-jigokudani-day.jpg",
+            "ito": "ito-okawa-river-day.jpg", "izukogen": "izukogen-jogasaki.jpg", "shuzenji": "shuzenji-river-day.jpg",
+            "karuizawa": "karuizawa-kumoba-pond.jpg", "kawaguchiko": "kawaguchiko-fuji.jpg", "kinosaki": "kinosaki-willow-day.jpg",
+            "kyoto": "kyoto-kiyomizu-autumn.jpg", "sapporo": "sapporo-odori-blue.jpg", "jozankei": "jozankei-bridge.jpg", "otaru": "otaru-canal-sunny.jpg",
+            "hakodate": "hakodate-hachimanzaka-day.jpg", "toya": "toya-lake.jpg", "akan": "akan-lake.jpg", "naha": "naha-shureimon.jpg",
+            "onna": "onna-beach-sunny.jpg", "chatan": "chatan-village.jpg", "ishigaki": "ishigaki-kabira.jpg",
+            "ikaho": "ikaho-steps.jpg", "nikko": "nikko-toshogu.jpg", "shima": "shima-river.jpg", "yugawara": "yugawara-fujiki-sunny.jpg",
+            "miyako": "miyako-maehama-beach.jpg", "nasu": "nasu-mountain-autumn.jpg", "isawa": "isawa-peach-blossom.jpg"}
 AREA_IMG = {k: v for k, v in AREA_IMG.items() if os.path.exists(f"{OUT}/assets/img/{v}")}
 
 
@@ -68,6 +69,20 @@ def area_min(key):
 AREA_MIN = {a["key"]: area_min(a["key"]) for a in LIVE}
 
 
+try: CREDITS = json.load(open(f"{OUT}/assets/img/credits.json"))
+except Exception: CREDITS = {}
+
+
+def credits_html(keys):
+    """タイルに使った写真のクレジット（Wikimedia Commons のライセンスの表示）。小さくたたんでおく。"""
+    AJ = {a["key"]: a["name"] for a in LIVE}
+    it = []
+    for k in keys:
+        c = CREDITS.get(AREA_IMG.get(k, ""))
+        if c: it.append(f'{esc(AJ[k])}：<a href="{esc(c["source"])}" target="_blank" rel="noopener">{esc(c["artist"] or "Wikimedia Commons")}</a>（{esc(c["license"])}）')
+    return f'<details class="at-cr"><summary>写真のクレジット</summary><p>{"・".join(it)}　出典：Wikimedia Commons</p></details>' if it else ""
+
+
 def meal_ja(key): return "朝食付き" if is_b(key) else "2食付き"
 
 
@@ -96,13 +111,13 @@ def tiles_by_region(base, open_region=None):
                    for i, r in enumerate(REGIONS))
     grids = "".join(f'<ul class="at-grid" data-reg="{i}"{"" if r == open_region else " hidden"}>'
                     + "".join(tile(a, base) for a in LIVE if a["region"] == r) + "</ul>" for i, r in enumerate(REGIONS))
-    return f'<div class="at-tabs" role="tablist" aria-label="地方">{tabs}</div>{grids}'
+    return f'<div class="at-tabs" role="tablist" aria-label="地方">{tabs}</div>{grids}{credits_html([a["key"] for a in LIVE])}'
 
 
 def tiles_row(base, first=None, skip=None):
     """横スクロールの1列。first（同じ地方）を先に、そのあと残りのエリア。"""
     order = [a for a in LIVE if a["key"] != skip and a["region"] == first] + [a for a in LIVE if a["key"] != skip and a["region"] != first]
-    return f'<ul class="at-row">{"".join(tile(a, base) for a in order)}</ul>'
+    return f'<ul class="at-row">{"".join(tile(a, base) for a in order)}</ul>{credits_html([a["key"] for a in order])}'
 
 
 # ---- はじめに見える一覧（list.js の row() と同じ中身）
