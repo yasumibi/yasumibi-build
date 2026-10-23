@@ -13,6 +13,7 @@ AFF = "589faade.b97f81b7.589faadf.010fa421"
 # slug/name map shared with build_hotel
 from common import SLUG
 from common import CARD_CAMP, card_extra
+import listdata as L
 
 
 def logo_html(base, href=None):
@@ -130,7 +131,7 @@ def _pcard(h, i, m, v, days, gap):
                else f'<div class="pt">楽天カードなら +{card_extra(v, datetime.date(m["y"], m["m"], days[0])):,}円分</div>'))
     return (f'<li class="rc"><a class="ph" href="../hotels/{h["slug"]}/"><img src="{h["thumb"]}" alt="" loading="lazy" width="300" height="200"></a>'
             f'<div class="inf"><span class="rk">{i + 1}</span><a class="nm" href="../hotels/{h["slug"]}/">{h["name"]}</a>'
-            f'<span class="meta">{DATA["areas"][h["area"]]}・{h["loc"]}｜★{h["avg"]:.2f}</span>{body}</div>'
+            f'<span class="meta">{DATA["areas"][h["area"]]}・{h["loc"]}｜★{h["avg"]:.2f}<i class="mb">{"朝食付き" if is_b(h["area"]) else "2食付き"}</i></span>{body}</div>'
             f'<div class="acts"><a class="cal" href="../hotels/{h["slug"]}/">神日カレンダー<span aria-hidden="true">›</span></a>'
             f'<a class="bk" href="{_plink(h["no"], m, days[0])}" target="_blank" rel="noopener sponsored">楽天トラベルで見る</a></div></li>')
 def _picks(mi):
@@ -211,13 +212,6 @@ page = f"""<!doctype html>
     <div class="fs-wrap"><button type="button" class="fs-ar prev" aria-label="前へ" hidden>‹</button><ul class="fs-row" id="fs-row">{strip_html}</ul><button type="button" class="fs-ar next" aria-label="次へ">›</button></div>
   </section>
 
-  <section class="res" aria-labelledby="rh" id="results" hidden>
-    <div class="rhd"><h2 id="rh">今月の神日</h2><span><span class="prt">PR</span><span id="rc"></span></span></div>
-    <p class="rnote" id="rnote"></p>
-    <ol class="rlist" id="rlist"></ol>
-    <button type="button" class="rmorebtn" id="rmore" hidden>もっと見る</button>
-  </section>
-
   <section class="pick" aria-labelledby="pk1">
     <div class="rhd"><h2 id="pk1"><span id="pk-m" class="pkm">{pk_m}</span>いちばん安い<span class="kw">神日</span></h2><span class="pkr"><span class="prt">PR</span><b class="top5">TOP5</b></span></div>
     <ol class="rlist" id="p-cheap">{pk_cheap}</ol>
@@ -231,8 +225,8 @@ page = f"""<!doctype html>
   <p class="cond">※★4.3以上＝楽天トラベルの口コミ評価4.3以上（口コミ50件以上）の宿。{COND_PLAN}（2名合計・税込）。{ASOF}時点の楽天トラベルの料金。予約前に最新の料金をご確認ください。宿の写真：楽天トラベル</p>
 
   <section class="areas" id="areas" aria-labelledby="ah">
-    <div class="rhd"><h2 id="ah">エリアから探す</h2><span>エリアは順次ふやしていきます</span></div>
-    {area_blocks}
+    <div class="rhd"><h2 id="ah">エリアから探す</h2></div>
+    {L.tiles_by_region(base)}
   </section>
 
 </main>

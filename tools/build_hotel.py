@@ -190,7 +190,7 @@ for meta in AREA["hotels"]:
     pts0 = mn0 * 2 // 100
     diff0 = pts0 - mn0 // 100
     feat_slug = FEAT.get((meta["area"], meta["tier"]))
-    crumb_area = f'{base}features/{feat_slug}/' if feat_slug else f'{base}?area={meta["area"]}#search'
+    crumb_area = f'{base}features/{feat_slug}/' if feat_slug else f'{base}areas/{meta["area"]}/'
     _mine = jan_min(meta["p"])   # 同じエリアで、1月の神日が近い価格の宿を6軒
     peers = sorted([h for h in AREA["hotels"] if h["area"] == meta["area"] and h["no"] != meta["no"] and str(h["no"]) in INFO and jan_min(h["p"])],
                    key=lambda h: abs(jan_min(h["p"]) - _mine))[:6]

@@ -68,7 +68,7 @@ def item(i, s, big, small, base, show_area=False):
   <span class="rk">{i}</span>
   <img class="rt" src="{esc(info.get('thumb',''))}" alt="" loading="lazy" width="96" height="64">
   <div class="rb">
-    {name}<span class="rm">{area}{esc(h.get('loc',''))}｜口コミ {h.get('avg',0):.2f}{'<i class="mb">朝食付き</i>' if is_b(h['area']) else ''}</span>
+    {name}<span class="rm">{area}{esc(h.get('loc',''))}｜口コミ {h.get('avg',0):.2f}<i class="mb">{'朝食付き' if is_b(h['area']) else '2食付き'}</i></span>
     <div class="rv"><b>{big}</b><span>{small}</span></div>
     <div class="rk2">神日 {kd} <b>{yen(s['mn'])}</b></div>
   </div>
@@ -143,15 +143,8 @@ def when_block(nos):
 </section>"""
 
 
-AREA_IMG = {"hakone": "hakone-fuji-ship.jpg", "atami": "atami-panorama.jpg", "kusatsu": "kusatsu-yubatake.jpg",
-            "yufuin": "yufuin-kinrinko.jpg", "beppu": "beppu-chinoike.jpg",
-            "arima": "arima-view.jpg", "kinugawa": "kinugawa-cover.jpg", "gero": "gero-cover.jpg", "noboribetsu": "noboribetsu-cover.jpg",
-            "ito": "ito-matsukawa.jpg", "izukogen": "izukogen-jogasaki.jpg", "shuzenji": "shuzenji-temple.jpg",
-            "karuizawa": "karuizawa-forest.jpg", "kawaguchiko": "kawaguchiko-fuji.jpg", "kinosaki": "kinosaki-night.jpg",
-            "kyoto": "kyoto-yasaka.jpg", "sapporo": "sapporo-odori.jpg", "jozankei": "jozankei-bridge.jpg", "otaru": "otaru-canal.jpg",
-            "hakodate": "hakodate-night.jpg", "toya": "toya-lake.jpg", "akan": "akan-lake.jpg", "naha": "naha-shureimon.jpg",
-            "onna": "onna-cape.jpg", "chatan": "chatan-village.jpg", "ishigaki": "ishigaki-kabira.jpg",
-            "ikaho": "ikaho-steps.jpg", "nikko": "nikko-toshogu.jpg", "shima": "shima-river.jpg", "yugawara": "yugawara-river.jpg"}
+import listdata as L
+AREA_IMG = L.AREA_IMG   # エリアの写真は listdata.py に1か所でまとめる
 try: CREDITS = json.load(open(f"{OUT}/assets/img/credits.json"))
 except Exception: CREDITS = {}
 
@@ -164,7 +157,7 @@ def cover(key, base):
     return f'<figure class="cv"><img src="{base}assets/img/{img}" alt="" width="960" height="540">{cr}</figure>'
 
 
-def page(path, title, desc, crumb, h1, lead, body, base, cv=""):
+def page(path, title, desc, crumb, h1, lead, body, base, cv="", js="", cur="features"):
     v = ver("site.css"), ver("hotel.css"), ver("top.css", "otoku.css", "rank.css")
     return f"""<!doctype html>
 <html lang="ja">
@@ -187,14 +180,14 @@ def page(path, title, desc, crumb, h1, lead, body, base, cv=""):
 <link rel="apple-touch-icon" href="{base}assets/img/apple-touch-icon.png">\n<link rel="manifest" href="{base}manifest.webmanifest">\n<meta name="theme-color" content="#ffffff">\n<meta name="apple-mobile-web-app-title" content="YASUMIBI">
 </head>
 <body class="app top2 otk">
-{site_header(base, "features")}
+{site_header(base, cur)}
 <main class="gin ok rkp">
   <nav class="crumb" aria-label="現在地">{crumb}</nav>
   {cv}<header class="ok-hd"><h1>{h1}</h1><p>{lead}</p></header>
   {body}
   <p class="fine">※{COND_PLAN}（2名合計・税込）。{KY}年{KM}月泊の料金で計算（年末年始・過ぎた日は除く）。料金は楽天トラベルの{esc(ASOF)}時点のもので、毎日更新しています。宿の写真：楽天トラベル</p>
 </main>
-""" + footer(base) + tabbar(base, "") + "</body></html>\n"
+""" + footer(base) + tabbar(base, "") + js + "</body></html>\n"
 
 
 def write(path, s):
@@ -205,25 +198,29 @@ def write(path, s):
 made = []
 by_area = {}
 for h in H.values(): by_area.setdefault(h["area"], []).append(h["no"])
+LJS = lambda base: f'<script src="{base}assets/list.js?v={ver("list.js")}" defer></script>\n'
 for a in AREAS:
     nos = by_area.get(a["key"])
-    if not nos or len(nos) < 5: continue
-    gap, pen, near = rank_sets(nos)
-    if not gap and not pen: continue
+    if not nos or a["key"] not in L.AREA_MIN: continue      # 宿が1軒もないエリアは作らない
     base = "../../"
     nm = a["name"]
-    body = when_block(nos)
-    body += ranking_block("gap", "ずらすだけで、浮く。", "土曜の予定を神日にずらしたときの差額。", gap, F_GAP, base, quip=Q_GAP)
-    body += ranking_block("pen", "土曜でも、ほぼ平日。", "土日しか休めない人の味方。土曜の値上がりが小さい宿。", pen, F_PEN, base, quip=Q_PEN)
-    body += ranking_block("cospa", "★4.5以上なのに、この値段。", "口コミ★4.5以上の宿を、神日の料金が安い順に。いわゆるコスパの良い宿。", cospa(nos), F_COSPA, base, quip=Q_COSPA)
-    body += ranking_block("near", "いつ行っても、だいたい安い。", "神日に近い料金の日が多い宿。日程を選ばない。", near, F_NEAR, base, quip=Q_NEAR)
-    body += f'<a class="c-apply" href="{base}?area={a["key"]}#search">{esc(nm)}の宿を、日付・予算で探す</a>'
-    title = f"{nm}の宿ランキング｜ずらし甲斐・土曜ペナルティ・神日の多さ（{KY}年{KM}月）｜YASUMIBI"
-    desc = f"{nm}の人気宿{len(nos)}軒の料金を全日調べて、日をずらすと安くなる宿、土曜でも高くならない宿をランキング。毎日更新。"
-    crumb = f'<a href="{base}">ホーム</a><span aria-hidden="true">›</span><a href="{base}ranking/">ランキング</a><span aria-hidden="true">›</span><span>{esc(nm)}</span>'
+    # いちばん上に、このエリアの宿の一覧（絞り込み・並び替えつき）。その下にランキング（宿が5軒以上のとき）
+    body = L.list_section(a["key"], base)
+    gap = pen = near = []
+    if len(nos) >= 5:
+        gap, pen, near = rank_sets(nos)
+        body += when_block(nos)
+        body += ranking_block("gap", "ずらすだけで、浮く。", "土曜の予定を神日にずらしたときの差額。", gap, F_GAP, base, quip=Q_GAP)
+        body += ranking_block("pen", "土曜でも、ほぼ平日。", "土日しか休めない人の味方。土曜の値上がりが小さい宿。", pen, F_PEN, base, quip=Q_PEN)
+        body += ranking_block("cospa", "★4.5以上なのに、この値段。", "口コミ★4.5以上の宿を、神日の料金が安い順に。いわゆるコスパの良い宿。", cospa(nos), F_COSPA, base, quip=Q_COSPA)
+        body += ranking_block("near", "いつ行っても、だいたい安い。", "神日に近い料金の日が多い宿。日程を選ばない。", near, F_NEAR, base, quip=Q_NEAR)
+    body += f'<section class="rsec ar-more" aria-labelledby="arm-h"><h2 id="arm-h">ほかのエリアも見る</h2>{L.tiles_row(base, first=a["region"], skip=a["key"])}</section>'
+    title = f"{nm}の宿・いちばん安い日（神日）｜★4.3以上の{len(nos)}軒・毎日更新｜YASUMIBI"
+    desc = f"{nm}の口コミ★4.3以上の宿{len(nos)}軒の料金を全日調べて、宿ごとにいちばん安く泊まれる日（神日）を表示。月・曜日・予算・こだわりで絞り込めます。毎日更新。"
+    crumb = f'<a href="{base}">ホーム</a><span aria-hidden="true">›</span><a href="{base}#areas">エリア</a><span aria-hidden="true">›</span><span>{esc(nm)}</span>'
     write(f"{OUT}/areas/{a['key']}/index.html", page(f"areas/{a['key']}/", title, desc, crumb, f"{esc(nm)}、どの日に泊まる？",
-                                                    f"{esc(nm)}の人気宿{len(nos)}軒、{KM}月の料金で比べました。毎日更新。", body, base, cover(a["key"], base)))
-    made.append((a, len(nos), gap[:1]))
+                                                    f"{esc(nm)}の★4.3以上の宿{len(nos)}軒。宿ごとに、いちばん安い日（神日）がわかります。毎日更新。", body, base, cover(a["key"], base), LJS(base), "areas"))
+    if gap or pen: made.append((a, len(nos), gap[:1]))
 
 # 全国版
 allnos = [no for no in H if not is_b(H[no]["area"])]   # 朝食付きで比べるエリアは、全国のランキングに混ぜない
