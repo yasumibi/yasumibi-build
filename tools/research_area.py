@@ -36,7 +36,9 @@ def resolve(area):
     """areas.json の middle/small/detail が無ければ、名前（match）から楽天のエリアコードを探す。"""
     if area.get("small"): return [(area["middle"], area["small"], area.get("detail"))]
     if area.get("codes"): return [tuple(c) for c in area["codes"]]
-    r = api("GetAreaClass/20140210", {})
+    r = api("GetAreaClass/20131024", {})
+    if not r or "areaClasses" not in r:
+        print(f"::warning::楽天のエリア一覧が取れませんでした（{str(r)[:150]}）", flush=True)
     out = []
     def walk(o, mid=None, sm=None):
         if isinstance(o, list):
@@ -125,12 +127,13 @@ def main():
             a = areas[key]
             codes = resolve(a)
             if not codes:
-                print(f"[{key}] 楽天のエリアが見つかりません（match={a.get('match')}）"); continue
+                print(f"::warning::[{key}] 楽天のエリアが見つかりません（match={a.get('match')}）"); continue
             a["codes"] = codes
             allh = list_hotels(codes)
             if a.get("addr"):   # 楽天のエリアが広いときは、住所で絞る（例：草津町）
                 allh = [o for o in allh if any(x in o.get("addr", "") for x in a["addr"])]
             print(f"[{key}] 楽天に登録 {len(allh)}軒（エリアコード {codes}）", flush=True)
+            print(f"::notice::[{key}] エリアコード {codes}", flush=True)
             cand = [o for o in allh if o["rc"] >= MIN_RC and o["ra"] >= MIN_RA]
             fp.MEAL_NOW["v"] = int(a.get("meal", 2))      # 京都・沖縄・北海道の街などは1泊朝食付きで調べる
             best = {}

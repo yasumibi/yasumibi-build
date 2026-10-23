@@ -46,8 +46,8 @@ CNT = {}
 for h in hotels: CNT[h["area"]] = CNT.get(h["area"], 0) + 1
 LIVE = [a for a in AREAS if CNT.get(a["key"])]       # 宿が1軒以上あるエリアだけ出す
 _big = [a["name"] for a in sorted(LIVE, key=lambda a: -CNT[a["key"]])][:5]
-TOP_T = "YASUMIBI｜温泉宿がいちばん安い日（神日）がわかる｜神日カレンダー"
-TOP_D = (f"{'・'.join(_big)}など{len(LIVE)}エリア、口コミ★4.3以上の温泉宿{sum(CNT[a['key']] for a in LIVE)}軒の料金を毎日全日調べて、"
+TOP_T = "YASUMIBI｜★4.3以上の宿が、いちばん安い日（神日）がわかる｜神日カレンダー"
+TOP_D = (f"{'・'.join(_big)}など{len(LIVE)}エリア、口コミ★4.3以上の宿{sum(CNT[a['key']] for a in LIVE)}軒（温泉宿は2食付き、街の宿は朝食付き）の料金を毎日全日調べて、"
          "いちばん安く泊まれる日（神日）を表示。安い日に、休みを合わせる。")
 DATA = dict(months=months, asof=ASOF, aff=AFF, hotels=hotels, areas={a["key"]: a["name"] for a in LIVE},
             camp=dict(bookEnd=CARD_CAMP["book_end"], outLast=CARD_CAMP["out_last"]))
@@ -56,7 +56,11 @@ REGIONS = []
 for a in LIVE:
     if a["region"] not in REGIONS: REGIONS.append(a["region"])
 area_opts = '<option value="all">すべて</option>' + "".join(
-    f'<optgroup label="{esc(r)}">' + "".join(f'<option value="{a["key"]}">{esc(a["name"])}</option>' for a in LIVE if a["region"] == r) + "</optgroup>" for r in REGIONS)
+    f'<optgroup label="{esc(r)}">' + "".join(f'<option value="{a["key"]}"{' data-b="1"' if is_b(a["key"]) else ''}>{esc(a["name"])}</option>' for a in LIVE if a["region"] == r) + "</optgroup>" for r in REGIONS)
+N2 = sum(CNT[a["key"]] for a in LIVE if not is_b(a["key"])); NB = sum(CNT[a["key"]] for a in LIVE if is_b(a["key"]))
+lane_html = (f'<div class="ln" role="tablist" aria-label="比べる宿">'
+             f'<button type="button" role="tab" id="ln-2" aria-selected="true">2食付きの宿<small>温泉・旅館 {N2}軒</small></button>'
+             f'<button type="button" role="tab" id="ln-b" aria-selected="false">朝食付きの宿<small>街・リゾート {NB}軒</small></button></div>') if NB else ""
 area_blocks = '<div class="regs">' + "".join(
     f'<div class="reg"><h3>{esc(r)}</h3><ul>' + "".join(f'<li><a href="#search" data-go-area="{a["key"]}">{esc(a["name"])}<small>{CNT[a["key"]]}軒</small></a></li>' for a in LIVE if a["region"] == r) + "</ul></div>" for r in REGIONS) + "</div>"
 _dd = datetime.date(*DEFAULT_YM, 16)
@@ -181,6 +185,7 @@ page = f"""<!doctype html>
     <div class="shift"><div class="o"><small>これまで</small>休みの日に、安い宿を探す。</div><h1 class="n"><small>これから</small><b>安い日に、休みを合わせる。</b></h1></div>
     <p class="kexp"><span class="star"><i aria-hidden="true">★</i>口コミ4.3以上の宿だけ</span><span class="kd"><b>神日</b>＝その月いちばん安い日</span></p>
     <div class="sbox">
+      {lane_html}
       <div class="stabs" role="tablist" aria-label="探し方">
         <button type="button" role="tab" id="t-free" aria-selected="true" aria-controls="p-search">日付はまだ決めていない</button>
         <button type="button" role="tab" id="t-date" aria-selected="false" aria-controls="p-search">日付が決まっている</button>
@@ -213,14 +218,14 @@ page = f"""<!doctype html>
   </section>
 
   <section class="pick" aria-labelledby="pk1">
-    <div class="rhd"><h2 id="pk1"><span id="pk-m" class="pkm">{pk_m}</span>いちばん安い<span class="kw">神日</span></h2><span class="pkr"><span class="prt">PR</span><b class="top5">TOP5</b></span></div>
+    <div class="rhd"><h2 id="pk1"><span class="pkl" id="pk-lane">2食付きの宿</span><span id="pk-m" class="pkm">{pk_m}</span>いちばん安い<span class="kw">神日</span></h2><span class="pkr"><span class="prt">PR</span><b class="top5">TOP5</b></span></div>
     <ol class="rlist" id="p-cheap">{pk_cheap}</ol>
   </section>
   <section class="pick" aria-labelledby="pk2">
     <div class="rhd"><h2 id="pk2">ずらすと、超お得に泊まれる宿</h2><span class="pkr"><span class="prt">PR</span><b class="top5">TOP5</b></span></div>
     <p class="rnote">土曜泊の平均と、その月の神日の差。</p>
     <ol class="rlist" id="p-gap">{pk_gap}</ol>
-    <a class="pmore" href="{base}ranking/">ランキングをもっと見る ›</a>
+    <a class="pmore" id="pk-rank" href="{base}ranking/">ランキングをもっと見る ›</a>
   </section>
   <p class="cond">※★4.3以上＝楽天トラベルの口コミ評価4.3以上（口コミ50件以上）の宿。{COND_PLAN}（2名合計・税込）。{ASOF}時点の楽天トラベルの料金。予約前に最新の料金をご確認ください。宿の写真：楽天トラベル</p>
 

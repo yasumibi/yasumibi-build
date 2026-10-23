@@ -137,7 +137,7 @@ for t in LIVE:
 <p class="tg-rule"><b>このタグの決め方</b>{esc(t['rule'])}</p>
 {FINE}"""
     title = f"{t['name']}の宿の神日｜いちばん安い日がわかる｜YASUMIBI"
-    desc = f"{t['name']}の、口コミ★4.3以上の温泉宿{len(rows)}軒。宿ごとにいちばん安く泊まれる日（神日）と料金を、楽天トラベルの料金から毎日計算。"
+    desc = f"{t['name']}の、口コミ★4.3以上の宿{len(rows)}軒。宿ごとにいちばん安く泊まれる日（神日）と料金を、楽天トラベルの料金から毎日計算。"
     write(f"tags/{t['slug']}/", page(f"tags/{t['slug']}/", title, desc, [(t["name"], None)], body, base))
     made.append(f"tags/{t['slug']}/")
     # エリア別

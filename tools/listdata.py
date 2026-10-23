@@ -22,7 +22,8 @@ AREA_IMG = {"hakone": "hakone-fuji-ship.jpg", "atami": "atami-panorama.jpg", "ku
             "hakodate": "hakodate-hachimanzaka-day.jpg", "toya": "toya-lake.jpg", "akan": "akan-lake.jpg", "naha": "naha-shureimon.jpg",
             "onna": "onna-beach-sunny.jpg", "chatan": "chatan-village.jpg", "ishigaki": "ishigaki-kabira.jpg",
             "ikaho": "ikaho-steps.jpg", "nikko": "nikko-toshogu.jpg", "shima": "shima-river.jpg", "yugawara": "yugawara-fujiki-sunny.jpg",
-            "miyako": "miyako-maehama-beach.jpg", "nasu": "nasu-mountain-autumn.jpg", "isawa": "isawa-peach-blossom.jpg"}
+            "miyako": "miyako-maehama-beach.jpg", "nasu": "nasu-mountain-autumn.jpg", "isawa": "isawa-peach-blossom.jpg",
+            "shirahama": "shirahama-beach.jpg", "okuhida": "okuhida-shinhotaka.jpg"}
 AREA_IMG = {k: v for k, v in AREA_IMG.items() if os.path.exists(f"{OUT}/assets/img/{v}")}
 
 
