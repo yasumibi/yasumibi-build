@@ -224,7 +224,8 @@ page = f"""<!doctype html>
     <ol class="rlist" id="p-cheap">{pk_cheap}</ol>
   </section>
   <section class="fstrip" aria-labelledby="fsh">
-    <div class="fs-hd"><h2 id="fsh">特集</h2><a href="{base}features/">すべて見る ›</a></div>
+    <div class="fs-hd rhd"><h2 id="fsh"><span class="fs-eb">特集</span>テーマから探す</h2><a href="{base}features/">すべて見る ›</a></div>
+    <p class="fs-lead">連休・週末・予算など、テーマごとに神日をまとめました。</p>
     <div class="fs-wrap"><button type="button" class="fs-ar prev" aria-label="前へ" hidden>‹</button><ul class="fs-row" id="fs-row">{strip_html}</ul><button type="button" class="fs-ar next" aria-label="次へ">›</button></div>
   </section>
 
