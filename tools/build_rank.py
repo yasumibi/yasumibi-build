@@ -143,7 +143,10 @@ def when_block(nos):
 
 
 AREA_IMG = {"hakone": "hakone-fuji-ship.jpg", "atami": "atami-panorama.jpg", "kusatsu": "kusatsu-yubatake.jpg",
-            "yufuin": "yufuin-kinrinko.jpg", "beppu": "beppu-chinoike.jpg"}
+            "yufuin": "yufuin-kinrinko.jpg", "beppu": "beppu-chinoike.jpg",
+            "arima": "arima-view.jpg", "kinugawa": "kinugawa-cover.jpg", "gero": "gero-cover.jpg", "noboribetsu": "noboribetsu-cover.jpg",
+            "ito": "ito-matsukawa.jpg", "izukogen": "izukogen-jogasaki.jpg", "shuzenji": "shuzenji-temple.jpg",
+            "karuizawa": "karuizawa-forest.jpg", "kawaguchiko": "kawaguchiko-fuji.jpg", "kinosaki": "kinosaki-night.jpg"}
 try: CREDITS = json.load(open(f"{OUT}/assets/img/credits.json"))
 except Exception: CREDITS = {}
 
