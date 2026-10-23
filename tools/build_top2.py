@@ -45,8 +45,8 @@ CNT = {}
 for h in hotels: CNT[h["area"]] = CNT.get(h["area"], 0) + 1
 LIVE = [a for a in AREAS if CNT.get(a["key"])]       # 宿が1軒以上あるエリアだけ出す
 _big = [a["name"] for a in sorted(LIVE, key=lambda a: -CNT[a["key"]])][:5]
-TOP_T = "YASUMIBI｜温泉宿がいちばん安い日（神日）がわかる｜神日カレンダー"
-TOP_D = (f"{'・'.join(_big)}など{len(LIVE)}エリア、口コミ★4.3以上の温泉宿{sum(CNT[a['key']] for a in LIVE)}軒の料金を毎日全日調べて、"
+TOP_T = "YASUMIBI｜★4.3以上の宿が、いちばん安い日（神日）がわかる｜神日カレンダー"
+TOP_D = (f"{'・'.join(_big)}など{len(LIVE)}エリア、口コミ★4.3以上の宿{sum(CNT[a['key']] for a in LIVE)}軒（温泉宿は2食付き、街の宿は朝食付き）の料金を毎日全日調べて、"
          "いちばん安く泊まれる日（神日）を表示。安い日に、休みを合わせる。")
 DATA = dict(months=months, asof=ASOF, aff=AFF, hotels=hotels, areas={a["key"]: a["name"] for a in LIVE},
             camp=dict(bookEnd=CARD_CAMP["book_end"], outLast=CARD_CAMP["out_last"]))

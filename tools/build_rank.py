@@ -225,17 +225,29 @@ for a in AREAS:
                                                     f"{esc(nm)}の人気宿{len(nos)}軒、{KM}月の料金で比べました。毎日更新。", body, base, cover(a["key"], base)))
     made.append((a, len(nos), gap[:1]))
 
-# 全国版
-allnos = [no for no in H if not is_b(H[no]["area"])]   # 朝食付きで比べるエリアは、全国のランキングに混ぜない
-gap, pen, near = rank_sets(allnos)
-base = "../"
-links = "".join(f'<li><a href="{base}areas/{a["key"]}/">{esc(a["name"])}<small>{n}軒</small></a></li>' for a, n, _ in made)
-body = ranking_block("gap", "全国・ずらすだけで、浮く。", "土曜の予定を神日にずらしたときの差額。", gap, F_GAP, base, True, 5, quip=Q_GAP)
-body += ranking_block("pen", "全国・土曜でも、ほぼ平日。", "土曜の値上がりが小さい宿。", pen, F_PEN, base, True, 5, quip=Q_PEN)
-body += ranking_block("cospa", "全国・★4.5以上なのに、この値段。", "口コミ★4.5以上の宿を、神日の料金が安い順に。いわゆるコスパの良い宿。", cospa(allnos), F_COSPA, base, True, 5, quip=Q_COSPA)
-body += f'<section class="rsec"><h2>エリア別のランキング</h2>' + (f'<p class="rlead">{B_AREA_LABEL}は1泊朝食付きの料金で比べているため、全国のランキングには入れず、エリア別だけで並べています。</p>' if B_AREA_NAMES else '') + f'<div class="reg"><ul>{links}</ul></div></section>'
-write(f"{OUT}/ranking/index.html", page("ranking/", f"全国の宿ランキング｜ずらし甲斐・土曜ペナルティ・コスパ（{KY}年{KM}月）｜YASUMIBI",
-      "全国の人気温泉地の宿の料金を全日調べて、日をずらすと安くなる宿、土曜でも高くならない宿をランキング。毎日更新。",
-      f'<a href="{base}">ホーム</a><span aria-hidden="true">›</span><span>ランキング</span>', "日をずらすと、いくら浮く？",
-      f"全国{len(made)}エリア・{len(allnos)}軒、{KM}月の料金で比べました。毎日更新。", body, base))
+# 全国版：2食付きの宿と朝食付きの宿で、ランキングを分ける（違う条件の宿は同じ並びに入れない）
+LANES = [dict(b=False, path="ranking/", base="../", name="2食付きの宿", other=("ranking/asa/", "朝食付きの宿")),
+         dict(b=True, path="ranking/asa/", base="../../", name="朝食付きの宿", other=("ranking/", "2食付きの宿"))]
+for L in LANES:
+    allnos = [no for no in H if is_b(H[no]["area"]) == L["b"]]
+    if not allnos: continue
+    gap, pen, near = rank_sets(allnos)
+    base = L["base"]
+    mine = [(a, n, g) for a, n, g in made if is_b(a["key"]) == L["b"]]
+    links = "".join(f'<li><a href="{base}areas/{a["key"]}/">{esc(a["name"])}<small>{n}軒</small></a></li>' for a, n, _ in mine)
+    cond = "1泊朝食付き" if L["b"] else "1泊2食付き"
+    sw = (f'<p class="gd-next">このページは<b>{cond}</b>の宿どうしで比べています。'
+          f'<a href="{base}{L["other"][0]}">{L["other"][1]}のランキングを見る →</a></p>') if any(is_b(H[no]["area"]) != L["b"] for no in H) else ""
+    body = sw
+    body += ranking_block("gap", "全国・ずらすだけで、浮く。", "土曜の予定を神日にずらしたときの差額。", gap, F_GAP, base, True, 5, quip=Q_GAP)
+    body += ranking_block("pen", "全国・土曜でも、ほぼ平日。", "土曜の値上がりが小さい宿。", pen, F_PEN, base, True, 5, quip=Q_PEN)
+    body += ranking_block("cospa", "全国・★4.5以上なのに、この値段。", "口コミ★4.5以上の宿を、神日の料金が安い順に。いわゆるコスパの良い宿。", cospa(allnos), F_COSPA, base, True, 5, quip=Q_COSPA)
+    body += f'<section class="rsec"><h2>エリア別のランキング</h2><div class="reg"><ul>{links}</ul></div></section>'
+    tl = "全国の宿ランキング" if not L["b"] else "全国の宿ランキング（朝食付き）"
+    crumb = (f'<a href="{base}">ホーム</a><span aria-hidden="true">›</span>' +
+             (f'<a href="{base}ranking/">ランキング</a><span aria-hidden="true">›</span><span>朝食付きの宿</span>' if L["b"] else '<span>ランキング</span>'))
+    write(f"{OUT}/{L['path']}index.html", page(L["path"], f"{tl}｜ずらし甲斐・土曜ペナルティ・コスパ（{KY}年{KM}月）｜YASUMIBI",
+          f"口コミ★4.3以上の宿（{cond}）の料金を全日調べて、日をずらすと安くなる宿、土曜でも高くならない宿をランキング。毎日更新。",
+          crumb, "日をずらすと、いくら浮く？" if not L["b"] else "朝食付きの宿、日をずらすといくら浮く？",
+          f"全国{len(mine)}エリア・{len(allnos)}軒（{cond}）、{KM}月の料金で比べました。毎日更新。", body, base))
 print("rank built", [(a["key"], n) for a, n, _ in made])

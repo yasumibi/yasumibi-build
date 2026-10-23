@@ -24,7 +24,7 @@ area = load_area()
 _INFO = json.load(open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "hotel_info_20261021.json")))["hotels"]
 area["hotels"] = [h for h in area["hotels"] if str(h["no"]) in _INFO]
 rows = []
-for h in area["hotels"]:
+for h in [x for x in area["hotels"] if not is_b(x["area"])]:   # 2食付きの宿だけで比べる
     p = h["p"]; vs = [v for v in p if v]
     if not vs: continue
     mn = min(vs); d = p.index(mn) + 1
