@@ -73,7 +73,10 @@ def list_hotels(codes):
         while page <= pc:
             q = dict(largeClassCode="japan", middleClassCode=mid, smallClassCode=sm, hits=30, page=page, responseType="large")
             if det: q["detailClassCode"] = det
-            r = api("SimpleHotelSearch/20170426", q) or {}
+            try:
+                r = api("SimpleHotelSearch/20170426", q) or {}
+            except SystemExit as e:   # まちがったエリアコードは飛ばして、ほかのコードで続ける
+                print(f"::warning::エリアコード {mid}/{sm}/{det} は使えません：{str(e)[:120]}", flush=True); break
             pc = (r.get("pagingInfo") or {}).get("pageCount", 1)
             for h in r.get("hotels", []):
                 parts = h if isinstance(h, list) else [h]
