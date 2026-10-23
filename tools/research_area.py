@@ -20,7 +20,7 @@ import fetch_prices as fp
 ENGINE = "https://openapi.rakuten.co.jp/engine/api/Travel/"
 MIN_RC, MIN_RA = int(os.environ.get("YB_MIN_RC", "50")), float(os.environ.get("YB_MIN_RA", "4.3"))
 MAX_ADD = int(os.environ.get("YB_MAX", "60"))
-EXCL = ("民宿", "ペンション", "ゲストハウス", "ペット", "dogs", "dog", "ドッグ", "犬", "わんわん", "わんこ", "カプセル", "ホステル", "グランピング", "glamping")
+EXCL = ("民宿", "ペンション", "ゲストハウス", "ペット", "dogs", "dog", "ドッグ", "犬", "わんわん", "わんこ", "わん", "カプセル", "ホステル", "グランピング", "glamping")
 
 
 def api(path, params):
