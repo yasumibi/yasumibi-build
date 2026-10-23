@@ -81,7 +81,7 @@ def credits_html(keys):
     for k in keys:
         c = CREDITS.get(AREA_IMG.get(k, ""))
         if c: it.append(f'{esc(AJ[k])}：<a href="{esc(c["source"])}" target="_blank" rel="noopener">{esc(c["artist"] or "Wikimedia Commons")}</a>（{esc(c["license"])}）')
-    return f'<details class="at-cr"><summary>写真のクレジット</summary><p>{"・".join(it)}　出典：Wikimedia Commons</p></details>' if it else ""
+    return f'<details class="at-cr"><summary>写真のクレジット</summary><p>{"・".join(it)}　出典：Wikimedia Commons。写真は明るさ・色味を調整しています。</p></details>' if it else ""
 
 
 def meal_ja(key): return "朝食付き" if is_b(key) else "2食付き"

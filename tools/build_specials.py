@@ -109,7 +109,7 @@ def bars(rows, fmt=yen):
 def cover(img):
     if not img or not os.path.exists(f"{OUT}/assets/img/{img}"): return ""
     c = CREDITS.get(img)
-    cr = f'<span class="cv-cr">写真：{esc(c["artist"] or "Wikimedia Commons")}（{esc(c["license"])}・Wikimedia Commons）</span>' if c else ""
+    cr = f'<span class="cv-cr">写真：{esc(c["artist"] or "Wikimedia Commons")}（{esc(c["license"])}・Wikimedia Commons{"・" + esc(c["edit"]) if c.get("edit") else ""}）</span>' if c else ""
     return f'<figure class="cv"><img src="../../assets/img/{img}" alt="" width="960" height="540">{cr}</figure>'
 
 
