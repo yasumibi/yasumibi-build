@@ -15,7 +15,7 @@ from common import site_header, tabbar, footer, og_meta, OUT, DATA, AREA_JA, HOT
 
 AFF = "589faade.b97f81b7.589faadf.010fa421"
 INFO = json.load(open(f"{DATA}/hotel_info_20261021.json"))["hotels"]
-DET = {}; MEAL = {}; ROOMS = {}
+DET = {}; MEAL = {}; ROOMS = {}; FAC = {}
 # 新しく足した宿は、候補調査の表（食事の評価・客室数）から補う
 for _fn in sorted(os.listdir(f"{DATA}/candidates")) if os.path.isdir(f"{DATA}/candidates") else []:
     if not _fn.endswith(".tsv"): continue
@@ -29,7 +29,7 @@ for _fn in sorted(os.listdir(f"{DATA}/candidates")) if os.path.isdir(f"{DATA}/ca
 for ln in open(f"{DATA}/hotel_detail_20261021.tsv", encoding="utf-8"):
     c = ln.rstrip("\n").split("\t")
     if len(c) >= 10:
-        DET[int(c[0])] = c[7] + " " + c[9]
+        DET[int(c[0])] = c[7] + " " + c[9]; FAC[int(c[0])] = c[9]
         try: MEAL[int(c[0])] = float(c[3].split(",")[5])
         except Exception: pass
         try: ROOMS[int(c[0])] = int(c[6] or 0)
@@ -407,7 +407,9 @@ def month_min(no, y, m):
 def med_by_month(nos):
     out = []
     for y, m in sorted({(d.year, d.month) for no in nos for d, _ in nights(no)}):
-        mins = [month_min(no, y, m)[0] for no in nos]; mins = [x for x in mins if x]
+        # 料金を取れている日が少ない月（先の月は数日おきにしか取らない）は、宿ごとの最安が高めに出るので数えない
+        mins = [month_min(no, y, m)[0] for no in nos if sum(1 for d, _ in nights(no) if d.year == y and d.month == m) >= 8]
+        mins = [x for x in mins if x]
         if len(mins) >= 5: out.append((y, m, statistics.median(mins)))
     return out
 
@@ -556,5 +558,166 @@ write("sapporo-1man", page("sapporo-1man", "sapporo", "sapporo-tower.jpg", "札�
       sec("1人あたりが安い順", f"{len(rows)}軒に、1人7千円以下の日があります。", ol(its, 8), "浮いたぶんで、スープカレーとジンギスカン。" if rows else ""),
       "1人あたり＝2名合計÷2。"))
 made.append("sapporo-1man")
+
+# ---- 既存エリアの2本目以降
+import re as _re
+def wk_sat(no):
+    """(土曜泊の平均, 日〜木泊の平均)。どちらかが2日未満なら None。"""
+    ns = nights(no)
+    sa = [v for d, v in ns if d.weekday() == 5]; wk = [v for d, v in ns if d.weekday() in (6, 0, 1, 2, 3)]
+    return (statistics.mean(sa), statistics.mean(wk)) if len(sa) >= 2 and len(wk) >= 2 else None
+
+
+def kami(no):
+    ns = nights(no)
+    return min(ns, key=lambda x: (x[1], x[0])) if ns else None
+
+
+# 19. 箱根・露天風呂付き客室、土曜と平日でいくら違う？
+ROTEN = r"露天風呂付|露天付|客室露天|部屋付.{0,3}露天|専用露天"
+rows = []
+for no in area_nos("hakone"):
+    if not _re.search(ROTEN, DET.get(no, "")): continue
+    ws = wk_sat(no); k = kami(no)
+    if ws and k: rows.append((ws[0] - ws[1], no, ws, k))
+rows.sort(key=lambda r: -r[0])
+its = [item(i + 1, no, f"−{g:,.0f}円", f"土曜 {yen(ws[0])} → 日〜木 {yen(ws[1])}（平均）", f"神日 {lab(k[0])} <b>{yen(k[1])}</b>", k[0]) for i, (g, no, ws, k) in enumerate(rows) if g > 0]
+body = ""
+if rows:
+    gs = [r[0] for r in rows]
+    body += sec("土曜をやめると、いくら浮く？", f"露天風呂付き客室のある箱根の宿{len(rows)}軒の、土曜泊と日〜木泊の平均の差。中央値は<b>{statistics.median(gs):,.0f}円</b>。", "", "")
+body += sec("平日に泊まると差が大きい宿", "土曜泊の平均と、日〜木泊の平均の差が大きい順。", ol(its),
+            f"1位の{esc(H[rows[0][1]]['name'])}は、平日にするだけで平均{rows[0][0]:,.0f}円。部屋の露天風呂は、平日でも同じお湯。" if its else "")
+write("hakone-rotenburo", page("hakone-rotenburo", "hakone", "hakone-torii.jpg", "箱根・露天風呂付き客室", "部屋に露天風呂。土曜と平日で、いくら違う？",
+      "露天風呂付き客室は、箱根でも人気が高い。土曜泊と日〜木泊で、同じ宿の料金がどれだけ違うかを比べました。", body,
+      "「露天風呂付き客室」は楽天トラベルの宿の紹介文・設備情報をもとにしています。表示の料金は露天風呂付きの部屋とは限りません。"))
+made.append("hakone-rotenburo")
+
+# 20. 熱海・何曜日に泊まると安い？
+WDJ = "月火水木金土日"
+byw = {}
+for no in area_nos("atami"):
+    for d, v in nights(no): byw.setdefault(d.weekday(), []).append(v)
+wr = [(f"{WDJ[w]}曜泊", statistics.median(byw[w]), "") for w in (6, 0, 1, 2, 3, 4, 5) if len(byw.get(w, [])) >= 10]
+body = ""
+if wr:
+    lo = min(wr, key=lambda r: r[1]); hi = max(wr, key=lambda r: r[1])
+    body += sec("曜日ごとの料金", f"熱海の宿の、泊まる曜日ごとの料金の中央値。いちばん安いのは<b>{lo[0]}</b>、いちばん高い{hi[0]}とは{hi[1] - lo[1]:,.0f}円の差。", bars(wr))
+    lw = [k for k, w in enumerate(WDJ) if f"{w}曜泊" == lo[0]][0]
+    rows = []
+    for no in area_nos("atami"):
+        ns = [x for x in nights(no) if x[0].weekday() == lw]
+        if ns:
+            d, v = min(ns, key=lambda x: (x[1], x[0])); rows.append((v, no, d))
+    rows.sort()
+    its = [item(i + 1, no, yen(v), f"いちばん安い{lo[0]} {lab(d)}", f"★{H[no]['avg']:.2f}", d) for i, (v, no, d) in enumerate(rows)]
+    body += sec(f"{lo[0]}が安い宿", f"{lo[0]}だけで、宿ごとにいちばん安い日。", ol(its), f"{lo[0]}は、土曜泊より中央値で{hi[1] - lo[1]:,.0f}円安い。")
+write("atami-youbi", page("atami-youbi", "atami", "atami-panorama.jpg", "熱海・曜日", "熱海、何曜日に泊まると安い？",
+      "同じ熱海の宿でも、泊まる曜日で料金は変わる。この先半年の料金を、曜日ごとに比べました。", body, "期間はこの先の半年。"))
+made.append("atami-youbi")
+
+# 21. 由布院・いちばん安い月は？
+YNOS = area_nos("yufuin")
+mm = med_by_month(YNOS)
+body = ""
+if mm:
+    lo = min(mm, key=lambda r: r[2]); hi = max(mm, key=lambda r: r[2])
+    body += sec("月ごとの料金", f"由布院の宿の、月ごとの神日の中央値。いちばん安いのは<b>{lo[1]}月</b>、いちばん高いのは<b>{hi[1]}月</b>。", bars([(f"{m}月", v, "") for y, m, v in mm]))
+    rows = []
+    for no in YNOS:
+        a, da = month_min(no, hi[0], hi[1]); b, db = month_min(no, lo[0], lo[1])
+        if a and b and a > b: rows.append((a - b, no, a, b, db))
+    rows.sort(key=lambda r: -r[0])
+    its = [item(i + 1, no, f"−{g:,}円", f"{hi[1]}月の神日 {yen(a)} → {lo[1]}月", f"{lo[1]}月の神日 {lab(db)} <b>{yen(b)}</b>", db) for i, (g, no, a, b, db) in enumerate(rows)]
+    body += sec(f"{lo[1]}月にずらすと、いくら安い？", f"同じ宿の、{hi[1]}月と{lo[1]}月の神日の差。", ol(its),
+                f"1位の{esc(H[rows[0][1]]['name'])}は、{lo[1]}月にずらすだけで{rows[0][0]:,}円。" if rows else "")
+write("yufuin-month", page("yufuin-month", "yufuin", "yufuin-kinrinko.jpg", "由布院・時期", "由布院、いちばん安い月は？",
+      "朝霧の金鱗湖は、秋から冬が見ごろ。宿がいちばん安いのはいつなのか、この先半年の料金を月ごとに比べました。", body, "この先半年の料金で比べています。"))
+made.append("yufuin-month")
+
+# 22. 別府・土曜でも、ほぼ平日。
+rows = []
+for no in area_nos("beppu"):
+    ws = wk_sat(no); k = kami(no)
+    if ws and k: rows.append((ws[0] - ws[1], no, ws, k))
+rows.sort(key=lambda r: (r[0], r[3][1]))
+its = [item(i + 1, no, (f"+{g:,.0f}円" if g > 0 else "土曜の方が安い"), f"土曜 {yen(ws[0])}／日〜木 {yen(ws[1])}（平均）", f"神日 {lab(k[0])} <b>{yen(k[1])}</b>", k[0]) for i, (g, no, ws, k) in enumerate(rows)]
+q = ""
+if rows:
+    q = (f"1位の{esc(H[rows[0][1]]['name'])}は、土曜と平日の差が{max(0, rows[0][0]):,.0f}円。"
+         f"別府の{len(rows)}軒全体では、土曜は平日より平均{statistics.median(r[0] for r in rows):,.0f}円高い（中央値）。")
+write("beppu-doyou", page("beppu-doyou", "beppu", "beppu-chinoike.jpg", "別府・土曜泊", "土曜の値上がりが小さい、別府の宿。",
+      "温泉地は土曜が高いのがふつう。土日しか休めない人のために、別府の宿を土曜泊と日〜木泊の差が小さい順に並べました。",
+      sec("土曜の値上がりが小さい順", "土曜泊の平均と、日〜木泊の平均の差。", ol(its, 8), q), "期間はこの先の半年。"))
+made.append("beppu-doyou")
+
+# 23. 伊豆高原・ペットと泊まれる宿の神日。
+pet = []; other = []
+for no in area_nos("izukogen"):
+    k = kami(no)
+    if not k: continue
+    (pet if "ペット同宿可" in FAC.get(no, "") else other).append((k[1], no, k[0]))
+pet.sort(); body = ""
+if pet and other:
+    mp, mo = statistics.median(v for v, _, _ in pet), statistics.median(v for v, _, _ in other)
+    body += sec("ペットと泊まれる宿は、高い？", f"伊豆高原の★4.3以上の宿で、ペットと泊まれる宿{len(pet)}軒と、そうでない宿{len(other)}軒の神日の中央値。",
+                bars([("ペット可", mp, ""), ("ペット不可", mo, "")]),
+                ("ほとんど変わらない。" if abs(mp - mo) / max(mp, mo) < 0.05 else (f"ペット可の宿のほうが{mp - mo:,.0f}円高い。" if mp > mo else f"ペット可の宿のほうが{mo - mp:,.0f}円安い。")))
+its = [item(i + 1, no, yen(v), f"神日 {lab(d)}", f"★{H[no]['avg']:.2f}・ペット同宿可", d) for i, (v, no, d) in enumerate(pet)]
+body += sec("ペットと泊まれる宿・神日の安い順", "楽天トラベルの設備に「ペット同宿可」がある宿。", ol(its, 8))
+write("izukogen-pet", page("izukogen-pet", "izukogen", "izukogen-jogasaki.jpg", "伊豆高原・ペット", "ペットと泊まれる、伊豆高原の神日。",
+      "ペットと行く旅先として人気の伊豆高原。★4.3以上で、ペットと泊まれる宿の神日を並べました。", body,
+      "「ペット同宿可」は楽天トラベルの設備情報です。泊まれる動物の種類・大きさ、ペット可の部屋の数・料金は宿ごとに違います。予約の前に宿のページで確かめてください。"))
+made.append("izukogen-pet")
+
+# 24. 軽井沢・高級ホテルが下がる日。
+rows = []
+for no in area_nos("karuizawa"):
+    ns = nights(no)
+    if len(ns) < 10: continue
+    med = statistics.median(v for _, v in ns)
+    if med < 60000: continue
+    d, v = min(ns, key=lambda x: (x[1], x[0])); rows.append((1 - v / med, no, med, d, v))
+rows.sort(key=lambda r: -r[0])
+its = [item(i + 1, no, f"−{p * 100:.0f}%", f"いつもは {yen(med)}（中央値）", f"神日 {lab(d)} <b>{yen(v)}</b>", d) for i, (p, no, med, d, v) in enumerate(rows)]
+write("karuizawa-luxury", page("karuizawa-luxury", "karuizawa", "karuizawa-forest.jpg", "軽井沢・高級ホテル", "軽井沢の高級ホテルが、下がる日。",
+      "ふだんは2人で6万円を超える軽井沢のホテル・旅館。その宿がいちばん下がる日と、いつもとの差を並べました。",
+      sec("いつもより下がる順", f"この先半年の料金の中央値が6万円以上の宿{len(rows)}軒。", ol(its),
+          f"1位の{esc(H[rows[0][1]]['name'])}は、神日にいつもより{rows[0][0] * 100:.0f}%安い。" if rows else ""), "「いつも」＝この先半年の料金の中央値。"))
+made.append("karuizawa-luxury")
+
+# 25. 城崎・かにの季節は、いくら高い？
+KNOS = area_nos("kinosaki")
+mm = med_by_month(KNOS)
+body = ""
+if mm:
+    lo = min(mm, key=lambda r: r[2]); hi = max(mm, key=lambda r: r[2])
+    body += sec("月ごとの料金", f"城崎の宿の、月ごとの神日の中央値。いちばん高いのは<b>{hi[1]}月</b>、いちばん安いのは<b>{lo[1]}月</b>。", bars([(f"{m}月", v, "") for y, m, v in mm]))
+rows = []
+for no in KNOS:
+    k = [(d, v) for d, v in nights(no) if d.month in (11, 12, 1, 2, 3)]
+    if k:
+        d, v = min(k, key=lambda x: (x[1], x[0])); rows.append((v, no, d))
+rows.sort()
+its = [item(i + 1, no, yen(v), f"かにの季節の神日 {lab(d)}", f"★{H[no]['avg']:.2f}・食事★{MEAL.get(no, 0):.2f}", d) for i, (v, no, d) in enumerate(rows)]
+body += sec("かにの季節に、いちばん安く泊まれる宿", "11〜3月だけで、宿ごとにいちばん安い日。", ol(its, 8))
+write("kinosaki-kani", page("kinosaki-kani", "kinosaki", "kinosaki-night.jpg", "城崎・かにの季節", "かにの季節の城崎、いちばん安い日。",
+      "松葉がにの季節（11月〜3月）は、城崎がいちばんにぎわう時期。その中でいちばん安く泊まれる日を探しました。", body,
+      "表示の料金は2食付きの最安プランで、かに料理のプランとは限りません。"))
+made.append("kinosaki-kani")
+
+# 26. 伊東・1人1万円台で泊まれる伊東。
+rows = []
+for no in area_nos("ito"):
+    ns = [x for x in nights(no) if x[1] < 40000]
+    if ns:
+        d, v = min(ns, key=lambda x: (x[1], x[0])); rows.append((v, no, d, len(ns)))
+rows.sort()
+its = [item(i + 1, no, f"1人 {yen(v // 2)}", f"2名合計 {yen(v)}・{lab(d)}", f"1人2万円未満の日 {k}日・★{H[no]['avg']:.2f}", d) for i, (v, no, d, k) in enumerate(rows)]
+write("ito-1man", page("ito-1man", "ito", "ito-matsukawa.jpg", "伊東・1人1万円台", "1人1万円台で泊まれる伊東。",
+      "★4.3以上で、2食付き。それでも1人2万円を切る日がある伊東の宿を、安い順に並べました。",
+      sec("1人あたりが安い順", f"伊東の★4.3以上の宿{len(area_nos('ito'))}軒のうち{len(rows)}軒に、1人1万円台の日があります。", ol(its, 8),
+          "東京から特急踊り子で約1時間45分。近くて、安くて、温泉。" if rows else ""), "1人あたり＝2名合計÷2。"))
+made.append("ito-1man")
 
 print("specials built", made)
