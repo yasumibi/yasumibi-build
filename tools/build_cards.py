@@ -1,4 +1,4 @@
-"""/cards/ — 旅の支払いに使うカード（楽天カード＋2枚目）。
+"""/cards/ — 旅の支払いに使うカード（楽天カード＋2枚目の候補：三井住友カード（NL）・エポスカード）。
 
 三井住友カード（NL）の記載は、A8のガイドライン（2025/11/20版）で掲載が許されている項目・文言だけを使う。
  - 名称は「三井住友カード（NL）」（全角かっこ）
@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import is_b, plan_s, plan_l, COND_PLAN
 from common import site_header, tabbar, footer, og_meta, OUT, CARD_AFF
 
-CHECKED = "2026年10月22日"
+CHECKED = "2026年10月23日"
 # 提携が通るまでは公式ページへのふつうのリンク。提携後にアフィリエイトリンクへ差し替える。
 NL_URL = "https://www.smbc-card.com/nyukai/card/numberless.jsp"
 NL_NOTE = ("※カード現物のタッチ決済、iD、カードの差し込み、磁気取引は対象外です。"
@@ -21,6 +21,9 @@ NL_NOTE = ("※カード現物のタッチ決済、iD、カードの差し込み
            "※通常のポイント分を含んだ還元率です。"
            "※ポイント還元率は利用金額に対する獲得ポイントを示したもので、ポイントの交換方法によっては、1ポイント1円相当にならない場合があります。"
            "※Google Pay™ 、Samsung Payで、Mastercard®タッチ決済はご利用いただけません。ポイント還元は受けられませんので、ご注意ください。")
+# エポスカード（A8.net・2026/10/23提携）。テキスト素材ID 001。計測用の1x1画像も一緒に置く。
+EPOS_URL = "https://px.a8.net/svt/ejp?a8mat=4BEMLP+7L9ZG2+38L8+5YJRM"
+EPOS_PX = "https://www18.a8.net/0.gif?a8mat=4BEMLP+7L9ZG2+38L8+5YJRM"
 RK_IMG = ("https://hbb.afl.rakuten.co.jp/hsb/58adb89a.1783e5b6.58ad7ff2.3c792b49/?me_id=2101008&me_adv_id=373425&t=pict",
           "https://hb.afl.rakuten.co.jp/hsc/58adb89a.1783e5b6.58ad7ff2.3c792b49/?link_type=pict&ut=eyJwYWdlIjoic2hvcCIsInR5cGUiOiJwaWN0IiwiY29sIjoxLCJjYXQiOiIxIiwiYmFuIjozNzM0MjUsImFtcCI6ZmFsc2V9")
 
@@ -66,6 +69,20 @@ nl = f"""<article class="cd" id="nl">
   <a class="c-apply nl" href="{NL_URL}" target="_blank" rel="noopener">三井住友カード（NL）の公式サイトを見る</a>
 </article>"""
 
+epos = f"""<article class="cd" id="epos">
+  <p class="role">海外旅行の保険に</p>
+  <div class="cd-hd"><div><h2>エポスカード</h2>
+    <p class="cd-lead">空港までの電車・バス代などをこのカードで払うと、海外旅行の保険が付きます。</p></div></div>
+  {spec([("年会費", "入会金・年会費とも永年無料"), ("海外旅行傷害保険", "傷害死亡・後遺傷害 最高3,000万円（利用付帯）"),
+         ("病気の治療費用", "270万円まで（1疾病の限度額）"), ("けがの治療費用", "200万円まで（1事故の限度額）")])}
+  <p class="cnote">※保険は、旅行代金（募集型企画旅行の代金、または航空券・電車・バス・タクシーなど公共交通の料金）をエポスカードで支払った場合に適用されます。個人で手配した宿泊料金だけの支払いでは適用されません。補償の詳細は公式ページでご確認ください。</p>
+  <div class="pc">
+    <div><h3>よいところ</h3>{ul("pros", ["入会金・年会費とも永年無料", "空港までの交通費などを払うだけで、海外旅行の保険が付く", "マルイの年4回のセールで10％オフ"])}</div>
+    <div><h3>気をつけたいところ</h3>{ul("cons", ["保険は利用付帯。旅行代金をカードで払わないと付かない", "宿泊代だけの支払いでは、保険の対象にならない", "保険の対象はカードを持つ本人のみ（家族は対象外）"])}</div>
+  </div>
+  <a class="c-apply nl" href="{EPOS_URL}" target="_blank" rel="nofollow sponsored noopener">エポスカードの公式サイトを見る</a><img src="{EPOS_PX}" width="1" height="1" alt="" style="position:absolute;width:1px;height:1px;border:0">
+</article>"""
+
 page = f"""<!doctype html>
 <html lang="ja">
 <head>
@@ -93,6 +110,7 @@ page = f"""<!doctype html>
   </header>
   {rakuten}
   {nl}
+  {epos}
   <ul class="notes small">
     <li>カードの申し込みには審査があります。</li>
     <li>内容は{CHECKED}時点で各社の公式ページ・広告主の案内を確認したものです。最新の条件は公式ページでご確認ください。</li>
