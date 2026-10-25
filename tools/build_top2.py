@@ -116,8 +116,8 @@ def fcard(s, t, sub, img):
     return f'<li><a href="{base}{s}">{vis}<span class="ft">{esc(t)}</span><span class="fs">{esc(sub)}</span></a></li>'
 strip_html = "".join(fcard(*f) for f in FEATURES)
 _tg = json.load(open(f"{OUT}/tags/tags.json")) if os.path.exists(f"{OUT}/tags/tags.json") else []
-tag_html = ('<nav class="tgc tgc-top" aria-label="こだわりで探す"><span class="tgc-l">こだわりで探す</span><ul>'
-            + "".join(f'<li><a href="tags/{t["slug"]}/">{esc(t["name"])}</a></li>' for t in _tg) + "</ul></nav>") if _tg else ""
+tag_html = ('<nav class="tgc tgc-top" aria-label="こだわりで探す"><span class="tgc-l">こだわり<small>いくつでも</small></span><ul>'
+            + "".join(f'<li><a href="tags/{t["slug"]}/" data-tag="{t["slug"]}" role="button" aria-pressed="false">{esc(t["name"])}</a></li>' for t in _tg) + "</ul></nav>") if _tg else ""   # 押すと選ぶ／外す（いくつでも）。「神日を探す」で、選んだこだわりをすべて満たす宿を出す
 TOP_N = 8   # トップの下に出す特集の数（残りは /features/ へ）
 _tx = [f for f in FEATURES if f[3] is None]; _ph = [f for f in FEATURES if f[3]]
 FEATURES = [x for pair in zip(_tx, _ph) for x in pair] + _tx[len(_ph):] + _ph[len(_tx):]   # 文字と写真を交互に
