@@ -225,7 +225,7 @@ for a in AREAS:
 
 # 全国版：2食付きの宿と朝食付きの宿で、ランキングを分ける（違う条件の宿は同じ並びに入れない）
 LANES = [dict(b=False, path="ranking/", base="../", name="2食付きの宿", other=("ranking/asa/", "朝食付きの宿")),
-         dict(b=True, path="ranking/asa/", base="../../", name="朝食付きの宿", other=("ranking/", "2食付きの宿"))]
+         dict(b=True, path="ranking/asa/", base="../../", name="朝食付きの宿", other=("ranking/", "食事付きの宿"))]
 for L in LANES:
     allnos = [no for no in H if is_b(H[no]["area"]) == L["b"]]
     if not allnos: continue

@@ -60,7 +60,7 @@ area_opts = '<option value="all">すべて</option>' + "".join(
     f'<optgroup label="{esc(r)}">' + "".join(f'<option value="{a["key"]}"{' data-b="1"' if is_b(a["key"]) else ''}>{esc(a["name"])}</option>' for a in LIVE if a["region"] == r) + "</optgroup>" for r in REGIONS)
 N2 = sum(CNT[a["key"]] for a in LIVE if not is_b(a["key"])); NB = sum(CNT[a["key"]] for a in LIVE if is_b(a["key"]))
 lane_html = (f'<div class="ln" role="tablist" aria-label="比べる宿">'
-             f'<button type="button" role="tab" id="ln-2" aria-selected="true">2食付きの宿<small>温泉・旅館 {N2}軒</small></button>'
+             f'<button type="button" role="tab" id="ln-2" aria-selected="true">食事付きの宿<small>夕食・朝食つき {N2}軒</small></button>'
              f'<button type="button" role="tab" id="ln-b" aria-selected="false">朝食付きの宿<small>街・リゾート {NB}軒</small></button></div>') if NB else ""
 area_blocks = '<div class="regs">' + "".join(
     f'<div class="reg"><h3>{esc(r)}</h3><ul>' + "".join(f'<li><a href="#search" data-go-area="{a["key"]}">{esc(a["name"])}<small>{CNT[a["key"]]}軒</small></a></li>' for a in LIVE if a["region"] == r) + "</ul></div>" for r in REGIONS) + "</div>"
@@ -220,7 +220,7 @@ page = f"""<!doctype html>
   </section>
 
   <section class="pick" aria-labelledby="pk1">
-    <div class="rhd"><h2 id="pk1"><span class="pkl" id="pk-lane">2食付きの宿</span><span id="pk-m" class="pkm">{pk_m}</span>いちばん安い<span class="kw">神日</span></h2><span class="pkr"><span class="prt">PR</span><b class="top5">TOP5</b></span></div>
+    <div class="rhd"><h2 id="pk1"><span class="pkl" id="pk-lane">食事付きの宿</span><span id="pk-m" class="pkm">{pk_m}</span>いちばん安い<span class="kw">神日</span></h2><span class="pkr"><span class="prt">PR</span><b class="top5">TOP5</b></span></div>
     <ol class="rlist" id="p-cheap">{pk_cheap}</ol>
   </section>
   <section class="fstrip" aria-labelledby="fsh">
