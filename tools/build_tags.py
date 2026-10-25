@@ -39,7 +39,7 @@ def rows_for(t, area=None):
     out = []
     for no in H:
         if area and H[no]["area"] != area: continue
-        if is_b(H[no]["area"]) and (not area or t.get("sort") == "drop" or t.get("per")): continue   # 朝食付きの宿は、全国版と料金の基準があるタグには入れない
+        if is_b(H[no]["area"]) and not t.get("both") and (not area or t.get("sort") == "drop" or t.get("per")): continue   # 朝食付きの宿は、全国版と料金の基準があるタグには入れない
         if not t["f"](no): continue
         ns = nights(no)
         if not ns: continue

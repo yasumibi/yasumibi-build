@@ -152,6 +152,7 @@ def first_rows(area, base):
     for i, (h, v, days) in enumerate(rows[:FIRST]):
         dl = "・".join(lab(y, m, d) for d in days[:2]) + (f" ほか{len(days) - 2}日" if len(days) > 2 else "")
         meta = f'{esc(h["loc"])}｜★{h["avg"]:.2f}' if area else f'{esc(place_of(h))}｜★{h["avg"]:.2f}<i class="mb">{meal_ja(h["area"])}</i>'
+        if "hc" in h["t"]: meta += '<i class="hcm">ハイクラス</i>'
         out.append(f'<li class="ri"><span class="rk">{i + 1}</span><a href="{base}hotels/{h["slug"]}/"><img class="rt" src="{h["thumb"]}" alt="" loading="lazy" width="96" height="64"></a>'
                    f'<div class="rb"><a class="rn" href="{base}hotels/{h["slug"]}/">{esc(h["name"])}</a><span class="rm">{meta}</span>'
                    f'<div class="rk2"><i class="kd">神日</i>{dl} <b>¥{v:,}</b></div></div>'
@@ -181,6 +182,7 @@ def list_section(area, base, src=None):
   <button type="button" class="fsum" id="fsum" hidden><span class="fsum-l">条件</span><span id="fsum-t"></span><span class="fsum-c">変える</span></button>
   <div class="sortrow"><b id="lc">{cnt}</b><div class="seg" id="lsort" role="group" aria-label="並び替え"></div></div>
   <p class="lnote" id="lnote"></p>
+  <p class="ppl-note" hidden></p>
   <ol class="rl" id="lrows">{rows}</ol>
   {more}
   {dat}

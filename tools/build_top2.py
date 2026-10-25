@@ -105,9 +105,9 @@ FEATURES = [("weekend/", "今週末に泊まれる神日。", "直前でも、�
             ("features/ito-1man/", "1人1万円台で泊まれる伊東。", "伊東・2食付きで1人2万円未満", "ito-okawa-river-day.jpg"),
             ("features/akogare/", "憧れの宿が、手の届く日。", "全国・ハイクラスの宿の神日", "hakone-fuji-ship.jpg"),
             ("features/hc-hakone/", "箱根のハイクラス宿が、下がる日。", "箱根・ハイクラス", "hakone-torii.jpg"),
-            ("features/hc-kyoto/", "京都のハイクラスホテルが、下がる日。", "京都・ハイクラス", "kyoto-pagoda-night.jpg"),
-            ("features/hc-karuizawa/", "軽井沢のハイクラス宿が、下がる日。", "軽井沢・ハイクラス", "karuizawa-forest.jpg"),
-            ("features/hc-okinawa/", "沖縄のハイクラスリゾートが、下がる日。", "沖縄・ハイクラス", "onna-cape.jpg")]
+            ("features/hc-kyoto/", "京都のハイクラスホテルが、下がる日。", "京都・ハイクラス", "kyoto-kiyomizu-autumn.jpg"),
+            ("features/hc-karuizawa/", "軽井沢のハイクラス宿が、下がる日。", "軽井沢・ハイクラス", "karuizawa-kumoba-pond.jpg"),
+            ("features/hc-okinawa/", "沖縄のハイクラスリゾートが、下がる日。", "沖縄・ハイクラス", "onna-beach-sunny.jpg")]
 FEATURES = [f for f in FEATURES if f[3] is None or os.path.isdir(f"{OUT}/{f[0]}")]
 TILE = {"weekend/": '<span class="tile">直前でも<b>今週末</b></span>', "renkyu/2027/": '<span class="tile">2027年の<b>連休</b></span>', "otoku-days/": '<span class="tile">予約は<b>5と0の日</b></span>', "renkyu/": '<span class="tile t-ren">有給1日で<b>何連休？</b></span>', "ranking/": '<span class="tile t-rank">ずらすと<b>いくら浮く？</b></span>'}
 base = ""
@@ -209,7 +209,10 @@ page = f"""<!doctype html>
           <select id="f-range"><option value="0">この日だけ</option><option value="1">前後1日も見る</option><option value="3">前後3日も見る（記念日など）</option></select></label>
         <label class="fld" id="w-wd"><span>曜日・泊数</span>
           <select id="f-wd"><option value="all">こだわらない</option><option value="sat">土曜泊</option><option value="wk">日〜木泊</option><option value="n2">2泊する（合計が安い2日）</option></select></label>
+        <label class="fld" id="w-ppl"><span>泊まる人数</span>
+          <select id="f-ppl"><option value="1-0">大人1人</option><option value="2-0" selected>大人2人</option><option value="3-0">大人3人</option><option value="4-0">大人4人</option><option value="5-0">大人5人</option><option value="2-1">大人2＋子ども1</option><option value="2-2">大人2＋子ども2</option><option value="2-3">大人2＋子ども3</option><option value="1-1">大人1＋子ども1</option></select></label>
         <button type="submit" class="go" id="f-go">神日を探す</button>
+        <p class="ppl-note" hidden></p>
         <div class="cands" id="w-cands" hidden><span class="cl">ほかに休めそうな日</span><div class="cl2" id="f-cands"></div><button type="button" class="cadd" id="f-add">＋日付を追加</button></div>
       </form>
       <form class="kw" id="kw" role="search" data-base="{base}" autocomplete="off">

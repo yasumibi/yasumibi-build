@@ -5,7 +5,7 @@
 """
 import os, sys, json, re, statistics, datetime as dt
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import is_b, DATA, HOTELS, PRH, WINDOW_START, WINDOW_END, TODAY
+from common import is_b, is_hc, DATA, HOTELS, PRH, WINDOW_START, WINDOW_END, TODAY
 
 INFO = json.load(open(f"{DATA}/hotel_info_20261021.json"))["hotels"]
 H = {h["no"]: h for h in HOTELS if str(h["no"]) in INFO}
@@ -48,6 +48,9 @@ SEA = ("オーシャンビュー", "海一望", "海を一望", "海が見え", 
 MED = {no: statistics.median([p for _, p in nights(no)]) for no in H if len(nights(no)) >= 10}
 
 TAGS = [
+    dict(slug="hc", name="ハイクラス", h1="ハイクラスの宿が、手の届く日。", both=True,
+         rule="この先半年の料金の中央値が、食事付きの宿は2名1泊2食9万円以上、朝食付きの宿は2名1泊朝食6万円以上の宿だけ（宿ページの「ハイクラス」と同じ決まり）。神日にいつもよりどれだけ下がるかの大きい順です。",
+         f=lambda no: is_hc(no, H[no]["area"]), sort="drop"),
     dict(slug="rotenburo", name="露天風呂付き客室", h1="露天風呂付き客室のある宿の、神日。",
          rule="宿の紹介文や設備に「露天風呂付き客室」と書かれている宿だけ。すべての部屋に付いているとは限りません。プランを選ぶときに、客室のタイプを確かめてください。",
          f=lambda no: re.search(r"露天風呂付|露天付|客室露天|部屋付.{0,3}露天|専用露天", text(no))),
@@ -66,9 +69,6 @@ TAGS = [
     dict(slug="gohan", name="ごはんが評判", h1="ごはんが評判の宿の、神日。",
          rule="楽天トラベルの口コミで「食事」の評価が4.7以上の宿だけ。",
          f=lambda no: meal(no) >= 4.7, sub=lambda no: f"食事の評価 ★{meal(no):.2f}"),
-    dict(slug="koukyu", name="高級宿・ご褒美", h1="高級宿が、手の届く日。",
-         rule="この先半年の2名1泊2食付きの料金の中央値が9万円以上の宿だけ。神日にいつもよりどれだけ下がるかの大きい順です。",
-         f=lambda no: MED.get(no, 0) >= 90000, sort="drop"),
     dict(slug="1man", name="1人1万円台", h1="1人1万円台で泊まれる宿の、神日。",
          rule="2名1泊2食付きで4万円未満（1人2万円未満）になる日がある宿だけ。",
          f=lambda no: any(p < 40000 for _, p in nights(no)), per=True),
@@ -76,10 +76,10 @@ TAGS = [
 
 
 def tags_of(no, area=None):
-    """その宿があてはまるタグ（slug）の一覧。エリアのページと同じ決まり：朝食付きのエリアの宿には、料金の基準があるタグ（高級宿・1人1万円台）は付けない。"""
+    """その宿があてはまるタグ（slug）の一覧。エリアのページと同じ決まり：朝食付きのエリアの宿には、料金の基準があるタグ（1人1万円台）は付けない。ハイクラスは食事付き・朝食付きそれぞれの基準で付ける。"""
     out = []
     for t in TAGS:
-        if is_b(H[no]["area"]) and (t.get("sort") == "drop" or t.get("per")): continue
+        if is_b(H[no]["area"]) and not t.get("both") and (t.get("sort") == "drop" or t.get("per")): continue
         if not nights(no): continue
         if t["f"](no): out.append(t["slug"])
     return out

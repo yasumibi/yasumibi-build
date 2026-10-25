@@ -748,11 +748,11 @@ def hc_page(slug, keys, place, img, h1, lead, quip_tail, place_href=None):
 
 hc_page("hc-hakone", ["hakone"], "箱根", "hakone-torii.jpg", "箱根のハイクラス宿が、下がる日。",
         "ふだんは2名9万円を超える箱根の宿。その宿がいちばん下がる日と、いつもとの差を並べました。", "憧れの宿は、日を選べば手が届く。")
-hc_page("hc-kyoto", ["kyoto"], "京都", "kyoto-pagoda-night.jpg", "京都のハイクラスホテルが、下がる日。",
+hc_page("hc-kyoto", ["kyoto"], "京都", "kyoto-kiyomizu-autumn.jpg", "京都のハイクラスホテルが、下がる日。",
         "ふだんは2名6万円を超える京都のホテル・旅館（朝食付き）。いちばん下がる日と、いつもとの差を並べました。", "紅葉の季節を外すと、差はさらに大きい。")
-hc_page("hc-karuizawa", ["karuizawa"], "軽井沢", "karuizawa-forest.jpg", "軽井沢のハイクラス宿が、下がる日。",
+hc_page("hc-karuizawa", ["karuizawa"], "軽井沢", "karuizawa-kumoba-pond.jpg", "軽井沢のハイクラス宿が、下がる日。",
         "ふだんは2名9万円を超える軽井沢の宿。いちばん下がる日と、いつもとの差を並べました。", "森の中の一泊が、ぐっと近くなる。")
-hc_page("hc-okinawa", ["onna", "naha", "chatan", "miyako", "ishigaki", "nanbu"], "沖縄", "onna-cape.jpg", "沖縄のハイクラスリゾートが、下がる日。",
+hc_page("hc-okinawa", ["onna", "naha", "chatan", "miyako", "ishigaki", "nanbu"], "沖縄", "onna-beach-sunny.jpg", "沖縄のハイクラスリゾートが、下がる日。",
         "ふだんは2名6万円を超える沖縄のリゾート・ホテル（朝食付き）。いちばん下がる日と、いつもとの差を並べました。", "海の見える部屋は、日を選んで。", place_href="areas/onna/")
 # 憧れの宿：全国の食事付きのハイクラス宿
 hc_page("akogare", [a for a in sorted({h["area"] for h in H.values()}) if not is_b(a)], "全国", "hakone-fuji-ship.jpg", "憧れの宿が、手の届く日。",

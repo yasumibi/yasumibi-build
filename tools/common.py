@@ -39,13 +39,19 @@ def tabbar(base, cur):
     return f'<nav class="tabbar" aria-label="メニュー">{a}</nav>'
 
 
+def _asset_v(name):
+    import hashlib
+    try: return hashlib.md5(open(f"{OUT}/assets/{name}", "rb").read()).hexdigest()[:8]
+    except Exception: return "0"
+
+
 def footer(base):
     return f"""<div class="wrap"><footer class="site">
   <nav aria-label="サイト情報"><a href="{base}about/">YASUMIBIについて</a><a href="{base}about/#operator">運営者情報</a><a href="{base}privacy/">プライバシーポリシー</a><a href="{base}disclosure/">広告の掲載について</a></nav>
   <nav aria-label="SNS" class="sns"><a href="https://www.instagram.com/yasumibi.travel/" target="_blank" rel="noopener">Instagram</a><a href="https://www.tiktok.com/@yasumibi.travel" target="_blank" rel="noopener">TikTok</a></nav>
   <div class="prnote">PR｜当サイトは広告（アフィリエイト）を利用しています。掲載している料金は調べた時点のもので、予約時の料金と異なる場合があります。</div>
   <div><a href="https://webservice.rakuten.co.jp/" target="_blank" rel="noopener">Supported by Rakuten Developers</a>　© YASUMIBI</div>
-</footer></div>
+</footer></div><script src="{base}assets/ppl.js?v={_asset_v('ppl.js')}" defer></script>
 """
 
 
