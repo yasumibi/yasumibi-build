@@ -20,7 +20,7 @@ import fetch_prices as fp
 ENGINE = "https://openapi.rakuten.co.jp/engine/api/Travel/"
 MIN_RC, MIN_RA = int(os.environ.get("YB_MIN_RC", "50")), float(os.environ.get("YB_MIN_RA", "4.3"))
 MAX_ADD = int(os.environ.get("YB_MAX", "60"))
-EXCL = ("民宿", "ペンション", "ゲストハウス", "ペット", "dogs", "dog", "ドッグ", "犬", "わんわん", "わんこ", "わん", "カプセル", "ホステル", "グランピング", "glamping", "ファミリーロッジ", "cabinity", "global cabin")
+EXCL = ("民宿", "ペンション", "ゲストハウス", "ペット", "dogs", "dog", "ドッグ", "犬", "わんわん", "わんこ", "わん", "カプセル", "ホステル", "グランピング", "glamping", "ファミリーロッジ", "cabinity", "global cabin", "stay villa", "一棟", "プールヴィラ", "pool villa", "luxury villa", "cottage", "森のコテージ", "グランコテージ", "貸別荘")
 
 
 def api(path, params):
@@ -152,7 +152,7 @@ def main():
                 if o["rc"] < MIN_RC: reason = f"口コミ{MIN_RC}件未満"
                 elif o["ra"] < MIN_RA: reason = f"評価{MIN_RA}未満"
                 elif not best.get(o["no"]): reason = ("2食付き" if fp.MEAL_NOW["v"] == 2 else "朝食付き") + "の空きが見つからない"
-                elif any(x in unicodedata.normalize("NFKC", o["name"]).lower() for x in EXCL): reason = "民宿・ペンション・ペット特化・グランピングなど"
+                elif any(x in unicodedata.normalize("NFKC", o["name"]).lower() for x in EXCL): reason = "民宿・ペンション・ペット特化・グランピング・一棟貸し・コテージなど"
                 elif o["no"] in BLOCK: reason = "個別に除外：" + BLOCK[o["no"]]
                 o["price"] = best.get(o["no"], 0)
                 o["score"] = (o["ra"] * o["rc"] + 4.4 * 150) / (o["rc"] + 150)
