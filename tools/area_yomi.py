@@ -1,0 +1,27 @@
+"""エリア名の読み（ひらがな）。トップのキーワード検索で「くさつ」「はこね」と打っても見つかるように。
+新しいエリアを足したら、ここにも読みを足す（無くても漢字とローマ字＝キーでは探せる）。"""
+YOMI = {
+ "hakone": "はこね", "atami": "あたみ", "kusatsu": "くさつ", "kinugawa": "きぬがわ", "yufuin": "ゆふいん ゆいふん", "beppu": "べっぷ", "arima": "ありま",
+ "kinosaki": "きのさき", "gero": "げろ", "noboribetsu": "のぼりべつ とうやこ", "ito": "いとう", "izukogen": "いずこうげん", "shuzenji": "しゅぜんじ",
+ "karuizawa": "かるいざわ", "kawaguchiko": "かわぐちこ", "kyoto": "きょうと", "sapporo": "さっぽろ", "jozankei": "じょうざんけい", "otaru": "おたる",
+ "hakodate": "はこだて", "akan": "あかんこ", "naha": "なは", "onna": "おんな なご", "chatan": "ちゃたん よみたん", "miyako": "みやこじま",
+ "ishigaki": "いしがき やえやま", "nikko": "にっこう", "nasu": "なす", "ikaho": "いかほ", "shima": "しま", "yugawara": "ゆがわら", "isawa": "いさわ",
+ "shimoda": "しもだ", "higashiizu": "ひがしいず あたがわ いなとり", "yuzawa": "えちごゆざわ ゆざわ", "okuhida": "おくひだ", "kaga": "かが やましろ やまなか かたやまづ",
+ "wakura": "わくら", "shirahama": "しらはま なんき", "tokyo": "とうきょう", "yokohama": "よこはま", "osaka": "おおさか", "kobe": "こうべ", "nagoya": "なごや",
+ "kanazawa": "かなざわ", "hiroshima": "ひろしま", "fukuoka": "ふくおか", "iseshima": "いせしま とば しま", "dogo": "どうご", "kurokawa": "くろかわ",
+ "ibusuki": "いぶすき", "kagoshima": "かごしま", "zao": "ざおう", "sendai": "せんだい", "akiu": "あきう さくなみ", "miyajima": "みやじま みやはま",
+ "matsushima": "まつしま", "naruko": "なるこ", "amanohashidate": "あまのはしだて みやづ", "nanbu": "いとまん なんじょう", "togatta": "とおがった しろいし",
+ "imabari": "いまばり しまなみ", "minakami": "みなかみ さるがきょう", "manza": "まんざ つまごい", "shiobara": "しおばら", "hanamaki": "はなまき",
+ "tazawako": "にゅうとう たざわこ", "bandaiatami": "ばんだいあたみ", "iizaka": "いいざか", "higashiyama": "あいづひがしやま ひがしやま", "tsukioka": "つきおか",
+ "unazuki": "うなづき", "awara": "あわら", "kamikochi": "しらほね かみこうち", "asama": "あさま うつくしがはら", "yudanaka": "しぶ ゆだなか",
+ "nozawa": "のざわ", "hirugami": "ひるがみ", "suwa": "すわ", "izunagaoka": "いずながおか", "nishiizu": "にしいず とい", "yumura": "ゆむら", "misasa": "みささ",
+ "kaike": "かいけ", "tamatsukuri": "たまつくり", "yubara": "ゆばら", "unzen": "うんぜん おばま", "ureshino": "うれしの たけお", "aso": "あそ", "kirishima": "きりしま",
+ "sounkyo": "そううんきょう", "tokachigawa": "とかちがわ", "yunoyama": "ゆのやま", "nagato": "ながとゆもと", "yuda": "ゆだ", "amagase": "あまがせ ひた",
+ "tsuetate": "つえたて", "yunishigawa": "ゆにしがわ かわじ", "nagaragawa": "ながらがわ", "gujo": "ぐじょう", "totsukawa": "とつかわ", "ako": "あこう",
+ "sumatakyo": "すまたきょう", "kanzanji": "はまなこ かんざんじ", "kumamoto": "くまもと", "nagasaki": "ながさき", "takamatsu": "たかまつ", "matsuyama": "まつやま",
+ "okayama": "おかやま", "kurashiki": "くらしき", "niigata": "にいがた", "nara": "なら", "himeji": "ひめじ", "miyazaki": "みやざき", "asahikawa": "あさひかわ",
+ "aomori": "あおもり", "morioka": "もりおか", "akita": "あきた", "toyama": "とやま", "shizuoka": "しずおか", "hamamatsu": "はままつ", "kitakyushu": "きたきゅうしゅう",
+ "maihama": "まいはま うらやす", "kamakura": "かまくら えのしま", "awaji": "あわじしま", "minamiboso": "みなみぼうそう かもがわ", "kiyosato": "きよさと やつがたけ",
+ "tateshina": "たてしな やつがたけ", "hakuba": "はくば", "takayama": "ひだたかやま たかやま", "furano": "ふらの びえい", "ogoto": "おごと", "takachiho": "たかちほ",
+ "yakushima": "やくしま", "onomichi": "おのみち", "izumo": "いずも", "kochi": "こうち", "mishima": "みしま ぬまづ",
+}

@@ -212,6 +212,11 @@ page = f"""<!doctype html>
         <button type="submit" class="go" id="f-go">神日を探す</button>
         <div class="cands" id="w-cands" hidden><span class="cl">ほかに休めそうな日</span><div class="cl2" id="f-cands"></div><button type="button" class="cadd" id="f-add">＋日付を追加</button></div>
       </form>
+      <form class="kw" id="kw" role="search" data-base="{base}" autocomplete="off">
+        <label class="kw-f"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+          <input type="search" id="kw-in" placeholder="宿の名前・地名・こだわりで探す" aria-label="宿の名前・地名・こだわりで探す" aria-controls="kw-dd" enterkeyhint="search"><button type="submit">探す</button></label>
+        <div class="kw-dd" id="kw-dd" role="listbox" hidden></div>
+      </form>
       {tag_html}
     </div>
   </div>
@@ -250,6 +255,7 @@ page = f"""<!doctype html>
 {tabbar(base, "home")}
 <script>window.TOP = {json.dumps(DATA, ensure_ascii=False)};</script>
 <script src="{base}assets/top.js?v={v3}"></script>
+<script src="{base}assets/kw.js?v={ver("kw.js")}" defer></script>
 </body></html>
 """
 open(f"{OUT}/index.html", "w", encoding="utf-8").write(page)

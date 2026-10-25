@@ -18,6 +18,18 @@ def ver(*files):
 os.makedirs(f"{OUT}/search", exist_ok=True)
 json.dump(L.data(None), open(f"{OUT}/search/data.json", "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
 dv = hashlib.md5(open(f"{OUT}/search/data.json", "rb").read()).hexdigest()[:8]
+
+# ---- トップのキーワード検索で使う、軽い一覧（宿の名前・地名・エリア・こだわり）。料金は入れない
+_AJ = {x["key"]: x["name"] for x in L.LIVE}
+_lc = {}
+for h in L.HOTELS_L:
+    if h["loc"] and h["loc"] != _AJ[h["area"]]: _lc[(h["area"], h["loc"])] = _lc.get((h["area"], h["loc"]), 0) + 1
+from area_yomi import YOMI
+KW = dict(a=[[x["key"], x["name"], x["region"], L.CNT[x["key"]], YOMI.get(x["key"], "") + " " + x["key"]] for x in L.LIVE],
+          l=[[a, lo, n] for (a, lo), n in sorted(_lc.items(), key=lambda kv: -kv[1])],
+          h=[[h["name"], h["slug"], h["area"], h["loc"]] for h in L.HOTELS_L],
+          t=[[k, v] for k, v in L.TAG_JA.items()])
+json.dump(KW, open(f"{OUT}/search/kw.json", "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
 base = "../"
 v1, v2, v3, vl = ver("site.css"), ver("hotel.css"), ver("top.css", "otoku.css", "rank.css"), ver("list.js")
 page = f"""<!doctype html>
