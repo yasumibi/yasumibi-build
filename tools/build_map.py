@@ -1,5 +1,5 @@
 """地図から探す（/map/）：★4.3以上の宿を地図に並べ、月ごとの神日の料金をピンで見せる。中身は map.js が作る。
-地図：Leaflet 1.9.4 ＋ Leaflet.markercluster 1.5.3（cdnjs・版を固定）／背景：国土地理院（地理院タイル・淡色地図）。
+地図：Leaflet 1.9.4 ＋ Leaflet.markercluster 1.5.3（cdnjs・版を固定）／背景：OpenFreeMap（Liberty・MapLibre GL 4.7.1＋maplibre-gl-leaflet 0.1.4、unpkg・版を固定）。WebGLが使えない端末は国土地理院の標準地図。
 食事付き（2食）と朝食付きの宿は混ぜない（上の切り替えでどちらかだけを出す）。
 """
 import os, sys, json, html, hashlib
@@ -54,6 +54,7 @@ page = f"""<!doctype html>
 {og_meta(html.escape(t), html.escape(d), "map/")}<link rel="canonical" href="https://yasumibi.com/map/">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.min.css">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
 <link rel="stylesheet" href="{base}assets/site.css?v={v[0]}">
 <link rel="stylesheet" href="{base}assets/hotel.css?v={v[3]}">
 <link rel="stylesheet" href="{base}assets/top.css?v={v[1]}">
@@ -83,10 +84,12 @@ page = f"""<!doctype html>
     <div class="mp-map" id="mp-map" role="region" aria-label="地図"></div>
     <div class="mp-card" id="mp-card" hidden></div>
   </div>
-  <p class="mp-note">※★4.3以上（口コミ50件以上）の宿。料金は大人2名・1室の最安プラン（食事付きは1泊2食、朝食付きは1泊朝食・2名合計・税込）で、その月いちばん安い日（神日）の料金です。地図：国土地理院（地理院タイル）</p>
+  <p class="mp-note">※★4.3以上（口コミ50件以上）の宿。料金は大人2名・1室の最安プラン（食事付きは1泊2食、朝食付きは1泊朝食・2名合計・税込）で、その月いちばん安い日（神日）の料金です。地図：OpenFreeMap © OpenMapTiles © OpenStreetMap</p>
 </main>
 """ + tabbar(base, "map") + f"""<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.min.js"></script>
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.1.4/leaflet-maplibre-gl.js"></script>
 <script src="{base}assets/map.js?v={v[2]}"></script>
 </body></html>
 """
