@@ -102,7 +102,12 @@ FEATURES = [("weekend/", "今週末に泊まれる神日。", "直前でも、�
             ("features/izukogen-pet/", "ペットと泊まれる、伊豆高原の神日。", "伊豆高原・ペット同宿可", "izukogen-jogasaki.jpg"),
             ("features/karuizawa-luxury/", "軽井沢の高級ホテルが、下がる日。", "軽井沢・いつもより下がる順", "karuizawa-kumoba-pond.jpg"),
             ("features/kinosaki-kani/", "かにの季節の城崎、いちばん安い日。", "城崎・11〜3月", "kinosaki-willow-day.jpg"),
-            ("features/ito-1man/", "1人1万円台で泊まれる伊東。", "伊東・2食付きで1人2万円未満", "ito-okawa-river-day.jpg")]
+            ("features/ito-1man/", "1人1万円台で泊まれる伊東。", "伊東・2食付きで1人2万円未満", "ito-okawa-river-day.jpg"),
+            ("features/akogare/", "憧れの宿が、手の届く日。", "全国・ハイクラスの宿の神日", "hakone-fuji-ship.jpg"),
+            ("features/hc-hakone/", "箱根のハイクラス宿が、下がる日。", "箱根・ハイクラス", "hakone-torii.jpg"),
+            ("features/hc-kyoto/", "京都のハイクラスホテルが、下がる日。", "京都・ハイクラス", "kyoto-pagoda-night.jpg"),
+            ("features/hc-karuizawa/", "軽井沢のハイクラス宿が、下がる日。", "軽井沢・ハイクラス", "karuizawa-forest.jpg"),
+            ("features/hc-okinawa/", "沖縄のハイクラスリゾートが、下がる日。", "沖縄・ハイクラス", "onna-cape.jpg")]
 FEATURES = [f for f in FEATURES if f[3] is None or os.path.isdir(f"{OUT}/{f[0]}")]
 TILE = {"weekend/": '<span class="tile">直前でも<b>今週末</b></span>', "renkyu/2027/": '<span class="tile">2027年の<b>連休</b></span>', "otoku-days/": '<span class="tile">予約は<b>5と0の日</b></span>', "renkyu/": '<span class="tile t-ren">有給1日で<b>何連休？</b></span>', "ranking/": '<span class="tile t-rank">ずらすと<b>いくら浮く？</b></span>'}
 base = ""

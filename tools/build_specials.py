@@ -11,7 +11,7 @@
 import os, sys, json, html, hashlib, datetime as dt, statistics, urllib.parse
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import img_v
-from common import is_b, plan_s, plan_l, COND_PLAN
+from common import is_b, plan_s, plan_l, COND_PLAN, usual_price, is_hc, HC_MIN
 from common import site_header, tabbar, footer, og_meta, OUT, DATA, AREA_JA, HOTELS, PRH, ASOF, TODAY, WINDOW_START, WINDOW_END, KY, KM
 
 AFF = "589faade.b97f81b7.589faadf.010fa421"
@@ -720,5 +720,42 @@ write("ito-1man", page("ito-1man", "ito", "ito-okawa-river-day.jpg", "伊東・1
       sec("1人あたりが安い順", f"伊東の★4.3以上の宿{len(area_nos('ito'))}軒のうち{len(rows)}軒に、1人1万円台の日があります。", ol(its, 8),
           "東京から特急踊り子で約1時間45分。近くて、安くて、温泉。" if rows else ""), "1人あたり＝2名合計÷2。"))
 made.append("ito-1man")
+
+# ---- ハイクラスの宿が、下がる日（エリア別・憧れの宿）
+def hc_rows(keys):
+    rows = []
+    for a in keys:
+        for no in area_nos(a):
+            if not is_hc(no, a): continue
+            k = kami(no); u = usual_price(no)
+            if k and u > k[1]: rows.append((1 - k[1] / u, no, u, k))
+    rows.sort(key=lambda r: -r[0])
+    return rows
+
+
+def hc_page(slug, keys, place, img, h1, lead, quip_tail, place_href=None):
+    rows = hc_rows(keys)
+    b = is_b(keys[0])
+    its = [item(i + 1, no, f"−{p * 100:.0f}%", f"いつもは {yen(u)}", f"神日 {lab(k[0])} <b>{yen(k[1])}</b>（{u - k[1]:,}円安い）", k[0]) for i, (p, no, u, k) in enumerate(rows)]
+    th = HC_MIN[1 if b else 2] // 10000
+    q = (f"1位の{esc(H[rows[0][1]]['name'])}は、神日ならいつもより{rows[0][0] * 100:.0f}%安い。{quip_tail}" if rows else "")
+    body = sec("いつもより下がる順", f"ふだんの料金（この先半年の中央値）が2名{th}万円以上の宿{len(rows)}軒。神日にどれだけ下がるか。", ol(its, 8), q)
+    write(slug, page(slug, keys[0], img, place + "・ハイクラス", h1, lead, body,
+                     f"ハイクラス＝この先半年の料金の中央値が2名{th}万円以上の宿（{'1泊朝食付き' if b else '1泊2食付き'}）。「いつも」＝その中央値。",
+                     place=place, place_href=place_href))
+    made.append(slug)
+
+
+hc_page("hc-hakone", ["hakone"], "箱根", "hakone-torii.jpg", "箱根のハイクラス宿が、下がる日。",
+        "ふだんは2名9万円を超える箱根の宿。その宿がいちばん下がる日と、いつもとの差を並べました。", "憧れの宿は、日を選べば手が届く。")
+hc_page("hc-kyoto", ["kyoto"], "京都", "kyoto-pagoda-night.jpg", "京都のハイクラスホテルが、下がる日。",
+        "ふだんは2名6万円を超える京都のホテル・旅館（朝食付き）。いちばん下がる日と、いつもとの差を並べました。", "紅葉の季節を外すと、差はさらに大きい。")
+hc_page("hc-karuizawa", ["karuizawa"], "軽井沢", "karuizawa-forest.jpg", "軽井沢のハイクラス宿が、下がる日。",
+        "ふだんは2名9万円を超える軽井沢の宿。いちばん下がる日と、いつもとの差を並べました。", "森の中の一泊が、ぐっと近くなる。")
+hc_page("hc-okinawa", ["onna", "naha", "chatan", "miyako", "ishigaki", "nanbu"], "沖縄", "onna-cape.jpg", "沖縄のハイクラスリゾートが、下がる日。",
+        "ふだんは2名6万円を超える沖縄のリゾート・ホテル（朝食付き）。いちばん下がる日と、いつもとの差を並べました。", "海の見える部屋は、日を選んで。", place_href="areas/onna/")
+# 憧れの宿：全国の食事付きのハイクラス宿
+hc_page("akogare", [a for a in sorted({h["area"] for h in H.values()}) if not is_b(a)], "全国", "hakone-fuji-ship.jpg", "憧れの宿が、手の届く日。",
+        "全国の★4.3以上で、ふだんは2名9万円を超える食事付きの宿。神日にいつもよりどれだけ下がるかの大きい順に並べました。", "日を選ぶだけで、いつもの憧れが現実になる。", place_href="ranking/")
 
 print("specials built", made)

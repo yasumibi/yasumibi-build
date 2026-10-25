@@ -139,6 +139,22 @@ _old = min((v, k) for k, v in ASOF_DATE_BY_AREA.items() if v) if any(ASOF_DATE_B
 ASOF = ASOF_BY_AREA.get(_old[1], "") or next(iter(ASOF_BY_AREA.values()), "")
 
 
+# ハイクラス：この先半年の料金の中央値が、食事付き（2名1泊2食）9万円以上／朝食付き（2名1泊朝食）6万円以上の宿
+HC_MIN = {2: 90000, 1: 60000}
+
+
+def usual_price(no):
+    """この先半年の料金の中央値（料金のある日が10日未満なら0）。"""
+    t = TODAY.isoformat()
+    v = sorted(int(p) for d, p in PRH.get(str(no), {}).items() if p and d > t)
+    return v[len(v) // 2] if len(v) >= 10 else 0
+
+
+def is_hc(no, area):
+    u = usual_price(no)
+    return bool(u) and u >= HC_MIN[MEAL.get(area, 2)]
+
+
 def month_prices(no, y, m):
     src = PRH.get(str(no), {})
     return [int(src.get(f"{y}-{m:02d}-{d:02d}", 0) or 0) for d in range(1, calendar.monthrange(y, m)[1] + 1)]
