@@ -7,7 +7,7 @@
 """
 import os, sys, json, html, hashlib, datetime as dt, urllib.parse
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import is_b, plan_s, plan_l, COND_PLAN
+from common import is_b, plan_s, plan_l, COND_PLAN, place_of
 from common import (site_header, tabbar, footer, og_meta, OUT, DATA, AREA_JA, HOTELS, PRH, ASOF,
                     WINDOW_START, WINDOW_END, TODAY)
 import jp_holidays
@@ -95,7 +95,7 @@ def item(i, r, base):
   <span class="rk">{i}</span>
   <img class="rt" src="{esc(info.get('thumb',''))}" alt="" loading="lazy" width="96" height="64">
   <div class="rb">
-    {name}<span class="rm">{esc(AREA_JA.get(h['area'], ''))}・{esc(h.get('loc',''))}｜★{h.get('avg',0):.2f}</span>
+    {name}<span class="rm">{esc(place_of(h))}｜★{h.get('avg',0):.2f}</span>
     <div class="rv"><b>−{r['save']:,}円</b><span>{lab(r['ref'][0])}泊 {yen(r['ref'][1])} → {lab(r['lo'][0])}泊</span></div>
     <div class="rk2">いちばん安い夜 {lab(r['lo'][0])} <b>{yen(r['lo'][1])}</b></div>
   </div>

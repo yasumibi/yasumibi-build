@@ -63,7 +63,7 @@ def tabbar(base, cur):
     return f'<nav class="tabbar" aria-label="メニュー">{a}</nav>'
 
 import sys as _sys; _sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import is_b, plan_s, plan_l, COND_PLAN, usual_price, is_hc
+from common import is_b, plan_s, plan_l, COND_PLAN, usual_price, is_hc, place_of
 from common import CARD_CAMP, CARD_BONUS
 from common import tabbar, footer, site_header, og_meta, load_area, logo_html, CARD_AFF, SLUG, jan_min, MONTHS, DEFAULT_YM, KY, KM, ASOF_BY_AREA, ASOF, AREA_JA, month_prices
 AREA = load_area()
@@ -200,7 +200,7 @@ for meta in AREA["hotels"]:
     peer_html = "".join(peer_li(h) for h in peers)
     room_html = (f'<figure class="room"><a href="{esc(info_link)}" target="_blank" rel="noopener sponsored"><img src="{esc(info["room"])}" alt="{esc(name)}の客室（楽天トラベル掲載写真）" loading="lazy"></a><figcaption>客室の一例（写真：楽天トラベル）</figcaption></figure>' if info.get("room") else "")
     kdl = "・".join(f"{KM}/{d}({wd(KY,KM,d)})" for d in kd[:3])
-    title = f"{name}（{H['area']}・{meta['loc']}）の神日カレンダー｜いちばん安い日と料金｜YASUMIBI"
+    title = f"{name}（{place_of(meta)}）の神日カレンダー｜いちばん安い日と料金｜YASUMIBI"
     desc = f"{full}の宿泊料金を全日調査。{KM}月の神日は{kdl}の{yen(mn0)}（2名{PS}）。楽天カードで払った場合のポイントも試算。"
     page = HEAD.format(robots="index,follow", title=esc(title), desc=esc(desc), canon=f"hotels/{H['slug']}/", base=base, v1=v1, v2=v2, og=og_meta(esc(title), esc(desc), f"hotels/{H['slug']}/",
             f"https://yasumibi.com/assets/og/{slug}.jpg" if os.path.exists(f"{OUT}/assets/og/{slug}.jpg") else None)) + f"""
@@ -216,7 +216,7 @@ for meta in AREA["hotels"]:
       </a>
       <div class="wrap">
         <div class="hcard">
-          <div class="chips"><span>{H['area']}・{esc(H['sub'])}</span><span class="star43"><i aria-hidden="true">★</i>{H['avg']:.2f}<small>口コミ{H['cnt']:,}件</small></span>{HCL}</div>
+          <div class="chips"><span>{esc(place_of(meta))}</span><span class="star43"><i aria-hidden="true">★</i>{H['avg']:.2f}<small>口コミ{H['cnt']:,}件</small></span>{HCL}</div>
           <h1>{esc(H['name'])}<small>{esc(H['full'])}</small></h1>
           <div class="hk">
             <div class="kl"><span class="tag">神日</span><span id="k-days"></span></div>
@@ -315,7 +315,8 @@ for meta in AREA["hotels"]:
     os.makedirs(f"{OUT}/hotels/{slug}", exist_ok=True)
     open(f"{OUT}/hotels/{slug}/index.html", "w", encoding="utf-8").write(page)
     # お気に入りの比較ページ用（その宿の料金だけの小さなデータ）
-    json.dump({k: H[k] for k in ("slug", "no", "name", "area", "areaKey", "loc", "avg", "cnt", "thumb", "months", "aff", "plan")},
+    H["place"] = place_of(meta)
+    json.dump({k: H[k] for k in ("slug", "no", "name", "area", "areaKey", "loc", "place", "avg", "cnt", "thumb", "months", "aff", "plan")},
               open(f"{OUT}/hotels/{slug}/data.json", "w"), ensure_ascii=False, separators=(",", ":"))
     built += 1
 mn0 = built; kd = []; pts0 = diff0 = 0

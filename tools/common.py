@@ -160,7 +160,52 @@ def month_prices(no, y, m):
     return [int(src.get(f"{y}-{m:02d}-{d:02d}", 0) or 0) for d in range(1, calendar.monthrange(y, m)[1] + 1)]
 
 
+# ---- 地区名（loc）
+# 住所から地区名を決める決まり。エリアごとに分ける（箱根の「湯本」が、那須湯本・東山の湯本・長門湯本に当たらないように）
+LOC_RULES = {
+    "hakone": [("湯本", "箱根湯本温泉"), ("塔之沢", "塔之沢"), ("大平台", "大平台"), ("宮ノ下", "宮ノ下"), ("底倉", "底倉"), ("小涌谷", "小涌谷"),
+               ("二ノ平", "二ノ平"), ("強羅", "強羅温泉"), ("宮城野", "宮城野"), ("仙石原", "仙石原"), ("芦之湯", "芦之湯"), ("元箱根", "芦ノ湖"),
+               ("箱根町箱根", "芦ノ湖")],
+    "atami": [("伊豆山", "伊豆山温泉"), ("網代", "網代温泉"), ("上多賀", "多賀"), ("下多賀", "多賀"), ("熱海", "熱海温泉")],
+}
+def loc_from_address(area, addr):
+    """そのエリアの決まりで、住所から地区名を返す（決まりが無い・当たらないときは None＝今の地区名のまま）"""
+    for k, v in LOC_RULES.get(area, []):
+        if k in (addr or ""): return v
+    return None
+
+def _loc_owner():
+    own = {}
+    for a, rules in LOC_RULES.items():
+        for _, v in rules: own.setdefault(v, set()).add(a)
+    return own
+_LOC_OWNER = _loc_owner()
+
+def fix_loc(h):
+    """ほかのエリア専用の地区名（例：那須の宿に「箱根湯本温泉」）が付いていたら、エリア名に戻す。直したら True"""
+    own = _LOC_OWNER.get(h.get("loc"))
+    if own and h.get("area") not in own:
+        h["loc"] = AREA_JA.get(h.get("area"), h.get("loc")); return True
+    return False
+
+def _bare(s): return s[:-2] if len(s) > 2 and s.endswith("温泉") else s
+def place(area_name, loc):
+    """「エリア・地区」の表示。同じ名前が2回出るときは1回にする
+    有馬＋有馬 → 有馬／熱海＋熱海温泉 → 熱海／白浜・南紀＋白浜 → 白浜（エリアが2つの名前のときは、宿のある方）"""
+    loc = (loc or "").strip(); area_name = (area_name or "").strip()
+    if not loc: return area_name
+    if not area_name: return loc
+    parts = [_bare(p) for p in area_name.split("・")]
+    if _bare(loc) == _bare(area_name): return area_name
+    if _bare(loc) in parts: return loc
+    return f"{area_name}・{loc}"
+
+def place_of(h):
+    return place(AREA_JA.get(h.get("area"), ""), h.get("loc"))
+
+
 HOTELS_ALL = json.load(open(f"{DATA}/hotels.json"))   # 宿の一覧（料金を取る対象）
+for _h in HOTELS_ALL: fix_loc(_h)   # 念のため、ページを作るときにも直す（元データは fetch_info.py で正しく付ける）
 # 掲載するのは「★4.3以上・口コミ50件以上」の宿だけ（毎週の評価の取り直しで下回ったら自動で外れる）
 HOTELS = [h for h in HOTELS_ALL if (h.get("avg") or 0) >= 4.3 and (h.get("cnt") or 0) >= 50]
 SLUG = {h["no"]: (h["slug"], h["name"], h["full"]) for h in HOTELS}

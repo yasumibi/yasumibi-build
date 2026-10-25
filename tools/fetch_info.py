@@ -7,7 +7,7 @@
 import json, os, re, sys, time, datetime, html as _html
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import ROOT
+from common import ROOT, loc_from_address, fix_loc
 import fetch_prices as fp
 
 API = "https://openapi.rakuten.co.jp/engine/api/Travel/HotelDetailSearch/20170426"
@@ -16,10 +16,7 @@ DET_F = f"{ROOT}/data/hotel_detail_20261021.tsv"
 HOTELS_F = f"{ROOT}/data/hotels.json"
 JST = datetime.timezone(datetime.timedelta(hours=9))
 
-# 住所から地区名を決める（箱根・熱海）
-LOC = [("湯本", "箱根湯本温泉"), ("塔之沢", "塔之沢"), ("大平台", "大平台"), ("宮ノ下", "宮ノ下"), ("底倉", "底倉"), ("小涌谷", "小涌谷"), ("二ノ平", "二ノ平"),
-       ("強羅", "強羅温泉"), ("宮城野", "宮城野"), ("仙石原", "仙石原"), ("芦之湯", "芦之湯"), ("元箱根", "芦ノ湖"), ("箱根町箱根", "芦ノ湖"),
-       ("伊豆山", "伊豆山温泉"), ("網代", "網代温泉"), ("上多賀", "多賀"), ("下多賀", "多賀"), ("熱海", "熱海温泉")]
+# 住所から地区名を決める決まりは common.py の LOC_RULES（エリアごと。箱根の決まりはほかのエリアに使わない）
 
 
 def clean(s):
@@ -71,8 +68,9 @@ def main():
                                            f.get("hotelRoomNum") or 0, clean(b.get("hotelSpecial", "")), clean(b.get("userReview", "")), clean(fac)]))
         addr = (b.get("address1", "") or "") + (b.get("address2", "") or "")
         if h.get("added") != "2026-10-19":   # 最初の20軒の地区名は手で付けたものを残す
-            for k, v in LOC:
-                if k in addr: h["loc"] = v; break
+            v = loc_from_address(h["area"], addr)   # そのエリアの決まりだけを使う
+            if v: h["loc"] = v
+        fix_loc(h)   # ほかのエリア専用の地区名が付いていたら、エリア名に戻す
         if b.get("reviewAverage"): h["avg"] = float(b["reviewAverage"])
         if b.get("reviewCount"): h["cnt"] = int(b["reviewCount"])
         changed = True

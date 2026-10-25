@@ -1,7 +1,7 @@
 """/rakuten-card/ — 楽天カードの紹介ページ（実際の宿の料金で試算）。"""
 import os, sys, json, html, hashlib, datetime
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import is_b, plan_s, plan_l, COND_PLAN
+from common import is_b, plan_s, plan_l, COND_PLAN, place_of
 from common import site_header, tabbar, footer, og_meta, load_area, OUT, ASOF, CARD_AFF, KY, KM, AREA_JA
 
 CHECKED = "2026年10月23日"  # 楽天カード・楽天トラベルの公式ページで条件を確認した日
@@ -59,7 +59,7 @@ def bar(r):
 def ex_card(r):
     h = r["h"]; slug, name, _ = SLUG[h["no"]]
     return f"""<article class="exc">
-  <div class="exh"><a href="../hotels/{slug}/">{esc(name)}</a><span>{AREA_JA[h['area']]}・{esc(h['loc'])}｜{KY}年{KM}月・2名{plan_s(h['area'])}</span></div>
+  <div class="exh"><a href="../hotels/{slug}/">{esc(name)}</a><span>{esc(place_of(h))}｜{KY}年{KM}月・2名{plan_s(h['area'])}</span></div>
   <div class="exn"><span>土曜泊の平均より</span><b>−{r['save']:,}<small>円</small></b></div>
   {bar(r)}
   <ul class="lg">

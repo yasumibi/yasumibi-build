@@ -5,7 +5,7 @@
 """
 import os, sys, json, html, datetime, calendar, urllib.parse
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import img_v
+from common import img_v, place_of
 from common import (AREAS, MONTHS, DEFAULT_YM, PRH, SLUG, TODAY, CARD_CAMP, is_b, load_area, OUT)
 from tagdefs import tags_of, INFO, TAGS
 
@@ -151,7 +151,7 @@ def first_rows(area, base):
     out = []
     for i, (h, v, days) in enumerate(rows[:FIRST]):
         dl = "・".join(lab(y, m, d) for d in days[:2]) + (f" ほか{len(days) - 2}日" if len(days) > 2 else "")
-        meta = f'{esc(h["loc"])}｜★{h["avg"]:.2f}' if area else f'{esc(dict((a["key"], a["name"]) for a in LIVE)[h["area"]])}・{esc(h["loc"])}｜★{h["avg"]:.2f}<i class="mb">{meal_ja(h["area"])}</i>'
+        meta = f'{esc(h["loc"])}｜★{h["avg"]:.2f}' if area else f'{esc(place_of(h))}｜★{h["avg"]:.2f}<i class="mb">{meal_ja(h["area"])}</i>'
         out.append(f'<li class="ri"><span class="rk">{i + 1}</span><a href="{base}hotels/{h["slug"]}/"><img class="rt" src="{h["thumb"]}" alt="" loading="lazy" width="96" height="64"></a>'
                    f'<div class="rb"><a class="rn" href="{base}hotels/{h["slug"]}/">{esc(h["name"])}</a><span class="rm">{meta}</span>'
                    f'<div class="rk2"><i class="kd">神日</i>{dl} <b>¥{v:,}</b></div></div>'

@@ -3,7 +3,7 @@
 """
 import os, sys, glob
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import OUT, HOTELS, AREA_JA
+from common import OUT, HOTELS, AREA_JA, place_of
 from PIL import Image, ImageDraw, ImageFont
 
 
@@ -36,7 +36,7 @@ def make(h, logo, path):
     im = Image.new("RGB", (W, H_), "#f6f1e6"); d = ImageDraw.Draw(im)
     d.rectangle([40, 40, W - 40, H_ - 40], outline="#e3d8c2", width=2)
     sans = font("sans", 30); small = font("sans", 26)
-    d.text((96, 92), f"{AREA_JA.get(h['area'], '')}・{h.get('loc', '')}", font=sans, fill="#6b6f6c")
+    d.text((96, 92), place_of(h), font=sans, fill="#6b6f6c")
     name = h["name"]
     for size in (88, 76, 64, 54):
         ft = font("serif", size); ls = wrap(d, name, ft, W - 192)

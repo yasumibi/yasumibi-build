@@ -8,7 +8,7 @@
 """
 import os, sys, json, html, hashlib, datetime, calendar, statistics, urllib.parse
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import img_v
+from common import img_v, place_of
 from common import B_AREA_NAMES, B_AREA_LABEL, is_b, plan_s, plan_l, COND_PLAN
 from common import (site_header, tabbar, footer, og_meta, OUT, DATA, AREAS, AREA_JA, HOTELS, MONTHS, KY, KM,
                     month_prices, ASOF_BY_AREA, ASOF, TODAY)
@@ -64,12 +64,12 @@ def item(i, s, big, small, base, show_area=False):
     hp = f"{base}hotels/{h['slug']}/" if h["slug"] in built_hotels else None
     kd = "・".join(lab(KY, KM, d) for d in s["kd"][:2]) + (f" ほか{len(s['kd'])-2}日" if len(s["kd"]) > 2 else "")
     name = f'<a class="rn" href="{hp}">{esc(h["name"])}</a>' if hp else f'<span class="rn">{esc(h["name"])}</span>'
-    area = f'{esc(AREA_JA.get(h["area"], ""))}・' if show_area else ""
+    where = place_of(h) if show_area else h.get("loc", "")   # 「エリア・地区」。同じ名前は1回だけ
     return f"""<li class="ri">
   <span class="rk">{i}</span>
   <img class="rt" src="{esc(info.get('thumb',''))}" alt="" loading="lazy" width="96" height="64">
   <div class="rb">
-    {name}<span class="rm">{area}{esc(h.get('loc',''))}｜口コミ {h.get('avg',0):.2f}<i class="mb">{'朝食付き' if is_b(h['area']) else '2食付き'}</i></span>
+    {name}<span class="rm">{esc(where)}｜口コミ {h.get('avg',0):.2f}<i class="mb">{'朝食付き' if is_b(h['area']) else '2食付き'}</i></span>
     <div class="rv"><b>{big}</b><span>{small}</span></div>
     <div class="rk2">神日 {kd} <b>{yen(s['mn'])}</b></div>
   </div>
