@@ -220,7 +220,7 @@ page = f"""<!doctype html>
 <main class="gin">
 
   <section class="areas" id="areas" aria-labelledby="ah">
-    <div class="rhd"><h2 id="ah">エリアから探す</h2></div>
+    <div class="rhd"><h2 id="ah">エリアから探す</h2><a class="ar-map-top" href="{base}map/">地図から探す ›</a></div>
     {L.tiles_by_region(base)}
   </section>
 

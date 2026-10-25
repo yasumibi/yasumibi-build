@@ -35,6 +35,7 @@ jobs:
           python3 tools/build_guides.py
           python3 tools/build_tags.py
           python3 tools/build_favs.py
+          python3 tools/build_map.py
           python3 tools/build_site.py
           python3 tools/build_specials.py
           python3 tools/build_top2.py
