@@ -118,6 +118,9 @@ def main():
     want = [x for x in (os.environ.get("YB_AREAS") or "").split(",") if x]
     hotels = json.load(open(f"{DATA}/hotels.json"))
     have = {h["no"] for h in hotels}
+    # 個別に外した宿（貸別荘・一棟貸しなど、ほかの宿と比べ方が違う宿）。data/blocklist.json に {施設番号: 理由}
+    try: BLOCK = {int(k): v for k, v in json.load(open(f"{DATA}/blocklist.json")).items()}
+    except Exception: BLOCK = {}
     os.makedirs(f"{DATA}/candidates", exist_ok=True)
     dates = check_dates()
     print("確認する日：", ", ".join(map(str, dates)), flush=True)
@@ -150,6 +153,7 @@ def main():
                 elif o["ra"] < MIN_RA: reason = f"評価{MIN_RA}未満"
                 elif not best.get(o["no"]): reason = ("2食付き" if fp.MEAL_NOW["v"] == 2 else "朝食付き") + "の空きが見つからない"
                 elif any(x in unicodedata.normalize("NFKC", o["name"]).lower() for x in EXCL): reason = "民宿・ペンション・ペット特化・グランピングなど"
+                elif o["no"] in BLOCK: reason = "個別に除外：" + BLOCK[o["no"]]
                 o["price"] = best.get(o["no"], 0)
                 o["score"] = (o["ra"] * o["rc"] + 4.4 * 150) / (o["rc"] + 150)
                 o["reason"] = reason
