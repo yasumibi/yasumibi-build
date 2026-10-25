@@ -63,7 +63,7 @@ def tabbar(base, cur):
     return f'<nav class="tabbar" aria-label="メニュー">{a}</nav>'
 
 import sys as _sys; _sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import is_b, plan_s, plan_l, COND_PLAN
+from common import is_b, plan_s, plan_l, COND_PLAN, usual_price, is_hc
 from common import CARD_CAMP, CARD_BONUS
 from common import tabbar, footer, site_header, og_meta, load_area, logo_html, CARD_AFF, SLUG, jan_min, MONTHS, DEFAULT_YM, KY, KM, ASOF_BY_AREA, ASOF, AREA_JA, month_prices
 AREA = load_area()
@@ -174,6 +174,8 @@ for meta in AREA["hotels"]:
     info = INFO[str(meta["no"])]
     H["thumb"] = info.get("thumb", ""); H["areaKey"] = meta["area"]; H["loc"] = meta["loc"]
     PS, PL = plan_s(meta["area"]), plan_l(meta["area"]); H["plan"] = PS
+    _u = usual_price(meta["no"])   # ハイクラス：この先半年の料金の中央値が高い宿にだけラベル
+    HCL = (f'<span class="hcl">ハイクラス<small>いつもは2名{_u / 10000:.1f}万円</small></span>' if is_hc(meta["no"], meta["area"]) else "")
     # 同じ日なら、こっちも安い：同じエリアで★が近い（−0.1まで）宿
     _al = [h for h in AREA["hotels"] if h["area"] == meta["area"] and h["no"] != meta["no"] and str(h["no"]) in INFO and h["avg"] >= meta["avg"] - 0.1]
     _al.sort(key=lambda h: abs(h["avg"] - meta["avg"]))
@@ -214,7 +216,7 @@ for meta in AREA["hotels"]:
       </a>
       <div class="wrap">
         <div class="hcard">
-          <div class="chips"><span>{H['area']}・{esc(H['sub'])}</span><span class="star43"><i aria-hidden="true">★</i>{H['avg']:.2f}<small>口コミ{H['cnt']:,}件</small></span></div>
+          <div class="chips"><span>{H['area']}・{esc(H['sub'])}</span><span class="star43"><i aria-hidden="true">★</i>{H['avg']:.2f}<small>口コミ{H['cnt']:,}件</small></span>{HCL}</div>
           <h1>{esc(H['name'])}<small>{esc(H['full'])}</small></h1>
           <div class="hk">
             <div class="kl"><span class="tag">神日</span><span id="k-days"></span></div>
