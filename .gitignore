@@ -3,3 +3,4 @@ __pycache__/
 .DS_Store
 # データは非公開の yasumibi-data に置く（Actions が data/ に取り込む）
 data/
+/data
