@@ -395,3 +395,24 @@ i.addEventListener('input',f);i.addEventListener('blur',()=>{const v=parseInt((i
 os.makedirs(f"{OUT}/otoku", exist_ok=True)
 open(f"{OUT}/otoku/index.html", "w", encoding="utf-8").write(otoku)
 print("hotel + otoku built", mn0, kd, pts0, diff0)
+
+# いま掲載していない宿（空きが少ない・基準を下回った）のページは、古い料金を出さずに「休止中」にする（お気に入りや検索から来た人のため）
+from common import HOTELS_ALL, HOTELS as _HS
+_on = {h["no"] for h in _HS}
+_rest = 0
+for _h in HOTELS_ALL:
+    if _h["no"] in _on: continue
+    _d = f"{OUT}/hotels/{_h['slug']}"
+    os.makedirs(_d, exist_ok=True)
+    _an = AREA_JA.get(_h["area"], "")
+    open(f"{_d}/index.html", "w", encoding="utf-8").write(f"""<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,follow">
+<title>{esc(_h['name'])}｜いまは掲載を休んでいます｜YASUMIBI</title><link rel="stylesheet" href="/assets/site.css"></head>
+<body><main style="max-width:640px;margin:0 auto;padding:48px 16px;line-height:1.8">
+<h1 style="font-size:20px">{esc(_h['name'])}</h1>
+<p>この宿は、この先の空きが少ないため（または掲載の基準を下回ったため）、いまは掲載を休んでいます。空きが戻れば、また自動で載ります。</p>
+<p><a href="/areas/{_h['area']}/">{esc(_an)}の宿を見る</a>　／　<a href="/">トップへ</a></p>
+</main></body></html>""")
+    if os.path.exists(f"{_d}/data.json"): os.remove(f"{_d}/data.json")
+    _rest += 1
+print("休止中のページ", _rest)
