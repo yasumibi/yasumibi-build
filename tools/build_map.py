@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import is_b, plan_s, COND_PLAN, HOTELS, MONTHS, DEFAULT_YM, AREA_JA, AREAS, DATA, month_prices
 from common import site_header, tabbar, footer, og_meta, OUT
 
-AFF = "589faade.b97f81b7.589faadf.010fa421"
+AFF = "58d3e60c.eb347c97.58d3e60d.8f598c34"
 INFO = json.load(open(f"{DATA}/hotel_info_20261021.json"))["hotels"]
 built = set(os.listdir(f"{OUT}/hotels")) if os.path.isdir(f"{OUT}/hotels") else set()
 

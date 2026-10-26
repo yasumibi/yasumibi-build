@@ -9,7 +9,7 @@ from common import is_b, plan_s, plan_l, COND_PLAN, place_of
 from common import (site_header, tabbar, footer, og_meta, OUT, DATA, AREA_JA, AREAS, HOTELS, PRH, ASOF,
                     WINDOW_START, WINDOW_END, TODAY)
 
-AFF = "589faade.b97f81b7.589faadf.010fa421"
+AFF = "58d3e60c.eb347c97.58d3e60d.8f598c34"
 INFO = json.load(open(f"{DATA}/hotel_info_20261021.json"))["hotels"]
 WD = "月火水木金土日"
 H = {h["no"]: h for h in HOTELS if str(h["no"]) in INFO}
