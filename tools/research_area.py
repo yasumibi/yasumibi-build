@@ -20,6 +20,10 @@ import fetch_prices as fp
 ENGINE = "https://openapi.rakuten.co.jp/engine/api/Travel/"
 MIN_RC, MIN_RA = int(os.environ.get("YB_MIN_RC", "50")), float(os.environ.get("YB_MIN_RA", "4.3"))
 MAX_ADD = int(os.environ.get("YB_MAX", "60"))
+# ハイクラス枠の調査（YB_HC=1）：口コミ50件以上★4.3以上、または口コミ20件以上★4.6以上で、先の平日の最安でも高い宿だけ
+HC = os.environ.get("YB_HC") == "1"
+HC_RC, HC_RA = 20, 4.6
+HC_P = {2: int(os.environ.get("YB_HC_P2", "65000")), 1: int(os.environ.get("YB_HC_P1", "42000"))}
 EXCL = ("民宿", "ペンション", "ゲストハウス", "ペット", "dogs", "dog", "ドッグ", "犬", "わんわん", "わんこ", "わん", "カプセル", "ホステル", "グランピング", "glamping", "ファミリーロッジ", "cabinity", "global cabin", "stay villa", "一棟", "プールヴィラ", "pool villa", "luxury villa", "cottage", "森のコテージ", "グランコテージ", "貸別荘", "guest house", "guesthouse", "hostel")
 
 
@@ -137,7 +141,8 @@ def main():
                 allh = [o for o in allh if any(x in o.get("addr", "") for x in a["addr"])]
             print(f"[{key}] 楽天に登録 {len(allh)}軒（エリアコード {codes}）", flush=True)
             print(f"::notice::[{key}] エリアコード {codes}", flush=True)
-            cand = [o for o in allh if o["rc"] >= MIN_RC and o["ra"] >= MIN_RA]
+            def okrv(o): return (o["rc"] >= MIN_RC and o["ra"] >= MIN_RA) or (HC and o["rc"] >= HC_RC and o["ra"] >= HC_RA)
+            cand = [o for o in allh if okrv(o)]
             fp.MEAL_NOW["v"] = int(a.get("meal", 2))      # 京都・沖縄・北海道の街などは1泊朝食付きで調べる
             best = {}
             nos = [o["no"] for o in cand]
@@ -149,11 +154,12 @@ def main():
             rows = []
             for o in allh:
                 reason = ""
-                if o["rc"] < MIN_RC: reason = f"口コミ{MIN_RC}件未満"
-                elif o["ra"] < MIN_RA: reason = f"評価{MIN_RA}未満"
+                if not okrv(o): reason = (f"口コミ{MIN_RC}件・★{MIN_RA}（または20件・★4.6）に届かない" if HC else
+                                          f"口コミ{MIN_RC}件未満" if o["rc"] < MIN_RC else f"評価{MIN_RA}未満")
                 elif not best.get(o["no"]): reason = ("2食付き" if fp.MEAL_NOW["v"] == 2 else "朝食付き") + "の空きが見つからない"
                 elif any(x in unicodedata.normalize("NFKC", o["name"]).lower() for x in EXCL): reason = "民宿・ペンション・ペット特化・グランピング・一棟貸し・コテージなど"
                 elif o["no"] in BLOCK: reason = "個別に除外：" + BLOCK[o["no"]]
+                elif HC and best.get(o["no"], 0) < HC_P[fp.MEAL_NOW["v"]]: reason = f"平日の最安が{HC_P[fp.MEAL_NOW['v']]//1000}千円未満（ハイクラスではない）"
                 o["price"] = best.get(o["no"], 0)
                 o["score"] = (o["ra"] * o["rc"] + 4.4 * 150) / (o["rc"] + 150)
                 o["reason"] = reason
@@ -161,7 +167,7 @@ def main():
             ok = sorted([o for o in rows if not o["reason"]], key=lambda o: -o["score"])
             pick = ok[:MAX_ADD]
             for o in ok[MAX_ADD:]: o["reason"] = f"上位{MAX_ADD}軒の外"
-            with open(f"{DATA}/candidates/{key}.tsv", "w", encoding="utf-8") as fh:
+            with open(f"{DATA}/candidates/{'hc_' if HC else ''}{key}.tsv", "w", encoding="utf-8") as fh:
                 fh.write("採用\t施設番号\t宿名\t口コミ件数\t評価\t食事\t風呂\t客室数\t2食の目安\t補正スコア\t理由\n")
                 for o in sorted(rows, key=lambda o: (o["reason"] != "", -o["score"])):
                     fh.write("\t".join(map(str, ["○" if o in pick else "", o["no"], o["name"], o["rc"], f'{o["ra"]:.2f}', f'{o.get("meal", 0) or 0:.2f}', f'{o.get("bath", 0) or 0:.2f}', o.get("rn", 0),
@@ -172,8 +178,8 @@ def main():
                 for o in pick:
                     if o["no"] in have: continue
                     hotels.append(dict(no=o["no"], area=key, slug=f"h{o['no']}", name=clean_name(o["name"]), full=unicodedata.normalize("NFKC", o["name"]),
-                                       loc=a["name"], tier="mid" if o["price"] < 70000 else "high", avg=o["ra"], cnt=o["rc"],
-                                       added=TODAY.isoformat(), ref_price=o["price"]))
+                                       loc=a["name"], tier="high" if HC or o["price"] >= 70000 else "mid", avg=o["ra"], cnt=o["rc"],
+                                       added=TODAY.isoformat(), ref_price=o["price"], **({"hc_slot": True} if HC and o["rc"] < MIN_RC else {})))
                     have.add(o["no"]); added_total += 1
         except BaseException as e:   # 1つのエリアで失敗しても、ほかのエリアは続ける（理由はGitHubの画面に出す）
             import traceback

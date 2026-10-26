@@ -12,6 +12,9 @@ on:
       max:
         description: "1エリアで足す上限"
         default: "60"
+      hc:
+        description: "ハイクラス枠の調査（yes / no）"
+        default: "no"
 
 permissions:
   contents: read
@@ -39,6 +42,7 @@ jobs:
           YB_ADD: ${{ github.event.inputs.add == 'yes' && '1' || '0' }}
           YB_MAX: ${{ github.event.inputs.max }}
           YB_BUDGET_MIN: "200"
+          YB_HC: ${{ github.event.inputs.hc == 'yes' && '1' || '0' }}
         run: |
           python3 tools/research_area.py
           if [ "$YB_ADD" = "1" ]; then python3 tools/fetch_info.py && python3 tools/fetch_prices.py; fi
