@@ -758,4 +758,51 @@ hc_page("hc-okinawa", ["onna", "naha", "chatan", "miyako", "ishigaki", "nanbu"],
 hc_page("akogare", [a for a in sorted({h["area"] for h in H.values()}) if not is_b(a)], "全国", "hakone-fuji-ship.jpg", "憧れの宿が、手の届く日。",
         "全国の★4.3以上で、ふだんは2名9万円を超える食事付きの宿。神日にいつもよりどれだけ下がるかの大きい順に並べました。", "日を選ぶだけで、いつもの憧れが現実になる。", place_href="ranking/")
 
+# ---- 空きが出にくい人気宿、いま空いている日（空きの少なさは毎日の料金データから。空きが増えたら自動で外れる）
+from common import open_days
+RARE_MAX = 40          # この先の空きがこの日数未満
+def rare_rows(lane_b):
+    rows = []
+    for no, h in H.items():
+        if is_b(h["area"]) != lane_b: continue
+        if not ((h.get("cnt") or 0) >= 100 or is_hc(no, h["area"])): continue
+        od = open_days(no); ns = nights(no)
+        if not ns or od >= RARE_MAX: continue
+        rows.append((od, no, ns))
+    rows.sort(key=lambda r: (r[0], -(H[r[1]].get("cnt") or 0)))
+    return rows
+
+def rare_items(rows):
+    out = []
+    for i, (od, no, ns) in enumerate(rows):
+        h = H[no]; info = INFO[str(no)]
+        near = ns[0]; low = min(ns, key=lambda x: x[1])
+        hp = f"../../hotels/{h['slug']}/" if h["slug"] in built else None
+        name = f'<a class="rn" href="{hp}">{esc(h["name"])}</a>' if hp else f'<span class="rn">{esc(h["name"])}</span>'
+        chips = "".join(f"<i>{lab(d)}</i>" for d, _ in ns[:4])
+        more = f"<em>ほか{len(ns) - 4}日</em>" if len(ns) > 4 else ""
+        out.append(f"""<li class="ri rare">
+  <span class="rk">{i + 1}</span>
+  <img class="rt" src="{esc(info.get('thumb',''))}" alt="" loading="lazy" width="96" height="64">
+  <div class="rb">
+    {name}<span class="rm">{esc(h.get('loc',''))}｜★{h.get('avg',0):.2f}（{h.get('cnt',0):,}件）</span>
+    <div class="rv"><span class="ak">空き</span><b>{od}</b><span class="ak">日</span><span class="ak2">この先半年</span></div>
+    <dl class="rare-d"><div><dt>いちばん近い空き</dt><dd><span>{lab(near[0])}</span><b>{yen(near[1])}</b></dd></div><div><dt>いちばん安い日</dt><dd><span>{lab(low[0])}</span><b>{yen(low[1])}</b></dd></div></dl>
+    <div class="rare-days"><span>空いている日</span>{chips}{more}</div>
+  </div>
+  <a class="rgo" href="{esc(rk_link(no, near[0]))}" target="_blank" rel="noopener sponsored">楽天トラベルで見る</a>
+</li>""")
+    return out
+
+r2, rb = rare_rows(False), rare_rows(True)
+body = sec("食事付きの宿（夕食・朝食つき）", f"口コミ100件以上の人気宿・ハイクラスの宿のうち、この先半年で空きが{RARE_MAX}日未満の{len(r2)}軒。空きの少ない順。", ol(rare_items(r2), 10),
+           (f"1位の{esc(H[r2[0][1]]['name'])}は、半年で空きが{r2[0][0]}日だけ。" if r2 else ""))
+if rb:
+    body += sec("朝食付きの宿（街・リゾート）", f"京都・沖縄・北海道の街などの宿。同じ基準で{len(rb)}軒。", ol(rare_items(rb), 10))
+write("aki-rare", page("aki-rare", "kusatsu", "kusatsu-yubatake-night.jpg", "空きが出にくい人気宿", "空きが出にくい人気宿、いま空いている日。",
+      "いつ見ても埋まっている人気宿にも、ぽつんと空く日があります。毎日の料金データから、空きの少ない宿と、いま空いている日を並べました。空きはすぐ埋まるので、気になる日は早めに。",
+      body, f"空き＝大人2名・1室で予約できるプランがある日（この先半年・毎日取り直し）。空きが{RARE_MAX}日以上に増えた宿は、自動でこのページから外れます。食事付きの宿は1泊2食付き、朝食付きの宿は1泊朝食付きの料金です。",
+      place="全国", place_href="ranking/"))
+made.append("aki-rare")
+
 print("specials built", made)

@@ -103,6 +103,7 @@ FEATURES = [("weekend/", "今週末に泊まれる神日。", "直前でも、�
             ("features/karuizawa-luxury/", "軽井沢の高級ホテルが、下がる日。", "軽井沢・いつもより下がる順", "karuizawa-kumoba-pond.jpg"),
             ("features/kinosaki-kani/", "かにの季節の城崎、いちばん安い日。", "城崎・11〜3月", "kinosaki-willow-day.jpg"),
             ("features/ito-1man/", "1人1万円台で泊まれる伊東。", "伊東・2食付きで1人2万円未満", "ito-okawa-river-day.jpg"),
+            ("features/aki-rare/", "空きが出にくい人気宿、いま空いている日。", "全国・空きの少ない人気宿", "kusatsu-yubatake-night.jpg"),
             ("features/akogare/", "憧れの宿が、手の届く日。", "全国・ハイクラスの宿の神日", "hakone-fuji-ship.jpg"),
             ("features/hc-hakone/", "箱根のハイクラス宿が、下がる日。", "箱根・ハイクラス", "hakone-torii.jpg"),
             ("features/hc-kyoto/", "京都のハイクラスホテルが、下がる日。", "京都・ハイクラス", "kyoto-kiyomizu-autumn.jpg"),
