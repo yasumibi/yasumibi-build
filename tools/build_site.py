@@ -199,7 +199,7 @@ for f in FEATURES:
     f["stats"] = s
 
 # ---------------- top page ----------------
-AFF = "58d3e60c.eb347c97.58d3e60d.8f598c34"
+AFF = "589faade.b97f81b7.589faadf.010fa421"
 def link_for(no, d):
     import urllib.parse
     d2 = datetime.date(Y, M, d) + datetime.timedelta(days=1)

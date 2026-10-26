@@ -9,7 +9,7 @@ from common import img_v, place_of
 from common import (AREAS, MONTHS, DEFAULT_YM, PRH, SLUG, TODAY, CARD_CAMP, is_b, load_area, OUT)
 from tagdefs import tags_of, INFO, TAGS
 
-AFF = "58d3e60c.eb347c97.58d3e60d.8f598c34"
+AFF = "589faade.b97f81b7.589faadf.010fa421"
 WD = "日月火水木金土"
 FIRST = 10          # はじめに見せる軒数（残りは「もっと見る」）
 

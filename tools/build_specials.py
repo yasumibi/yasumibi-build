@@ -14,7 +14,7 @@ from common import img_v
 from common import is_b, plan_s, plan_l, COND_PLAN, usual_price, is_hc, HC_MIN
 from common import site_header, tabbar, footer, og_meta, OUT, DATA, AREA_JA, HOTELS, PRH, ASOF, TODAY, WINDOW_START, WINDOW_END, KY, KM
 
-AFF = "58d3e60c.eb347c97.58d3e60d.8f598c34"
+AFF = "589faade.b97f81b7.589faadf.010fa421"
 INFO = json.load(open(f"{DATA}/hotel_info_20261021.json"))["hotels"]
 DET = {}; MEAL = {}; ROOMS = {}; FAC = {}
 # 新しく足した宿は、候補調査の表（食事の評価・客室数）から補う

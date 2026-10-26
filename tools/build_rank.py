@@ -13,7 +13,7 @@ from common import B_AREA_NAMES, B_AREA_LABEL, is_b, plan_s, plan_l, COND_PLAN
 from common import (site_header, tabbar, footer, og_meta, OUT, DATA, AREAS, AREA_JA, HOTELS, MONTHS, KY, KM,
                     month_prices, ASOF_BY_AREA, ASOF, TODAY)
 
-AFF = "58d3e60c.eb347c97.58d3e60d.8f598c34"
+AFF = "589faade.b97f81b7.589faadf.010fa421"
 INFO = json.load(open(f"{DATA}/hotel_info_20261021.json"))["hotels"]
 WD = "日月火水木金土"
 TOPN = 3

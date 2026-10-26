@@ -9,7 +9,7 @@ from common import is_b, plan_s, plan_l, COND_PLAN
 from common import site_header, tabbar, footer, og_meta, load_area, AREAS, AREA_JA, MONTHS, DEFAULT_YM, ASOF, PRH, TODAY
 AREA = load_area()
 INFO = json.load(open(f"{ROOT}/data/hotel_info_20261021.json"))["hotels"]
-AFF = "58d3e60c.eb347c97.58d3e60d.8f598c34"
+AFF = "589faade.b97f81b7.589faadf.010fa421"
 
 # slug/name map shared with build_hotel
 from common import SLUG

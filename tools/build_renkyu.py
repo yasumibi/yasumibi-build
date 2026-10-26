@@ -12,7 +12,7 @@ from common import (site_header, tabbar, footer, og_meta, OUT, DATA, AREA_JA, HO
                     WINDOW_START, WINDOW_END, TODAY)
 import jp_holidays
 
-AFF = "58d3e60c.eb347c97.58d3e60d.8f598c34"
+AFF = "589faade.b97f81b7.589faadf.010fa421"
 INFO = json.load(open(f"{DATA}/hotel_info_20261021.json"))["hotels"]
 WD = "月火水木金土日"
 MORE = 4
