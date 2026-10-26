@@ -24,7 +24,34 @@ AREA_IMG = {"hakone": "hakone-fuji-ship.jpg", "atami": "atami-panorama.jpg", "ku
             "onna": "onna-beach-sunny.jpg", "chatan": "chatan-village.jpg", "ishigaki": "ishigaki-kabira.jpg",
             "ikaho": "ikaho-steps.jpg", "nikko": "nikko-toshogu.jpg", "shima": "shima-river.jpg", "yugawara": "yugawara-fujiki-sunny.jpg",
             "miyako": "miyako-maehama-beach.jpg", "nasu": "nasu-mountain-autumn.jpg", "isawa": "isawa-peach-blossom.jpg",
-            "shirahama": "shirahama-beach.jpg", "okuhida": "okuhida-shinhotaka.jpg"}
+            "shirahama": "shirahama-beach.jpg", "okuhida": "okuhida-shinhotaka.jpg",
+            # 10/26 写真のなかった104エリア（明るさ・色味を調整済み）
+            "akita": "akita-kubota-castle-sakura.jpg", "akiu": "akiu-otaki-falls.jpg", "ako": "ako-castle.jpg", "amagase": "amagase-river-town.jpg",
+            "amanohashidate": "amanohashidate-view.jpg", "aomori": "aomori-bay-bridge.jpg", "asahikawa": "asahikawa-asahidake.jpg", "asama": "asama-utsukushigahara.jpg",
+            "aso": "aso-kusasenri.jpg", "awaji": "awaji-akashi-bridge.jpg", "awara": "awara-ashiyu.jpg", "bandaiatami": "bandaiatami-onsen-street.jpg",
+            "dogo": "dogo-honkan.jpg", "fukuoka": "fukuoka-momochi-tower.jpg", "furano": "furano-sorachi-river.jpg", "gujo": "gujo-castle.jpg",
+            "hakuba": "hakuba-rapeseed-field.jpg", "hamamatsu": "hamamatsu-castle.jpg", "hanamaki": "hanamaki-rose-garden.jpg", "higashiizu": "higashiizu-atagawa-coast.jpg",
+            "higashiyama": "higashiyama-onsen-river.jpg", "himeji": "himeji-castle.jpg", "hiroshima": "hiroshima-castle-gate.jpg", "hirugami": "hirugami-onsen-river.jpg",
+            "ibusuki": "ibusuki-kaimondake.jpg", "iizaka": "iizaka-onsen-river.jpg", "imabari": "imabari-kurushima-bridge.jpg", "iseshima": "iseshima-ago-bay.jpg",
+            "izumo": "izumo-taisha.jpg", "izunagaoka": "izunagaoka-katsuragiyama-view.jpg", "kaga": "kaga-yamanaka-kikunoyu.jpg", "kagoshima": "kagoshima-sakurajima.jpg",
+            "kaike": "kaike-beach.jpg", "kamakura": "kamakura-enoshima.jpg", "kamikochi": "kamikochi-kappabashi-autumn.jpg", "kanazawa": "kanazawa-kenrokuen.jpg",
+            "kanzanji": "kanzanji-lake.jpg", "kirishima": "kirishima-mount-karakuni.jpg", "kitakyushu": "kitakyushu-mojiko-retro.jpg", "kiyosato": "kiyosato-street.jpg",
+            "kobe": "kobe-port-tower.jpg", "kochi": "kochi-katsurahama.jpg", "kumamoto": "kumamoto-castle.jpg", "kurashiki": "kurashiki-bikan-canal.jpg",
+            "kurokawa": "kurokawa-onsen-street.jpg", "maihama": "maihama-kasai-bay.jpg", "manza": "manza-highland-view.jpg", "matsushima": "matsushima-bay-cherry.jpg",
+            "matsuyama": "matsuyama-dogo-onsen.jpg", "minakami": "minakami-tanigawadake.jpg", "minamiboso": "minamiboso-nojimazaki.jpg", "misasa": "misasa-kawaranoyu.jpg",
+            "mishima": "mishima-skywalk.jpg", "miyajima": "miyajima-torii.jpg", "miyazaki": "miyazaki-aoshima.jpg", "morioka": "morioka-mount-iwate.jpg",
+            "nagaragawa": "nagaragawa-river-view.jpg", "nagasaki": "nagasaki-glover-garden.jpg", "nagato": "nagato-motonosumi.jpg", "nagoya": "nagoya-castle.jpg",
+            "nanbu": "nanbu-cape-chinen.jpg", "nara": "nara-kofukuji.jpg", "naruko": "naruko-gorge-autumn.jpg", "niigata": "niigata-bandai-bridge.jpg",
+            "nishiizu": "nishiizu-toi-beach.jpg", "nozawa": "nozawa-oyu.jpg", "ogoto": "ogoto-lake-biwa.jpg", "okayama": "okayama-korakuen.jpg",
+            "onomichi": "onomichi-view.jpg", "osaka": "osaka-castle-park.jpg", "sendai": "sendai-city-view.jpg", "shimoda": "shimoda-shirahama-beach.jpg",
+            "shiobara": "shiobara-momijidani-bridge.jpg", "shizuoka": "shizuoka-fuji-shimizu.jpg", "sounkyo": "sounkyo-gorge.jpg", "sumatakyo": "sumatakyo-yume-bridge.jpg",
+            "suwa": "suwa-lake.jpg", "takachiho": "takachiho-gorge.jpg", "takamatsu": "takamatsu-ritsurin.jpg", "takayama": "takayama-nakabashi.jpg",
+            "tamatsukuri": "tamatsukuri-tamayu-river.jpg", "tateshina": "tateshina-mount-tateshina.jpg", "tazawako": "tazawako-lake.jpg", "togatta": "togatta-shiroishi-castle.jpg",
+            "tokachigawa": "tokachigawa-onsen-town.jpg", "tokyo": "tokyo-skytree.jpg", "totsukawa": "totsukawa-tanize-bridge.jpg", "toyama": "toyama-kansui-park.jpg",
+            "tsuetate": "tsuetate-river-town.jpg", "tsukioka": "tsukioka-onsen-garden.jpg", "unazuki": "unazuki-lake-bridge.jpg", "unzen": "unzen-jigoku.jpg",
+            "ureshino": "ureshino-romon-gate.jpg", "wakura": "wakura-onsen-plaza.jpg", "yakushima": "yakushima-senpiro-falls.jpg", "yokohama": "yokohama-minatomirai-fuji.jpg",
+            "yubara": "yubara-bridge.jpg", "yuda": "yuda-rurikoji.jpg", "yudanaka": "yudanaka-snow-monkeys.jpg", "yumura": "yumura-arayu.jpg",
+            "yunishigawa": "yunishigawa-street.jpg", "yunoyama": "yunoyama-ropeway.jpg", "yuzawa": "yuzawa-mountain-view.jpg", "zao": "zao-onsen-town.jpg"}
 AREA_IMG = {k: v for k, v in AREA_IMG.items() if os.path.exists(f"{OUT}/assets/img/{v}")}
 
 
