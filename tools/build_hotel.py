@@ -4,6 +4,10 @@ import json, os, datetime, html, hashlib, calendar
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # このリポジトリ
 OUT = os.environ.get("YB_OUT", os.path.join(os.path.dirname(ROOT), "yasumibi-site"))  # 公開用リポジトリ（隣に置く）
 INFO = json.load(open(f"{ROOT}/data/hotel_info_20261021.json"))["hotels"]
+try:   # 上の写真の縦横（tools/img_size.py が調べる）。ページに書いておくと、写真が届いても下がずれない
+    IMG_WH = json.load(open(f"{ROOT}/data/img_sizes.json"))
+except FileNotFoundError:
+    IMG_WH = {}
 WD = "日月火水木金土"
 AFF = "589faade.b97f81b7.589faadf.010fa421"
 # 楽天アフィリエイトの公式素材（楽天カードの券面だけ・200x200）。加工せず縮めて表示する。
@@ -202,6 +206,8 @@ for meta in AREA["hotels"]:
     kdl = "・".join(f"{KM}/{d}({wd(KY,KM,d)})" for d in kd[:3])
     title = f"{name}（{place_of(meta)}）の神日カレンダー｜いちばん安い日と料金｜YASUMIBI"
     desc = f"{full}の宿泊料金を全日調査。{KM}月の神日は{kdl}の{yen(mn0)}（2名{PS}）。楽天カードで払った場合のポイントも試算。"
+    _wh = IMG_WH.get(info.get("img", ""))
+    hero_wh = f' width="{_wh[0]}" height="{_wh[1]}"' if _wh else ""
     page = HEAD.format(robots="index,follow", title=esc(title), desc=esc(desc), canon=f"hotels/{H['slug']}/", base=base, v1=v1, v2=v2, og=og_meta(esc(title), esc(desc), f"hotels/{H['slug']}/",
             f"https://yasumibi.com/assets/og/{slug}.jpg" if os.path.exists(f"{OUT}/assets/og/{slug}.jpg") else None)) + f"""
     {site_header(base)}
@@ -211,7 +217,7 @@ for meta in AREA["hotels"]:
 
     <header class="hhero">
       <a class="hphoto" href="{esc(info_link)}" target="_blank" rel="noopener sponsored" aria-label="楽天トラベルで{esc(H['name'])}の写真と詳細を見る">
-        <img src="{esc(info.get('img',''))}" alt="{esc(H['name'])}の外観・館内（楽天トラベル掲載写真）" fetchpriority="high">
+        <img src="{esc(info.get('img',''))}"{hero_wh} alt="{esc(H['name'])}の外観・館内（楽天トラベル掲載写真）" fetchpriority="high">
         <span class="credit">写真：楽天トラベル</span>
       </a>
       <div class="wrap">

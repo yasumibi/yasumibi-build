@@ -20,6 +20,17 @@ jobs:
         with: { repository: yasumibi/yasumibi-site, token: "${{ secrets.SITE_PUSH_TOKEN }}", path: site }
       - uses: actions/setup-python@v6
         with: { python-version: "3.12" }
+      - name: 宿ページの写真の大きさを調べて保存（まだの写真だけ。CLS対策）
+        continue-on-error: true   # 失敗しても公開は止めない（写真の大きさが書けないだけ）
+        run: |
+          python3 tools/img_size.py
+          cd data
+          git config user.name "yasumibi-bot"; git config user.email "yasumibi@users.noreply.github.com"
+          git add img_sizes.json
+          if ! git diff --cached --quiet; then
+            git commit -m "写真の大きさ $(TZ=Asia/Tokyo date +%Y-%m-%d)"
+            for i in 1 2 3; do git pull --rebase origin main && git push && break; sleep 5; done
+          fi
       - name: サイトを作り直す
         env:
           YB_OUT: ${{ github.workspace }}/site
