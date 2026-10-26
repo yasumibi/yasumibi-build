@@ -214,6 +214,10 @@ HOTELS_ALL = json.load(open(f"{DATA}/hotels.json"))   # 宿の一覧（料金を
 for _h in HOTELS_ALL: fix_loc(_h)   # 念のため、ページを作るときにも直す（元データは fetch_info.py で正しく付ける）
 # 掲載するのは「★4.3以上・口コミ50件以上」の宿だけ（毎週の評価の取り直しで下回ったら自動で外れる）
 HOTELS = [h for h in HOTELS_ALL if ((h.get("avg") or 0) >= 4.3 and (h.get("cnt") or 0) >= 50) or (h.get("hc_slot") and (h.get("avg") or 0) >= 4.6 and (h.get("cnt") or 0) >= 20)]
+# この先の空き日数（料金のある日）。空きの少ない人気宿も掲載は続ける（「空きが出た」こと自体に価値があるため）
+def open_days(no):
+    t = TODAY.isoformat()
+    return sum(1 for d, p in PRH.get(str(no), {}).items() if p and d >= t)
 SLUG = {h["no"]: (h["slug"], h["name"], h["full"]) for h in HOTELS}
 
 
