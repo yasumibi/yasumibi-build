@@ -206,7 +206,7 @@ for a in AREAS:
     base = "../../"
     nm = a["name"]
     # いちばん上に、このエリアの宿の一覧（絞り込み・並び替えつき）。その下にランキング（宿が5軒以上のとき）
-    body = f'<p class="ar-map"><a href="{base}map/?area={a["key"]}">{esc(a["name"])}の宿を地図で見る ›</a></p>' + L.list_section(a["key"], base)
+    body = L.list_section(a["key"], base)
     gap = pen = near = []
     if len(nos) >= 5:
         gap, pen, near = rank_sets(nos)
