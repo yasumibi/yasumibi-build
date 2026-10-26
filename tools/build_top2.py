@@ -248,7 +248,7 @@ page = f"""<!doctype html>
     <ol class="rlist" id="p-gap">{pk_gap}</ol>
     <a class="pmore" id="pk-rank" href="{base}ranking/">ランキングをもっと見る ›</a>
   </section>
-  <p class="cond">※★4.3以上＝楽天トラベルの口コミ評価4.3以上（口コミ50件以上）の宿。{COND_PLAN}（2名合計・税込）。{ASOF}時点の楽天トラベルの料金。予約前に最新の料金をご確認ください。宿の写真：楽天トラベル</p>
+  <p class="cond">※★4.3以上＝楽天トラベルの口コミ評価4.3以上（口コミ50件以上。ハイクラスの宿は20件以上・★4.6以上）の宿。{COND_PLAN}（2名合計・税込）。{ASOF}時点の楽天トラベルの料金。予約前に最新の料金をご確認ください。宿の写真：楽天トラベル</p>
 
 
 </main>

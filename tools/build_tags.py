@@ -116,7 +116,7 @@ def write(path, s):
     open(f"{OUT}/{path}index.html", "w", encoding="utf-8").write(s)
 
 
-FINE = (f'<p class="fine">※★4.3以上＝楽天トラベルの口コミ評価4.3以上（口コミ50件以上）の宿。{COND_PLAN}（2名合計・税込）。'
+FINE = (f'<p class="fine">※★4.3以上＝楽天トラベルの口コミ評価4.3以上（口コミ50件以上。ハイクラスの宿は20件以上・★4.6以上）の宿。{COND_PLAN}（2名合計・税込）。'
         f'「いつもより」＝その宿の、この先半年の料金の中央値との差。料金は楽天トラベルの{esc(ASOF)}時点のもので、毎日更新しています。宿の写真：楽天トラベル</p>')
 
 LIVE = [t for t in TAGS if rows_for(t)]

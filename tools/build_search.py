@@ -61,7 +61,7 @@ page = f"""<!doctype html>
   {L.list_section(None, base, src=f"data.json?v={dv}")}
   <p class="srch-back"><a href="{base}#search">トップで条件を変える</a></p>
   <section class="rsec ar-more" aria-labelledby="arm-h"><h2 id="arm-h">エリアから探す</h2>{L.tiles_row(base)}</section>
-  <p class="fine">※★4.3以上＝楽天トラベルの口コミ評価4.3以上（口コミ50件以上）の宿。{COND_PLAN}（2名合計・税込）。料金は楽天トラベルの{ASOF}時点のもので、毎日更新しています。宿の写真：楽天トラベル</p>
+  <p class="fine">※★4.3以上＝楽天トラベルの口コミ評価4.3以上（口コミ50件以上。ハイクラスの宿は20件以上・★4.6以上）の宿。{COND_PLAN}（2名合計・税込）。料金は楽天トラベルの{ASOF}時点のもので、毎日更新しています。宿の写真：楽天トラベル</p>
 </main>
 {footer(base)}
 {tabbar(base, "")}
