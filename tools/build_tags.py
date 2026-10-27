@@ -128,31 +128,31 @@ for t in LIVE:
     # 全エリア
     base = "../../"
     ach = "".join(f'<li><a href="{a}/">{esc(AREA_JA[a])}<small>{areas[a]}軒</small></a></li>' for a in order)
-    body = f"""<header class="ok-hd"><p class="tg-eb">タグ</p><h1>{esc(t['h1'])}</h1>
+    body = f"""<header class="ok-hd"><p class="tg-eb">タグ</p><h1>全国の{esc(t['q'])}</h1>
   <p>★4.3以上の宿のうち、<b>{esc(t['name'])}</b>にあてはまる<b>{len(rows)}軒</b>。この先半年で、それぞれいちばん安い日（神日）を並べました。</p></header>
 {chips(t['slug'], base, 'tags/')}
 {f'<section class="rsec"><h2>エリアで絞る</h2><ul class="tg-ar">{ach}</ul></section>' if order else ''}
-<section class="rsec"><h2>{esc(t['name'])}の宿・神日の安い順{'（値下がりの大きい順）' if t.get('sort') == 'drop' else ''}</h2>
+<section class="rsec"><h2>{esc(t['q'])}・神日の安い順{'（値下がりの大きい順）' if t.get('sort') == 'drop' else ''}</h2>
   <ol class="rl">{''.join(item(i + 1, r, base, t) for i, r in enumerate(rows))}</ol></section>
 <p class="tg-rule"><b>このタグの決め方</b>{esc(t['rule'])}</p>
 {FINE}"""
-    title = f"{t['name']}の宿の神日｜いちばん安い日がわかる｜YASUMIBI"
-    desc = f"{t['name']}の、口コミ★4.3以上の宿{len(rows)}軒。宿ごとにいちばん安く泊まれる日（神日）と料金を、楽天トラベルの料金から毎日計算。"
+    title = f"全国の{t['q']}｜安い日がわかる★4.3以上{len(rows)}軒｜YASUMIBI"
+    desc = f"全国の{t['q']}を、口コミ★4.3以上の{len(rows)}軒から。宿ごとにいちばん安く泊まれる日（神日）と料金がわかります。楽天トラベルの料金から毎日更新。"
     write(f"tags/{t['slug']}/", page(f"tags/{t['slug']}/", title, desc, [(t["name"], None)], body, base))
     made.append(f"tags/{t['slug']}/")
     # エリア別
     for a in order:
         ar = rows_for(t, a); base = "../../../"
-        body = f"""<header class="ok-hd"><p class="tg-eb">{esc(AREA_JA[a])}・タグ</p><h1>{esc(AREA_JA[a])}で、{esc(t['h1'])}</h1>
+        body = f"""<header class="ok-hd"><p class="tg-eb">{esc(AREA_JA[a])}・タグ</p><h1>{esc(AREA_JA[a])}で{esc(t['q'])}</h1>
   <p>{esc(AREA_JA[a])}の★4.3以上の宿のうち、<b>{esc(t['name'])}</b>にあてはまる<b>{len(ar)}軒</b>の神日です。</p></header>
 {chips(t['slug'], base, 'tags/')}
-<section class="rsec"><h2>{esc(AREA_JA[a])}・{esc(t['name'])}の宿</h2>
+<section class="rsec"><h2>{esc(AREA_JA[a])}の{esc(t['q'])}</h2>
   <ol class="rl">{''.join(item(i + 1, r, base, t) for i, r in enumerate(ar))}</ol></section>
-<p class="gd-next"><a href="{base}tags/{t['slug']}/">全エリアの{esc(t['name'])}の宿を見る →</a>　<a href="{base}areas/{a}/">{esc(AREA_JA[a])}の宿をすべて見る →</a></p>
+<p class="gd-next"><a href="{base}tags/{t['slug']}/">全国の{esc(t['q'])}を見る →</a>　<a href="{base}areas/{a}/">{esc(AREA_JA[a])}の宿をすべて見る →</a></p>
 <p class="tg-rule"><b>このタグの決め方</b>{esc(t['rule'])}</p>
 {FINE}"""
-        title = f"{AREA_JA[a]}の{t['name']}の宿｜いちばん安い日｜YASUMIBI"
-        desc = f"{AREA_JA[a]}で{t['name']}の、口コミ★4.3以上の宿{len(ar)}軒。宿ごとにいちばん安く泊まれる日（神日）と料金を毎日更新。"
+        title = f"{AREA_JA[a]}で{t['q']}｜安い日がわかる★4.3以上{len(ar)}軒｜YASUMIBI"
+        desc = f"{AREA_JA[a]}で{t['q']}を、口コミ★4.3以上の{len(ar)}軒から。宿ごとにいちばん安く泊まれる日（神日）と料金がわかります。楽天トラベルの料金から毎日更新。"
         write(f"tags/{t['slug']}/{a}/", page(f"tags/{t['slug']}/{a}/", title, desc, [(t["name"], f"{base}tags/{t['slug']}/"), (AREA_JA[a], None)], body, base))
         made.append(f"tags/{t['slug']}/{a}/")
 
