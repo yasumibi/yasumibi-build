@@ -296,3 +296,56 @@ def img_v(name):
         try: _IMGV[name] = _hl.md5(open(f"{OUT}/assets/img/{name}", "rb").read()).hexdigest()[:8]
         except Exception: _IMGV[name] = "0"
     return _IMGV[name]
+
+
+# ---- その宿だけの「安い日のまとめ」（毎日の料金から作る文。宿ページの最初に出す）
+def price_summary(no):
+    """この先半年の料金から、いちばん安い日・土曜泊と日〜木泊の差・月ごとの差を出す。料金が少なければ None。"""
+    days = []
+    for k, v in PRH.get(str(no), {}).items():
+        try: v = int(v or 0)
+        except (TypeError, ValueError): continue
+        if not v: continue
+        d = _dt.date.fromisoformat(k)
+        if d <= TODAY or d < WINDOW_START or d > WINDOW_END: continue
+        days.append((v, d))
+    if len(days) < 10: return None
+    low = min(days, key=lambda x: (x[0], x[1]))
+    sat = [x for x in days if x[1].weekday() == 5]
+    wk = [x for x in days if x[1].weekday() in (6, 0, 1, 2, 3)]   # 日〜木泊
+    sat_min = min(sat, key=lambda x: (x[0], x[1])) if sat else None
+    wk_min = min(wk, key=lambda x: (x[0], x[1])) if wk else None
+    bym = {}
+    for v, d in days: bym.setdefault((d.year, d.month), []).append(v)
+    mmin = {k: min(v) for k, v in bym.items() if len(v) >= 7}   # 料金のある日が少ない月は比べない
+    return dict(low=low, sat=sat_min, wk=wk_min, mmin=mmin, days=days)
+
+
+def _md(d): return f"{d.month}/{d.day}({WD_JA[d.weekday()]})"
+
+
+def summary_text(no, name="", unit=""):
+    """宿ページの最初に出す2〜3文（HTMLではなく文字だけ）。料金が少ない宿は空。"""
+    s = price_summary(no)
+    if not s: return []
+    v, d = s["low"]
+    n = sum(1 for x in s["days"] if x[0] == v)
+    u = f"（{unit}）" if unit else ""
+    if n > 1:
+        out = [f"{name + 'が' if name else ''}この先半年でいちばん安いのは¥{v:,}{u}。この料金の日は{_md(d)}泊など、全部で{n}日あります。"]
+    else:
+        out = [f"{name + 'が' if name else ''}この先半年でいちばん安いのは、{_md(d)}泊の¥{v:,}{u}です。"]
+    if s["sat"] and s["wk"]:
+        sv, sd = s["sat"]; wv, wd_ = s["wk"]
+        if sv - wv >= 1000:
+            out.append(f"土曜泊はいちばん安い日でも¥{sv:,}（{_md(sd)}）。日〜木泊のいちばん安い日なら、¥{sv - wv:,}安くなります。")
+        else:
+            out.append(f"土曜泊でも、いちばん安い日は¥{sv:,}（{_md(sd)}）。曜日による差が小さい宿です。")
+    mm = s["mmin"]
+    if len(mm) >= 3:
+        lv, hv = min(mm.values()), max(mm.values())
+        los = sorted(k for k in mm if mm[k] == lv); his = sorted(k for k in mm if mm[k] == hv)
+        if hv >= lv * 1.05 and len(los) <= 3 and len(his) <= 2:
+            j = lambda ks: "・".join(f"{k[1]}月" for k in ks)
+            out.append(f"月ごとの最安値で比べると、{j(los)}がいちばん安く、{j(his)}がいちばん高くなります。")
+    return out

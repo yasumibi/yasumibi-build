@@ -67,7 +67,7 @@ def tabbar(base, cur):
     return f'<nav class="tabbar" aria-label="メニュー">{a}</nav>'
 
 import sys as _sys; _sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import is_b, plan_s, plan_l, COND_PLAN, usual_price, is_hc, place_of, lowest_upcoming, WD_JA
+from common import is_b, plan_s, plan_l, COND_PLAN, usual_price, is_hc, place_of, lowest_upcoming, WD_JA, summary_text
 from common import CARD_CAMP, CARD_BONUS
 from common import tabbar, footer, site_header, og_meta, load_area, logo_html, CARD_AFF, SLUG, jan_min, MONTHS, DEFAULT_YM, KY, KM, ASOF_BY_AREA, ASOF, AREA_JA, month_prices
 AREA = load_area()
@@ -213,6 +213,9 @@ for meta in AREA["hotels"]:
     else:
         title = f"{name}の安い日・最安値｜{place_of(meta)}｜YASUMIBI"
         desc = f"{name}（{place_of(meta)}）が安い日を、この先半年のすべての日で調べています。楽天トラベルの料金から毎日更新。"
+    _st = summary_text(meta["no"], name, f"2名{PS}・税込")   # その宿だけの安い日のまとめ（毎日の料金から）
+    _sum = (f'<section class="hsum" aria-labelledby="hsum-h"><h2 id="hsum-h">{esc(name)}の安い日</h2><p>{"".join(esc(t) for t in _st)}</p>'
+            f'<small>{H["asof"]}時点の楽天トラベルの料金から。毎日更新します。</small></section>') if _st else ""
     _wh = IMG_WH.get(info.get("img", ""))
     hero_wh = f' width="{_wh[0]}" height="{_wh[1]}"' if _wh else ""
     page = HEAD.format(robots="index,follow", title=esc(title), desc=esc(desc), canon=f"hotels/{H['slug']}/", base=base, v1=v1, v2=v2, og=og_meta(esc(title), esc(desc), f"hotels/{H['slug']}/",
@@ -243,6 +246,7 @@ for meta in AREA["hotels"]:
     </header>
 
     <div class="wrap">
+      {_sum}
       <section class="sv" aria-labelledby="sv-h">
     <div class="sv-hd"><h2 id="sv-h">この宿をいちばん安く泊まるには</h2><span class="pr">PR</span></div>
     <ol class="sv-rows" id="sv-rows"></ol>
