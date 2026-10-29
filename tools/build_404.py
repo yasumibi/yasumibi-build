@@ -6,7 +6,7 @@ from common import site_header, footer, OUT
 page = f"""<!doctype html>
 <html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex"><title>ページが見つかりません｜YASUMIBI</title>
-<link rel="stylesheet" href="/assets/site.css"><link rel="icon" href="/assets/img/favicon-48.png" type="image/png"></head>
+<link rel="stylesheet" href="/assets/site.css"><link rel="icon" href="/assets/img/favicon-48.png" sizes="48x48" type="image/png"><link rel="icon" href="/assets/img/favicon-192.png" sizes="192x192" type="image/png"></head>
 <body class="nf">
 {site_header("/")}
 <main class="gin" style="padding:48px 16px 64px;max-width:640px">

@@ -48,7 +48,7 @@ page = f"""<!doctype html>
 <link rel="stylesheet" href="{base}assets/top.css?v={v3}">
 <link rel="stylesheet" href="{base}assets/otoku.css?v={v3}">
 <link rel="stylesheet" href="{base}assets/rank.css?v={v3}">
-<link rel="icon" href="{base}assets/img/favicon-48.png" type="image/png">
+<link rel="icon" href="{base}assets/img/favicon-48.png" sizes="48x48" type="image/png"><link rel="icon" href="{base}assets/img/favicon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="{base}assets/img/apple-touch-icon.png">
 <link rel="manifest" href="{base}manifest.webmanifest">
 <meta name="theme-color" content="#ffffff">

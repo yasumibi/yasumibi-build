@@ -181,7 +181,7 @@ page = f"""<!doctype html>
 <link rel="stylesheet" href="{base}assets/site.css?v={v1}">
 <link rel="stylesheet" href="{base}assets/hotel.css?v={v2}">
 <link rel="stylesheet" href="{base}assets/top.css?v={v3}">
-<link rel="icon" href="{base}assets/img/favicon-48.png" type="image/png">
+<link rel="icon" href="{base}assets/img/favicon-48.png" sizes="48x48" type="image/png"><link rel="icon" href="{base}assets/img/favicon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="{base}assets/img/apple-touch-icon.png">\n<link rel="manifest" href="{base}manifest.webmanifest">\n<meta name="theme-color" content="#ffffff">\n<meta name="apple-mobile-web-app-title" content="YASUMIBI">
 </head>
 <body class="app top2">
@@ -283,7 +283,7 @@ fpage = f"""<!doctype html>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,600..900&display=swap">
 <link rel="stylesheet" href="{base}assets/site.css?v={v1}">
 <link rel="stylesheet" href="{base}assets/top.css?v={v3}">
-<link rel="icon" href="{base}assets/img/favicon-48.png" type="image/png">
+<link rel="icon" href="{base}assets/img/favicon-48.png" sizes="48x48" type="image/png"><link rel="icon" href="{base}assets/img/favicon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="{base}assets/img/apple-touch-icon.png">\n<link rel="manifest" href="{base}manifest.webmanifest">\n<meta name="theme-color" content="#ffffff">\n<meta name="apple-mobile-web-app-title" content="YASUMIBI">
 </head>
 <body class="app top2">
