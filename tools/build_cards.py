@@ -10,7 +10,7 @@ import os, sys, html, hashlib
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import is_b, plan_s, plan_l, COND_PLAN
 from common import site_header, tabbar, footer, og_meta, OUT, CARD_AFF
-from common import CARD_CAMP, CARD_BONUS, camp_live
+from common import CARD_CAMP, CARD_BONUS, camp_live, camp_ok, card_extra, lowest_upcoming, place_of, SLUG, load_area, WD_JA
 
 CHECKED = "2026年10月23日"
 # 提携が通るまでは公式ページへのふつうのリンク。提携後にアフィリエイトリンクへ差し替える。
@@ -49,7 +49,28 @@ title = "旅の支払いに使うカード｜楽天カードと、もう1枚｜Y
 desc = "楽天トラベルの予約は楽天カード。ふだんの支払いには、もう1枚。年会費・ポイント・旅行保険を、公式の条件どおりにまとめました。"
 v1 = ver("site.css"); v2 = ver("hotel.css"); v3 = ver("top.css", "otoku.css")
 
-rakuten = f"""<article class="cd" id="rakuten">
+# 「たとえば、この宿なら」：口コミのいちばん多い宿の、この先いちばん安い日で計算（毎日の更新で変わる）
+def _example():
+    best = None
+    for h in load_area()["hotels"]:
+        if is_b(h["area"]): continue   # 温泉宿（1泊2食）の例にする
+        if h["no"] not in SLUG or not os.path.exists(f"{OUT}/hotels/{SLUG[h['no']][0]}/index.html"): continue
+        lo = lowest_upcoming(h["no"])
+        if not lo: continue
+        if camp_live() and not camp_ok(lo[1]): continue
+        if best is None or h.get("cnt", 0) > best[0].get("cnt", 0): best = (h, lo)
+    if not best: return ""
+    h, (v, d) = best; slug, name, _ = SLUG[h["no"]]; x = card_extra(v, d)
+    return f"""<div class="cx-ex">
+    <p class="cx-h">たとえば、この宿なら</p>
+    <p class="cx-w"><a href="{base}hotels/{slug}/">{esc(name)}</a>（{esc(place_of(h))}）<br>{d.month}/{d.day}({WD_JA[d.weekday()]})泊・2名{plan_s(h['area'])} <b>¥{v:,}</b></p>
+    <ul class="cx-r"><li><span>楽天カードで事前決済<small>楽天カード以外で払うより多い分{'（合計2.5倍）' if camp_ok(d) else '（カード通常分）'}</small></span><b>+{x:,}円分</b></li>
+      <li><span>はじめての方は入会特典<small>2,000円分＋条件達成で3,000円分</small></span><b>+{CARD_BONUS:,}円分</b></li></ul>
+    <p class="cx-t"><span>宿代とは別に戻ってくるポイント</span><b>最大{x + CARD_BONUS:,}円分</b></p>
+  </div>"""
+EXAMPLE = _example()
+
+rakuten = f"""<article class="cd main" id="rakuten">
   <p class="role">楽天トラベルの予約に</p>
   <div class="cd-hd">
     <a class="cd-face" href="{RK_IMG[1]}" target="_blank" rel="nofollow sponsored noopener"><img src="{RK_IMG[0]}" alt="楽天カードの券面" width="200" height="200" loading="lazy"></a>
@@ -58,8 +79,9 @@ rakuten = f"""<article class="cd" id="rakuten">
   {spec([("年会費", "永年無料"), ("入会特典", "5,000ポイント<small>うち3,000は期間限定ポイント・3回以上の利用などの条件あり</small>"),
          ("楽天トラベル", (f"ポイント2.5倍<small>エントリー・事前決済が必要。{CARD_CAMP['book_end_ja']}までの予約・{CARD_CAMP['out_last_ja']}チェックアウトまでの宿泊</small>" if camp_live()
                     else "事前決済でポイントが増える<small>カード利用100円につき1ポイント（楽天カード以外で払うより多い分）</small>"))])}
+  {EXAMPLE}
   <a class="c-apply" href="{CARD_AFF}" target="_blank" rel="nofollow sponsored noopener">楽天カードを申し込む（年会費無料）</a>
-  <a class="ok-more" href="{base}rakuten-card/">実際の宿で、いくら戻るかを見る →</a>
+  <a class="ok-more" href="{base}rakuten-card/">ほかの宿で、いくら戻るかを見る →</a>
 </article>"""
 
 nl = f"""<article class="cd" id="nl">
