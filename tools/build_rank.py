@@ -8,7 +8,7 @@
 """
 import os, sys, json, html, hashlib, datetime, calendar, statistics, urllib.parse
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import img_v, place_of, lowest_upcoming
+from common import img_v, place_of, lowest_upcoming, bk_attr
 KEEP_TITLE = {"kinugawa"}   # 検索で上位（2026/10/29時点で2位）。タイトルを変えずに様子を見るエリア
 from common import B_AREA_NAMES, B_AREA_LABEL, is_b, plan_s, plan_l, COND_PLAN
 from common import (site_header, tabbar, footer, og_meta, OUT, DATA, AREAS, AREA_JA, HOTELS, MONTHS, KY, KM,
@@ -74,7 +74,7 @@ def item(i, s, big, small, base, show_area=False):
     <div class="rv"><b>{big}</b><span>{small}</span></div>
     <div class="rk2">神日 {kd} <b>{yen(s['mn'])}</b></div>
   </div>
-  <a class="rgo" href="{esc(rk_link(s['no'], KY, KM, s['kd'][0]))}" target="_blank" rel="noopener sponsored">楽天トラベルで見る</a>
+  <a class="rgo" href="{esc(rk_link(s['no'], KY, KM, s['kd'][0]))}"{bk_attr(s['no'], datetime.date(KY, KM, s['kd'][0]))} target="_blank" rel="noopener sponsored">楽天トラベルで見る</a>
 </li>"""
 
 

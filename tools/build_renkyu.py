@@ -7,7 +7,7 @@
 """
 import os, sys, json, html, hashlib, datetime as dt, urllib.parse
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import is_b, plan_s, plan_l, COND_PLAN, place_of
+from common import is_b, plan_s, plan_l, COND_PLAN, place_of, bk_attr
 from common import (site_header, tabbar, footer, og_meta, OUT, DATA, AREA_JA, HOTELS, PRH, ASOF,
                     WINDOW_START, WINDOW_END, TODAY)
 import jp_holidays
@@ -99,7 +99,7 @@ def item(i, r, base):
     <div class="rv"><b>−{r['save']:,}円</b><span>{lab(r['ref'][0])}泊 {yen(r['ref'][1])} → {lab(r['lo'][0])}泊</span></div>
     <div class="rk2">いちばん安い夜 {lab(r['lo'][0])} <b>{yen(r['lo'][1])}</b></div>
   </div>
-  <a class="rgo" href="{esc(rk_link(r['no'], r['lo'][0]))}" target="_blank" rel="noopener sponsored">楽天トラベルで見る</a>
+  <a class="rgo" href="{esc(rk_link(r['no'], r['lo'][0]))}"{bk_attr(r['no'], r['lo'][0])} target="_blank" rel="noopener sponsored">楽天トラベルで見る</a>
 </li>"""
 
 

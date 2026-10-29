@@ -10,7 +10,7 @@
 """
 import os, sys, json, html, hashlib, datetime as dt, statistics, urllib.parse
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import img_v
+from common import img_v, bk_attr
 from common import is_b, plan_s, plan_l, COND_PLAN, usual_price, is_hc, HC_MIN
 from common import site_header, tabbar, footer, og_meta, OUT, DATA, AREA_JA, HOTELS, PRH, ASOF, TODAY, WINDOW_START, WINDOW_END, KY, KM
 
@@ -83,7 +83,7 @@ def item(i, no, big, small, sub, d, n=1):
     <div class="rv"><b>{big}</b><span>{small}</span></div>
     <div class="rk2">{sub}</div>
   </div>
-  <a class="rgo" href="{esc(rk_link(no, d, n))}" target="_blank" rel="noopener sponsored">楽天トラベルで見る</a>
+  <a class="rgo" href="{esc(rk_link(no, d, n))}"{bk_attr(no, d, n)} target="_blank" rel="noopener sponsored">楽天トラベルで見る</a>
 </li>"""
 
 
@@ -790,7 +790,7 @@ def rare_items(rows):
     <dl class="rare-d"><div><dt>いちばん近い空き</dt><dd><span>{lab(near[0])}</span><b>{yen(near[1])}</b></dd></div><div><dt>いちばん安い日</dt><dd><span>{lab(low[0])}</span><b>{yen(low[1])}</b></dd></div></dl>
     <div class="rare-days"><span>空いている日</span>{chips}{more}</div>
   </div>
-  <a class="rgo" href="{esc(rk_link(no, near[0]))}" target="_blank" rel="noopener sponsored">楽天トラベルで見る</a>
+  <a class="rgo" href="{esc(rk_link(no, near[0]))}"{bk_attr(no, near[0])} target="_blank" rel="noopener sponsored">楽天トラベルで見る</a>
 </li>""")
     return out
 

@@ -283,6 +283,18 @@ def camp_ok(checkin):
     return now < end and out <= _dt.date.fromisoformat(CARD_CAMP["out_last"])
 
 
+def camp_live():
+    return _dt.datetime.now(JST) < _dt.datetime.fromisoformat(CARD_CAMP["book_end"])
+
+
+def camp_html():
+    """キャンペーンの期限の文（assets/bsheet.js の campHtml と同じ文）。期限を過ぎたら入会特典の文に変わる。"""
+    if not camp_live():
+        return f"はじめて楽天カードを作る方は、入会特典で<b>最大{CARD_BONUS:,}円分</b>のポイント（条件あり）"
+    e = _dt.datetime.fromisoformat(CARD_CAMP["book_end"]).astimezone(JST)
+    return f"<b>{e.month}/{e.day} {e.hour}:{e.minute:02d}まで</b>の予約なら、楽天カードの事前決済でポイント<b>2.5倍</b>（エントリーが必要）"
+
+
 def card_extra(v, checkin):
     """楽天カードで事前決済すると、楽天カード以外で払うより多くもらえるポイント（目安）。"""
     return v // 100 + ((v * 10 // 11) // 200 if camp_ok(checkin) else 0)
@@ -349,3 +361,20 @@ def summary_text(no, name="", unit=""):
             j = lambda ks: "・".join(f"{k[1]}月" for k in ks)
             out.append(f"月ごとの最安値で比べると、{j(los)}がいちばん安く、{j(his)}がいちばん高くなります。")
     return out
+
+
+# ---- 予約前シート用：「楽天トラベルで見る」に付ける目印（料金・神日か・朝食付きか）。assets/bsheet.js が読む
+_AREA_OF = {str(h["no"]): h["area"] for h in HOTELS_ALL}
+def bk_attr(no, d, n=1):
+    """宿番号と泊まる日（n泊）から、シートでポイントを計算するための data 属性を作る。料金が無ければ空。"""
+    src = PRH.get(str(no), {})
+    try:
+        ps = [int(src.get((d + _dt.timedelta(days=i)).isoformat(), 0) or 0) for i in range(n)]
+    except Exception:
+        return ""
+    if not all(ps): return ""
+    p = sum(ps)
+    mv = [v for v in month_prices(no, d.year, d.month) if v]
+    k = n == 1 and mv and p == min(mv)
+    area = _AREA_OF.get(str(no), "")
+    return f' data-p="{p}"' + (' data-k="1"' if k else "") + (' data-b="1"' if area and is_b(area) else "")

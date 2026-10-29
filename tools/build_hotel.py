@@ -68,7 +68,7 @@ def tabbar(base, cur):
 
 import sys as _sys; _sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import is_b, plan_s, plan_l, COND_PLAN, usual_price, is_hc, place_of, lowest_upcoming, WD_JA, summary_text
-from common import CARD_CAMP, CARD_BONUS
+from common import CARD_CAMP, CARD_BONUS, camp_html, camp_live
 from common import tabbar, footer, site_header, og_meta, load_area, logo_html, CARD_AFF, SLUG, jan_min, MONTHS, DEFAULT_YM, KY, KM, ASOF_BY_AREA, ASOF, AREA_JA, month_prices
 AREA = load_area()
 
@@ -168,6 +168,11 @@ def feat_html(no, name, base_link_aff):
 {rev_html}
         {('<div class="fac"><h3>館内の施設</h3><ul>' + fac + '</ul></div>') if fac else ''}"""
 
+# キャンペーンの期限を過ぎたら、2.5倍の注記は出さない（毎日の更新で切り替わる）
+CAMP_NOTE = (f'2.5倍は予約前のエントリーと楽天カードでの事前決済が条件で、{CARD_CAMP["book_end_ja"]}までの予約・{CARD_CAMP["out_last_ja"]}チェックアウトまでの宿泊が対象です（楽天トラベルのキャンペーン）。特典分は税抜料金で計算されます。'
+             if camp_live() else "")
+CAMP_COND = f'（エントリーが必要。2.5倍は{CARD_CAMP["out_last_ja"]}チェックアウトまでの宿泊）' if camp_live() else ""
+
 built = 0
 for meta in AREA["hotels"]:
     if str(meta["no"]) not in INFO: continue   # 写真・アクセスがまだ無い宿は、施設情報を取ってから作る
@@ -249,6 +254,7 @@ for meta in AREA["hotels"]:
       {_sum}
       <section class="sv" aria-labelledby="sv-h">
     <div class="sv-hd"><h2 id="sv-h">この宿をいちばん安く泊まるには</h2><span class="pr">PR</span></div>
+    <p class="sv-camp" data-ybcamp="">{camp_html()}</p>
     <ol class="sv-rows" id="sv-rows"></ol>
     <div class="sv-total"><span id="sv-tl">神日の宿代</span><b id="sv-total"></b></div>
     <div class="sv-card">
@@ -257,7 +263,7 @@ for meta in AREA["hotels"]:
     </div>
     <ol class="sv-rows sv-pts" id="sv-pts"></ol>
     <div class="sv-total"><span>戻ってくるポイント</span><b id="sv-ptotal"></b></div>
-    <p class="sv-note" id="sv-note">ポイントは目安です。2.5倍は予約前のエントリーと楽天カードでの事前決済が条件で、{CARD_CAMP["book_end_ja"]}までの予約・{CARD_CAMP["out_last_ja"]}チェックアウトまでの宿泊が対象です（楽天トラベルのキャンペーン）。特典分は税抜料金で計算されます。入会特典は初めて楽天カードを作る方が対象で、3,000ポイントは期間限定・3回以上の利用などの条件があります（{CARD_CAMP["checked"]}時点）。</p>
+    <p class="sv-note" id="sv-note">ポイントは目安です。{CAMP_NOTE}入会特典は初めて楽天カードを作る方が対象で、3,000ポイントは期間限定・3回以上の利用などの条件があります（{CARD_CAMP["checked"]}時点）。</p>
     <a class="sv-apply" href="{CARD_AFF}" target="_blank" rel="nofollow sponsored noopener">楽天カードを申し込む（年会費無料）</a>
     <a class="sv-go" href="{base}rakuten-card/">楽天カードについて詳しく見る <span aria-hidden="true">→</span></a>
   </section>
@@ -298,7 +304,7 @@ for meta in AREA["hotels"]:
         <ul class="peers">{peer_html}</ul>
       </section>
 
-      <div class="cond">※大人2名・1室・{PL}の最安プラン（2名合計・税込）。{H['asof']}時点の楽天トラベルの料金。予約前に最新の料金をご確認ください。ポイントは、楽天カードで事前決済すると楽天カード以外で払うより多くもらえる分の目安です（エントリーが必要。2.5倍は{CARD_CAMP["out_last_ja"]}チェックアウトまでの宿泊）。条件は楽天トラベルのキャンペーンページでご確認ください。宿の写真：楽天トラベル</div>
+      <div class="cond">※大人2名・1室・{PL}の最安プラン（2名合計・税込）。{H['asof']}時点の楽天トラベルの料金。予約前に最新の料金をご確認ください。ポイントは、楽天カードで事前決済すると楽天カード以外で払うより多くもらえる分の目安です{CAMP_COND}。条件は楽天トラベルのキャンペーンページでご確認ください。宿の写真：楽天トラベル</div>
     </div>
     """ + footer(base) + f"""
     <div class="bar" id="bar">
@@ -310,20 +316,6 @@ for meta in AREA["hotels"]:
     </div>
     {tabbar(base, "")}
 
-    <div class="scrim" id="scrim" hidden></div>
-    <section class="bsheet" id="bsheet" role="dialog" aria-modal="true" aria-labelledby="bs-h" hidden>
-      <div class="grab" aria-hidden="true"></div>
-      <h2 id="bs-h">この予約、もっと得にできます</h2>
-      <ol class="ksteps">
-        <li><b>神日に泊まる</b><span id="bs-1"></span></li>
-        <li class="hot"><b>楽天カードで事前決済</b><span id="bs-2"></span></li>
-        <li><b>普段の支払いは2枚目で</b><span>マイルや還元を、次の旅費に回す</span></li>
-      </ol>
-      <p class="bs-note">楽天トラベルでは「{PL}」のプランを選ぶと、表示の料金になります（素泊まりなど他のプランが先に表示されることがあります）。</p>
-      <a class="bs-main" href="{CARD_AFF}" target="_blank" rel="nofollow sponsored noopener">先に楽天カードを申し込む（年会費無料）</a>
-      <a class="bs-skip" id="bs-skip" href="#" target="_blank" rel="noopener sponsored">このまま楽天トラベルで予約する →</a>
-      <button type="button" class="bs-x" id="bs-x" aria-label="閉じる">×</button>
-    </section>
 
     <script>window.HOTEL = {json.dumps(H, ensure_ascii=False, separators=(",", ":"))};</script>
     <script src="{base}assets/hotel.js?v={v2}"></script>

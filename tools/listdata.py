@@ -5,7 +5,7 @@
 """
 import os, sys, json, html, datetime, calendar, urllib.parse
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import img_v, place_of
+from common import img_v, place_of, bk_attr
 from common import (AREAS, MONTHS, DEFAULT_YM, PRH, SLUG, TODAY, CARD_CAMP, is_b, load_area, OUT)
 from tagdefs import tags_of, INFO, TAGS
 
@@ -183,7 +183,7 @@ def first_rows(area, base):
         out.append(f'<li class="ri"><span class="rk">{i + 1}</span><a href="{base}hotels/{h["slug"]}/"><img class="rt" src="{h["thumb"]}" alt="" loading="lazy" width="96" height="64"></a>'
                    f'<div class="rb"><a class="rn" href="{base}hotels/{h["slug"]}/">{esc(h["name"])}</a><span class="rm">{meta}</span>'
                    f'<div class="rk2"><i class="kd">神日</i>{dl} <b>¥{v:,}</b></div></div>'
-                   f'<a class="rgo" href="{link(h["no"], y, m, days[0])}" target="_blank" rel="noopener sponsored">楽天トラベルで見る</a></li>')
+                   f'<a class="rgo" href="{link(h["no"], y, m, days[0])}"{bk_attr(h["no"], datetime.date(y, m, days[0]))} target="_blank" rel="noopener sponsored">楽天トラベルで見る</a></li>')
     return "".join(out), len(rows)
 
 

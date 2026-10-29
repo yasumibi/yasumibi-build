@@ -4,7 +4,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # このリポジトリ
 OUT = os.environ.get("YB_OUT", os.path.join(os.path.dirname(ROOT), "yasumibi-site"))  # 公開用リポジトリ（隣に置く）
-from common import img_v, place_of
+from common import img_v, place_of, bk_attr
 from common import is_b, plan_s, plan_l, COND_PLAN
 from common import site_header, tabbar, footer, og_meta, load_area, AREAS, AREA_JA, MONTHS, DEFAULT_YM, ASOF, PRH, TODAY
 AREA = load_area()
@@ -144,7 +144,7 @@ def _pcard(h, i, m, v, days, gap):
             f'<div class="inf"><span class="rk">{i + 1}</span><a class="nm" href="../hotels/{h["slug"]}/">{h["name"]}</a>'
             f'<span class="meta">{esc(place_of(h))}｜★{h["avg"]:.2f}<i class="mb">{"朝食付き" if is_b(h["area"]) else "2食付き"}</i></span>{body}</div>'
             f'<div class="acts"><a class="cal" href="../hotels/{h["slug"]}/">神日カレンダー<span aria-hidden="true">›</span></a>'
-            f'<a class="bk" href="{_plink(h["no"], m, days[0])}" target="_blank" rel="noopener sponsored">楽天トラベルで見る</a></div></li>')
+            f'<a class="bk" href="{_plink(h["no"], m, days[0])}"{bk_attr(h["no"], datetime.date(m["y"], m["m"], days[0]))} target="_blank" rel="noopener sponsored">楽天トラベルで見る</a></div></li>')
 def _picks(mi):
     m = months[mi]; k = f"{m['y']}-{m['m']:02d}"
     past = m["days"] if (m["y"], m["m"]) < (TODAY.year, TODAY.month) else (TODAY.day - 1 if (m["y"], m["m"]) == (TODAY.year, TODAY.month) else 0)

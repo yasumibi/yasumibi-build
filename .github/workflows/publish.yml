@@ -51,6 +51,7 @@ jobs:
           python3 tools/build_top2.py
           python3 tools/build_search.py
           python3 tools/build_404.py
+          python3 tools/add_bsheet.py      # 予約前シート（楽天トラベルで見る→楽天カードの案内）を全ページに
           python3 tools/add_jsonld.py      # 構造化データ（パンくず・宿の一覧）。見た目は変わらない
           python3 tools/add_analytics.py   # 全ページにアクセス解析（GA4）を入れる。いちばん最後に動かす
       - name: 公開
