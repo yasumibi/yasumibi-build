@@ -45,6 +45,7 @@ jobs:
           f = sorted(glob.glob('data/analytics/*.json'))[-1]; d = json.load(open(f))
           print(f"::notice title=GA4::{list(d['ga4'])} totals={d['ga4'].get('totals')}")
           print(f"::notice title=Cloudflare::{list(d['cloudflare'])} totals={d['cloudflare'].get('totals')} sites={d['cloudflare'].get('sites')}")
+          sc = d.get('search_console') or {}; print(f"::notice title=Search Console::site={sc.get('site')} totals={sc.get('totals')} 途中の日={sc.get('provisional_days')}")
           for e in d['errors']: print(f"::warning title={e['where']}::{e['error'][:600]}")
           PY
       - name: 非公開の yasumibi-data に保存

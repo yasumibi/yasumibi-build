@@ -338,6 +338,9 @@ for slug, (t, pg, bodyhtml) in prose.items():
     write(f"{OUT}/{slug}/index.html", page)
 
 write(f"{OUT}/robots.txt", "User-agent: *\nAllow: /\nSitemap: https://yasumibi.com/sitemap.xml\n")
+# Cloudflare Pages の予備のURL（yasumibi-site.pages.dev）は検索に出さない（本物は yasumibi.com。同じページが2つあると評価が割れる）
+# _headers は Cloudflare Pages の決まりのファイル。このホストだけに noindex を付ける
+write(f"{OUT}/_headers", "https://:project.pages.dev/*\n  X-Robots-Tag: noindex\n\nhttps://:version.:project.pages.dev/*\n  X-Robots-Tag: noindex\n")
 _hs = sorted(os.listdir(f"{OUT}/hotels")) if os.path.isdir(f"{OUT}/hotels") else []
 _ar = sorted(os.listdir(f"{OUT}/areas")) if os.path.isdir(f"{OUT}/areas") else []
 urls = [""] + [x for x in ("ranking/", "ranking/asa/", "renkyu/", "renkyu/2027/", "otoku-days/", "weekend/", "features/") if os.path.isdir(f"{OUT}/{x}")] + [f"areas/{x}/" for x in _ar] + [f"features/{x}/" for x in ("hakone-5man", "hakone-10man", "atami-5man", "atami-10man", "kusatsu-winter", "yufuin-2haku", "beppu-1man", "kinugawa-heijitsu", "gero-gohan", "noboribetsu-size", "arima-renkyu", "kyoto-koyo", "kyoto-asagohan", "kyoto-46", "okinawa-month", "okinawa-ritou", "sapporo-yukimatsuri", "sapporo-1man", "hakone-rotenburo", "atami-youbi", "yufuin-month", "beppu-doyou", "izukogen-pet", "karuizawa-luxury", "kinosaki-kani", "ito-1man", "aki-rare", "akogare", "hc-hakone", "hc-kyoto", "hc-karuizawa", "hc-okinawa")] + [f"hotels/{h}/" for h in _hs] + ["otoku/", "rakuten-card/", "cards/", "about/", "privacy/", "disclosure/"]

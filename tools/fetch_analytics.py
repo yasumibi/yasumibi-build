@@ -25,7 +25,7 @@ end = start + dt.timedelta(days=6)
 iso = start.isocalendar()
 OUTF = os.path.join(DATA, "analytics", f"{iso[0]}-W{iso[1]:02d}.json")
 out = {"week": f"{iso[0]}-W{iso[1]:02d}", "from": start.isoformat(), "to": end.isoformat(),
-       "fetched_at": dt.datetime.now(JST).isoformat(timespec="minutes"), "ga4": {}, "cloudflare": {}, "errors": []}
+       "fetched_at": dt.datetime.now(JST).isoformat(timespec="minutes"), "ga4": {}, "cloudflare": {}, "search_console": {}, "errors": []}
 
 def err(where, e):
     msg = str(e)
@@ -131,7 +131,61 @@ def cloudflare():
     except Exception as e:
         err("cloudflare.web_vitals", e)
 
-for name, fn in (("ga4", ga4), ("cloudflare", cloudflare)):
+# ================= Search Console =================
+# 同じサービスアカウント（GA4_SA_KEY）を、Search Console に「制限付き」以上で追加しておく。
+# Search Console のデータは2〜3日遅れで確定する。月曜の集計では先週の終わり2〜3日がまだ途中なので、
+# 「fresh」（途中を含む）で取って "provisional_days" に途中の日を残し、翌週の集計で先々週の分を確定値に取り直す。
+SC_SITES = [os.environ.get("SC_SITE") or "sc-domain:yasumibi.com", "https://yasumibi.com/"]
+
+def sc_session():
+    key = os.environ.get("GA4_SA_KEY")
+    if not key: raise RuntimeError("GA4_SA_KEY がありません")
+    from google.oauth2 import service_account
+    from google.auth.transport.requests import AuthorizedSession
+    cred = service_account.Credentials.from_service_account_info(json.loads(key), scopes=["https://www.googleapis.com/auth/webmasters.readonly"])
+    return AuthorizedSession(cred)
+
+def sc_fetch(s, d0, d1):
+    import urllib.parse
+    last = None
+    for site in SC_SITES:
+        url = f"https://searchconsole.googleapis.com/webmasters/v3/sites/{urllib.parse.quote(site, safe='')}/searchAnalytics/query"
+        def q(dims, limit):
+            body = {"startDate": d0.isoformat(), "endDate": d1.isoformat(), "dimensions": dims, "rowLimit": limit, "dataState": "all", "type": "web"}
+            r = s.post(url, json=body, timeout=60)
+            if r.status_code != 200: raise RuntimeError(f"{r.status_code} {r.text[:300]}")
+            return [dict(zip(dims, row.get("keys", [])), clicks=row["clicks"], impressions=row["impressions"],
+                         ctr=round(row["ctr"], 4), position=round(row["position"], 1)) for row in r.json().get("rows", [])]
+        try:
+            tot = q([], 1)
+            return {"site": site, "totals": tot[0] if tot else {"clicks": 0, "impressions": 0},
+                    "daily": sorted(q(["date"], 10), key=lambda r: r["date"]),
+                    "queries": q(["query"], 100), "pages": q(["page"], 100), "devices": q(["device"], 5)}
+        except Exception as e:
+            last = e   # ドメインのプロパティで無ければ、URLのプロパティで試す
+    raise last
+
+def search_console():
+    s = sc_session()
+    sc = sc_fetch(s, start, end)
+    today = dt.datetime.now(JST).date()
+    sc["provisional_days"] = [d.isoformat() for d in (end - dt.timedelta(days=i) for i in range(7)) if (today - d).days <= 3]
+    out["search_console"] = sc
+    # 先々週のファイルがあれば、Search Console の分を確定値で取り直す
+    p0 = start - dt.timedelta(days=7); iso0 = p0.isocalendar()
+    f0 = os.path.join(DATA, "analytics", f"{iso0[0]}-W{iso0[1]:02d}.json")
+    if os.path.exists(f0):
+        try:
+            prev = json.load(open(f0, encoding="utf-8"))
+            if (prev.get("search_console") or {}).get("provisional_days") or "search_console" not in prev:
+                fin = sc_fetch(s, p0, p0 + dt.timedelta(days=6)); fin["provisional_days"] = []
+                prev["search_console"] = fin
+                json.dump(prev, open(f0, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+                print(f"Search Console：{os.path.basename(f0)} を確定値に更新")
+        except Exception as e:
+            err("search_console.prev_week", e)
+
+for name, fn in (("ga4", ga4), ("cloudflare", cloudflare), ("search_console", search_console)):
     try: fn()
     except Exception as e: err(name, e)
 
