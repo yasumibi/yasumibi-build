@@ -169,6 +169,9 @@ def feat_html(no, name, base_link_aff):
         {('<div class="fac"><h3>館内の施設</h3><ul>' + fac + '</ul></div>') if fac else ''}"""
 
 # キャンペーンの期限を過ぎたら、2.5倍の注記は出さない（毎日の更新で切り替わる）
+OT_RATE = (f'楽天トラベルでエントリーして楽天カードで事前決済すると、国内宿泊のポイントは2.5倍。楽天カード以外で払うと1倍です（2.5倍は{CARD_CAMP["book_end_ja"]}までの予約・{CARD_CAMP["out_last_ja"]}チェックアウトまでの宿泊）。'
+           if camp_live() else "楽天カードで事前決済すると、楽天カード以外で払うよりポイントが多くもらえます（カード利用100円につき1ポイント）。")
+OT_NOTE = "（エントリーが必要・2.5倍）。特典分は税抜料金で計算されます" if camp_live() else "（カード通常分）"
 CAMP_NOTE = (f'2.5倍は予約前のエントリーと楽天カードでの事前決済が条件で、{CARD_CAMP["book_end_ja"]}までの予約・{CARD_CAMP["out_last_ja"]}チェックアウトまでの宿泊が対象です（楽天トラベルのキャンペーン）。特典分は税抜料金で計算されます。'
              if camp_live() else "")
 CAMP_COND = f'（エントリーが必要。2.5倍は{CARD_CAMP["out_last_ja"]}チェックアウトまでの宿泊）' if camp_live() else ""
@@ -361,13 +364,13 @@ otoku = ohead + f"""
       <span class="sn">02</span>
       <div class="sb">
         <h2>楽天カードで払う</h2>
-        <p>楽天トラベルでエントリーして楽天カードで事前決済すると、国内宿泊のポイントは2.5倍。楽天カード以外で払うと1倍です（2.5倍は{CARD_CAMP["out_last_ja"]}チェックアウトまでの宿泊）。はじめての方は、入会と利用で合計5,000ポイントの特典もあります。ポイントは宿代とは別に戻ってきます。</p>
+        <p>{OT_RATE}はじめての方は、入会と利用で合計5,000ポイントの特典もあります。ポイントは宿代とは別に戻ってきます。</p>
         <section class="calc2" aria-labelledby="ch">
           <div class="c-hd"><h3 id="ch">戻ってくるポイントを計算する</h3><span class="pr">PR</span></div>
           <label class="c-in" for="cv"><span>宿代（2名分・税込）</span><span class="ci"><span aria-hidden="true">¥</span><input id="cv" inputmode="numeric" value="50,000" autocomplete="off"></span></label>
           <ol class="c-rows" id="cr" aria-live="polite"></ol>
           <div class="c-total"><span>戻ってくるポイント</span><b id="ct"></b></div>
-          <p class="c-note">楽天カードで事前決済した場合（エントリーが必要・2.5倍）の目安です。特典分は税抜料金で計算されます。入会特典は初めて楽天カードを作る方が対象で、3,000ポイントは期間限定・3回以上の利用などの条件があります（{CARD_CAMP["checked"]}時点）。</p>
+          <p class="c-note">楽天カードで事前決済した場合{OT_NOTE}の目安です。入会特典は初めて楽天カードを作る方が対象で、3,000ポイントは期間限定・3回以上の利用などの条件があります（{CARD_CAMP["checked"]}時点）。</p>
           <a class="c-apply" href="{CARD_AFF}" target="_blank" rel="nofollow sponsored noopener">楽天カードを申し込む（年会費無料）</a>
           <p class="c-fine">申し込み・審査・特典の条件は、楽天カードの公式ページでご確認ください。</p>
           <a class="ok-more" href="{ob}rakuten-card/">実際の宿での試算と、上位カードとの違いを見る →</a>
@@ -388,9 +391,10 @@ otoku = ohead + f"""
 </main>
 """ + footer(ob) + otabs + """
 <script>
-(function(){const i=document.getElementById('cv'),r=document.getElementById('cr'),t=document.getElementById('ct');
+(function(){const CE=Date.parse('""" + CARD_CAMP["book_end"] + """');   // キャンペーンの期限（過ぎたら特典分を足さない）
+const i=document.getElementById('cv'),r=document.getElementById('cr'),t=document.getElementById('ct');
 const n=(v)=>v.toLocaleString('ja-JP');
-function f(){const v=parseInt((i.value||'').replace(/[^0-9]/g,''),10)||0;const tb=Math.floor(v*10/11),b=Math.floor(tb/100),x=Math.floor(v/100)+Math.floor(tb/200);
+function f(){const v=parseInt((i.value||'').replace(/[^0-9]/g,''),10)||0;const tb=Math.floor(v*10/11),b=Math.floor(tb/100),x=Math.floor(v/100)+(Date.now()<CE?Math.floor(tb/200):0);
 if(!v){r.innerHTML='<li><span>金額を入れてください</span></li>';t.textContent='—';return;}
 r.innerHTML='<li><span>楽天カード以外で払っても（1倍）</span><b>'+n(b)+'円分</b></li>'+
 '<li class="dn"><span>楽天カードで事前決済すると増える分</span><b>+'+n(x)+'円分</b></li>'+

@@ -6,7 +6,7 @@ from common import site_header, tabbar, footer, og_meta, load_area, OUT, ASOF, C
 
 CHECKED = "2026年10月23日"  # 楽天カード・楽天トラベルの公式ページで条件を確認した日
 from common import SLUG
-from common import CARD_CAMP, CARD_BONUS, card_extra
+from common import CARD_CAMP, CARD_BONUS, card_extra, camp_live
 WD = "日月火水木金土"
 
 
@@ -92,11 +92,11 @@ P10 = (_tb // 100, _tb // 100 + 1000 + _tb // 200, _tb // 100 + 1000 + _tb // 10
 best = max(ex, key=lambda r: r["save"])
 base = "../"
 title = "楽天カードで旅費はいくら下がる？楽天トラベルのポイントと入会特典｜YASUMIBI"
-desc = "楽天トラベルを楽天カードで事前決済するとポイント2.5倍。温泉宿の実際の料金で、神日と組み合わせた節約額を試算。入会特典や上位カードとの違いも。"
+desc = ("楽天トラベルを楽天カードで事前決済するとポイント2.5倍。" if camp_live() else "楽天トラベルを楽天カードで事前決済すると、ポイントが増えます。") + "温泉宿の実際の料金で、神日と組み合わせた節約額を試算。入会特典や上位カードとの違いも。"
 v1 = ver("site.css"); v2 = ver("hotel.css"); v3 = ver("top.css", "otoku.css")
 apply = f'<a class="c-apply" href="{CARD_AFF}" target="_blank" rel="nofollow sponsored noopener">楽天カードを申し込む（年会費無料）</a>'
-tiles = (card_tile("card", "楽天カード", "永年無料", "2.5倍", "年に数回の旅行なら、これで十分") +
-         card_tile("premium", "楽天プレミアムカード", "11,000円", "3.5倍", "年110万円以上、または空港ラウンジをよく使う人向け", '<p class="cx">プライオリティ・パス 年5回</p>'))
+tiles = (card_tile("card", "楽天カード", "永年無料", "2.5倍" if camp_live() else "公式ページで", "年に数回の旅行なら、これで十分") +
+         card_tile("premium", "楽天プレミアムカード", "11,000円", "3.5倍" if camp_live() else "公式ページで", "年110万円以上、または空港ラウンジをよく使う人向け", '<p class="cx">プライオリティ・パス 年5回</p>'))
 
 page = f"""<!doctype html>
 <html lang="ja">
@@ -149,8 +149,8 @@ page = f"""<!doctype html>
     <p class="fine">通常分と特典分は税抜料金で、楽天カードの通常分はカードの利用額で計算した目安です。2.5倍・3.5倍は{CARD_CAMP["book_end_ja"]}までの予約・{CARD_CAMP["out_last_ja"]}チェックアウトまでの宿泊が対象です。</p>
     <details class="more"><summary>2.5倍になる条件</summary>
       <ul class="notes">
-        <li>楽天トラベルのキャンペーンページで、チェックアウトより前にエントリー</li>
-        <li>楽天カードで事前決済（現地払い・家族カードは対象外）</li>
+        <li>予約する前に、楽天トラベルのキャンペーンページでエントリー（予約したあとのエントリーは対象外）</li>
+        <li>予約のときに楽天カードで事前決済（現地払い・家族カード・予約後の支払い方法の変更は対象外）</li>
         <li>国内の宿泊のみ（日帰り・デイユース・楽パック・海外は対象外）</li>
       </ul>
     </details>
@@ -199,5 +199,8 @@ page = f"""<!doctype html>
 </main>
 """ + footer(base) + tabbar(base, "otoku") + "</body></html>\n"
 os.makedirs(f"{OUT}/rakuten-card", exist_ok=True)
+if not camp_live():   # キャンペーンの期限を過ぎたら、2.5倍・3.5倍の試算の区画は出さない（期限切れの文を残さない）
+    import re as _re
+    page = _re.sub(r'\s*<section class="sec" aria-labelledby="s2">.*?</section>', "", page, count=1, flags=_re.S)
 open(f"{OUT}/rakuten-card/index.html", "w", encoding="utf-8").write(page)
 print("rakuten-card built", [(SLUG[r['h']['no']][1], r['save']) for r in ex])

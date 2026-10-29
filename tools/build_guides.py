@@ -6,7 +6,7 @@
 """
 import os, sys, json, html, hashlib, statistics, datetime as dt, urllib.parse, calendar
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import is_b, plan_s, plan_l, COND_PLAN, place_of, bk_attr
+from common import is_b, plan_s, plan_l, COND_PLAN, place_of, bk_attr, camp_live, CARD_CAMP
 from common import (site_header, tabbar, footer, og_meta, OUT, DATA, AREA_JA, HOTELS, PRH, ASOF,
                     WINDOW_START, WINDOW_END, TODAY, CARD_AFF)
 import jp_holidays
@@ -339,7 +339,7 @@ def build_otoku_days():
   <ol class="od-s">
     <li><span class="n">01</span><div><h3>泊まる日は、神日で決める</h3><p>同じ宿でも、日によって2名1泊で数万円ちがいます。まずはYASUMIBIで、その宿がいちばん安い日（神日）を見つけます。</p><a class="od-a" href="{base}">神日を探す →</a></div></li>
     <li><span class="n">02</span><div><h3>予約は、5と0のつく日に</h3><p>毎月5・10・15・20・25・30日は、楽天トラベルで使える割引クーポンが出る日です。クーポンを取ってから予約します。クーポンの内容や対象の宿泊日は、回ごとに変わります。</p><a class="od-a" href="{esc(aff(FIVE0))}" target="_blank" rel="noopener sponsored">5と0のつく日のクーポンを見る →</a></div></li>
-    <li><span class="n">03</span><div><h3>払うのは、楽天カードで事前決済</h3><p>楽天カードで事前にオンライン決済すると、ポイントは通常2倍。キャンペーンにエントリーすると2.5倍になります（国内宿泊・カード払いの分）。</p><a class="od-a" href="{base}cards/">旅行に使うカードを比べる →</a></div></li>
+    <li><span class="n">03</span><div><h3>払うのは、楽天カードで事前決済</h3><p>楽天カードで事前にオンライン決済すると、ポイントは通常2倍。{'予約の前にキャンペーンにエントリーすると2.5倍になります（国内宿泊・' + CARD_CAMP['book_end_ja'] + 'までの予約）。' if camp_live() else ''}</p><a class="od-a" href="{base}cards/">旅行に使うカードを比べる →</a></div></li>
   </ol>
 </section>
 <section class="rsec"><h2>スーパーSALE（年4回）</h2>

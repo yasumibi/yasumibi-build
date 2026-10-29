@@ -10,7 +10,7 @@ import os, sys, html, hashlib
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import is_b, plan_s, plan_l, COND_PLAN
 from common import site_header, tabbar, footer, og_meta, OUT, CARD_AFF
-from common import CARD_CAMP, CARD_BONUS
+from common import CARD_CAMP, CARD_BONUS, camp_live
 
 CHECKED = "2026年10月23日"
 # 提携が通るまでは公式ページへのふつうのリンク。提携後にアフィリエイトリンクへ差し替える。
@@ -56,7 +56,8 @@ rakuten = f"""<article class="cd" id="rakuten">
     <div><h2>楽天カード</h2><p class="cd-lead">はじめての方は、入会と3回の利用で<b class="big">{CARD_BONUS:,}円分</b>のポイント。</p></div>
   </div>
   {spec([("年会費", "永年無料"), ("入会特典", "5,000ポイント<small>うち3,000は期間限定ポイント・3回以上の利用などの条件あり</small>"),
-         ("楽天トラベル", f"ポイント2.5倍<small>エントリー・事前決済が必要。{CARD_CAMP['out_last_ja']}チェックアウトまでの宿泊</small>")])}
+         ("楽天トラベル", (f"ポイント2.5倍<small>エントリー・事前決済が必要。{CARD_CAMP['book_end_ja']}までの予約・{CARD_CAMP['out_last_ja']}チェックアウトまでの宿泊</small>" if camp_live()
+                    else "事前決済でポイントが増える<small>カード利用100円につき1ポイント（楽天カード以外で払うより多い分）</small>"))])}
   <a class="c-apply" href="{CARD_AFF}" target="_blank" rel="nofollow sponsored noopener">楽天カードを申し込む（年会費無料）</a>
   <a class="ok-more" href="{base}rakuten-card/">実際の宿で、いくら戻るかを見る →</a>
 </article>"""
