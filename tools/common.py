@@ -166,6 +166,21 @@ def month_prices(no, y, m):
     return [int(src.get(f"{y}-{m:02d}-{d:02d}", 0) or 0) for d in range(1, calendar.monthrange(y, m)[1] + 1)]
 
 
+def lowest_upcoming(no):
+    """この先（明日から、表示している半年の終わりまで）でいちばん安い料金と、その日。無ければ None。タイトル・説明文に使う"""
+    best = None
+    for k, v in PRH.get(str(no), {}).items():
+        try: v = int(v or 0)
+        except (TypeError, ValueError): continue
+        if not v: continue
+        d = _dt.date.fromisoformat(k)
+        if d <= TODAY or d < WINDOW_START or d > WINDOW_END: continue
+        if best is None or v < best[0] or (v == best[0] and d < best[1]): best = (v, d)
+    return best
+
+WD_JA = "月火水木金土日"
+
+
 # ---- 地区名（loc）
 # 住所から地区名を決める決まり。エリアごとに分ける（箱根の「湯本」が、那須湯本・東山の湯本・長門湯本に当たらないように）
 LOC_RULES = {

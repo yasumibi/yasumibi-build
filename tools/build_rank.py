@@ -8,7 +8,8 @@
 """
 import os, sys, json, html, hashlib, datetime, calendar, statistics, urllib.parse
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import img_v, place_of
+from common import img_v, place_of, lowest_upcoming
+KEEP_TITLE = {"kinugawa"}   # 検索で上位（2026/10/29時点で2位）。タイトルを変えずに様子を見るエリア
 from common import B_AREA_NAMES, B_AREA_LABEL, is_b, plan_s, plan_l, COND_PLAN
 from common import (site_header, tabbar, footer, og_meta, OUT, DATA, AREAS, AREA_JA, HOTELS, MONTHS, KY, KM,
                     month_prices, ASOF_BY_AREA, ASOF, TODAY)
@@ -216,7 +217,12 @@ for a in AREAS:
         body += ranking_block("cospa", "★4.5以上なのに、この値段。", "口コミ★4.5以上の宿を、神日の料金が安い順に。いわゆるコスパの良い宿。", cospa(nos), F_COSPA, base, quip=Q_COSPA)
         body += ranking_block("near", "いつ行っても、だいたい安い。", "神日に近い料金の日が多い宿。日程を選ばない。", near, F_NEAR, base, quip=Q_NEAR)
     body += f'<section class="rsec ar-more" aria-labelledby="arm-h"><h2 id="arm-h">ほかのエリアも見る</h2>{L.tiles_row(base, first=a["region"], skip=a["key"])}</section>'
-    title = f"{nm}の宿・いちばん安い日（神日）｜★4.3以上の{len(nos)}軒・毎日更新｜YASUMIBI"
+    # 検索する人の言葉（エリア＋宿が安い日）に合わせる。検索の順位がよいエリアは、順位が落ちないよう今のタイトルのまま（Search Consoleで確かめてから）
+    _lows = [x for x in (lowest_upcoming(n) for n in nos) if x]
+    if a["key"] in KEEP_TITLE or not _lows:
+        title = f"{nm}の宿・いちばん安い日（神日）｜★4.3以上の{len(nos)}軒・毎日更新｜YASUMIBI"
+    else:
+        title = f"{nm}の宿が安い日｜★4.3以上{len(nos)}軒・2名{plan_s(a['key'])}¥{min(_lows)[0]:,}〜｜YASUMIBI"
     desc = f"{nm}の口コミ★4.3以上の宿{len(nos)}軒の料金を全日調べて、宿ごとにいちばん安く泊まれる日（神日）を表示。月・曜日・予算・こだわりで絞り込めます。毎日更新。"
     crumb = f'<a href="{base}">ホーム</a><span aria-hidden="true">›</span><a href="{base}#areas">エリア</a><span aria-hidden="true">›</span><span>{esc(nm)}</span>'
     write(f"{OUT}/areas/{a['key']}/index.html", page(f"areas/{a['key']}/", title, desc, crumb, f"{esc(nm)}、どの日に泊まる？",

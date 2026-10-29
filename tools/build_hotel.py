@@ -67,7 +67,7 @@ def tabbar(base, cur):
     return f'<nav class="tabbar" aria-label="メニュー">{a}</nav>'
 
 import sys as _sys; _sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import is_b, plan_s, plan_l, COND_PLAN, usual_price, is_hc, place_of
+from common import is_b, plan_s, plan_l, COND_PLAN, usual_price, is_hc, place_of, lowest_upcoming, WD_JA
 from common import CARD_CAMP, CARD_BONUS
 from common import tabbar, footer, site_header, og_meta, load_area, logo_html, CARD_AFF, SLUG, jan_min, MONTHS, DEFAULT_YM, KY, KM, ASOF_BY_AREA, ASOF, AREA_JA, month_prices
 AREA = load_area()
@@ -204,8 +204,15 @@ for meta in AREA["hotels"]:
     peer_html = "".join(peer_li(h) for h in peers)
     room_html = (f'<figure class="room"><a href="{esc(info_link)}" target="_blank" rel="noopener sponsored"><img src="{esc(info["room"])}" alt="{esc(name)}の客室（楽天トラベル掲載写真）" loading="lazy"></a><figcaption>客室の一例（写真：楽天トラベル）</figcaption></figure>' if info.get("room") else "")
     kdl = "・".join(f"{KM}/{d}({wd(KY,KM,d)})" for d in kd[:3])
-    title = f"{name}（{place_of(meta)}）の神日カレンダー｜いちばん安い日と料金｜YASUMIBI"
-    desc = f"{full}の宿泊料金を全日調査。{KM}月の神日は{kdl}の{yen(mn0)}（2名{PS}）。楽天カードで払った場合のポイントも試算。"
+    # 検索する人の言葉（宿名＋安い日・最安値）に合わせる。料金は毎日の更新で新しくなる
+    _lo = lowest_upcoming(meta["no"])
+    if _lo:
+        title = f"{name}の安い日・最安値｜{place_of(meta)}・2名{PS}{yen(_lo[0])}〜｜YASUMIBI"
+        desc = (f"{name}（{place_of(meta)}）が安い日を、この先半年のすべての日で調べました。いちばん安いのは"
+                f"{_lo[1].month}/{_lo[1].day}({WD_JA[_lo[1].weekday()]})泊の{yen(_lo[0])}（2名{PS}・税込）。楽天トラベルの料金から毎日更新。")
+    else:
+        title = f"{name}の安い日・最安値｜{place_of(meta)}｜YASUMIBI"
+        desc = f"{name}（{place_of(meta)}）が安い日を、この先半年のすべての日で調べています。楽天トラベルの料金から毎日更新。"
     _wh = IMG_WH.get(info.get("img", ""))
     hero_wh = f' width="{_wh[0]}" height="{_wh[1]}"' if _wh else ""
     page = HEAD.format(robots="index,follow", title=esc(title), desc=esc(desc), canon=f"hotels/{H['slug']}/", base=base, v1=v1, v2=v2, og=og_meta(esc(title), esc(desc), f"hotels/{H['slug']}/",
