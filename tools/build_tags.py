@@ -6,6 +6,7 @@
 import os, sys, json, re, html, hashlib, statistics, datetime as dt, urllib.parse
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import is_b, plan_s, plan_l, COND_PLAN, place_of, bk_attr
+from tagarea import pages_for_area
 from common import (site_header, tabbar, footer, og_meta, OUT, DATA, AREA_JA, AREAS, HOTELS, PRH, ASOF,
                     WINDOW_START, WINDOW_END, TODAY)
 
@@ -74,9 +75,11 @@ def item(i, r, base, t):
 </li>"""
 
 
-def chips(cur_slug, base, prefix):
+def chips(cur_slug, base, prefix, area=None):
+    """タグのチップ。エリアのページでは、同じエリアのページがあるタグはそこへ（無ければ全国版へ）。"""
+    ok = {s for s, *_ in pages_for_area(area)} if area else set()
     return '<nav class="tgc" aria-label="タグ"><ul>' + "".join(
-        f'<li><a href="{base}{prefix}{t["slug"]}/"{" aria-current=page" if t["slug"] == cur_slug else ""}>{esc(t["name"])}</a></li>' for t in LIVE) + "</ul></nav>"
+        f'<li><a href="{base}{prefix}{t["slug"]}/{(area + "/") if t["slug"] in ok else ""}"{" aria-current=page" if t["slug"] == cur_slug else ""}>{esc(t["name"])}</a></li>' for t in LIVE) + "</ul></nav>"
 
 
 def page(path, title, desc, crumbs, body, base):
@@ -145,7 +148,7 @@ for t in LIVE:
         ar = rows_for(t, a); base = "../../../"
         body = f"""<header class="ok-hd"><p class="tg-eb">{esc(AREA_JA[a])}・タグ</p><h1>{esc(AREA_JA[a])}で{esc(t['q'])}</h1>
   <p>{esc(AREA_JA[a])}の★4.3以上の宿のうち、<b>{esc(t['name'])}</b>にあてはまる<b>{len(ar)}軒</b>の神日です。</p></header>
-{chips(t['slug'], base, 'tags/')}
+{chips(t['slug'], base, 'tags/', a)}
 <section class="rsec"><h2>{esc(AREA_JA[a])}の{esc(t['q'])}</h2>
   <ol class="rl">{''.join(item(i + 1, r, base, t) for i, r in enumerate(ar))}</ol></section>
 <p class="gd-next"><a href="{base}tags/{t['slug']}/">全国の{esc(t['q'])}を見る →</a>　<a href="{base}areas/{a}/">{esc(AREA_JA[a])}の宿をすべて見る →</a></p>

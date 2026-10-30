@@ -8,6 +8,8 @@
 """
 import os, sys, json, html, hashlib, datetime, calendar, statistics, urllib.parse
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from tagarea import pages_for_area
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import img_v, place_of, lowest_upcoming, bk_attr
 KEEP_TITLE = {"kinugawa"}   # 検索で上位（2026/10/29時点で2位）。タイトルを変えずに様子を見るエリア
 from common import B_AREA_NAMES, B_AREA_LABEL, is_b, plan_s, plan_l, COND_PLAN
@@ -208,6 +210,10 @@ for a in AREAS:
     nm = a["name"]
     # いちばん上に、このエリアの宿の一覧（絞り込み・並び替えつき）。その下にランキング（宿が5軒以上のとき）
     body = L.list_section(a["key"], base)
+    _tp = pages_for_area(a["key"])   # このエリアのタグ×エリアのページへのリンク（検索で入りやすいページに、サイトの中から道をつくる）
+    if _tp:
+        body += (f'<section class="rsec tg-sec" aria-labelledby="tgh"><h2 id="tgh">{esc(nm)}を、こだわりで探す</h2><ul class="tg-ar">'
+                 + "".join(f'<li><a href="{base}tags/{s}/{a["key"]}/">{esc(n)}<small>{c}軒</small></a></li>' for s, n, q, c in _tp) + "</ul></section>")
     gap = pen = near = []
     if len(nos) >= 5:
         gap, pen, near = rank_sets(nos)

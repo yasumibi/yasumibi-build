@@ -69,6 +69,7 @@ def tabbar(base, cur):
 import sys as _sys; _sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import is_b, plan_s, plan_l, COND_PLAN, usual_price, is_hc, place_of, lowest_upcoming, WD_JA, summary_text
 from common import CARD_CAMP, CARD_BONUS, camp_html, camp_live
+from tagarea import pages_for_hotel
 from common import tabbar, footer, site_header, og_meta, load_area, logo_html, CARD_AFF, SLUG, jan_min, MONTHS, DEFAULT_YM, KY, KM, ASOF_BY_AREA, ASOF, AREA_JA, month_prices
 AREA = load_area()
 
@@ -224,6 +225,9 @@ for meta in AREA["hotels"]:
     _st = summary_text(meta["no"], name, f"2名{PS}・税込")   # その宿だけの安い日のまとめ（毎日の料金から）
     _sum = (f'<section class="hsum" aria-labelledby="hsum-h"><h2 id="hsum-h">{esc(name)}の安い日</h2><p>{"".join(esc(t) for t in _st)}</p>'
             f'<small>{H["asof"]}時点の楽天トラベルの料金から。毎日更新します。</small></section>') if _st else ""
+    _ht = pages_for_hotel(meta["no"])   # この宿があてはまる「エリア×こだわり」のページへ
+    _tags_html = ('<div class="htags"><h3>' + esc(H['area']) + 'で、同じこだわりの宿</h3><ul>'
+                  + "".join(f'<li><a href="{base}tags/{s}/{meta["area"]}/">{esc(n)}<small>{c}軒</small></a></li>' for s, n, q, c in _ht) + "</ul></div>") if _ht else ""
     _wh = IMG_WH.get(info.get("img", ""))
     hero_wh = f' width="{_wh[0]}" height="{_wh[1]}"' if _wh else ""
     page = HEAD.format(robots="index,follow", title=esc(title), desc=esc(desc), canon=f"hotels/{H['slug']}/", base=base, v1=v1, v2=v2, og=og_meta(esc(title), esc(desc), f"hotels/{H['slug']}/",
@@ -297,6 +301,7 @@ for meta in AREA["hotels"]:
       <section class="blk" aria-labelledby="fth">
         <div class="sh"><h2 id="fth">宿の特徴</h2></div>
         {feat_html(meta["no"], name, info_link)}
+        {_tags_html}
         {room_html}
         <dl class="acc"><dt>アクセス</dt><dd>{esc(info.get('access',''))}</dd><dt>最寄り駅</dt><dd>{esc(info.get('station',''))}</dd></dl>
         <p class="note">※宿の情報・評価・口コミは楽天トラベルの掲載内容です（2026年10月21日時点）。</p>
