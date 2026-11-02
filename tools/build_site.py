@@ -17,7 +17,7 @@ def logo_html(base, href=None):
     href = base if href is None else href
     return (f'<a class="brand" href="{href}" aria-label="YASUMIBI ホーム">'
             f'<img class="lg-l" src="{base}assets/img/logo.png" alt="YASUMIBI" width="714" height="120">'
-            f'<img class="lg-d" src="{base}assets/img/logo-dark.png" alt="" width="714" height="120"></a>')
+            f'</a>')   # 暗い色のロゴは使っていない（ダークモードなし）。読み込まないよう外した
 
 def img_of(no): return INFO.get(str(no), {}).get("img", "")
 def thumb_of(no): return INFO.get(str(no), {}).get("thumb", "")
@@ -345,6 +345,11 @@ _hs = sorted(os.listdir(f"{OUT}/hotels")) if os.path.isdir(f"{OUT}/hotels") else
 _ar = sorted(os.listdir(f"{OUT}/areas")) if os.path.isdir(f"{OUT}/areas") else []
 urls = [""] + [x for x in ("ranking/", "ranking/asa/", "renkyu/", "renkyu/2027/", "otoku-days/", "weekend/", "features/") if os.path.isdir(f"{OUT}/{x}")] + [f"areas/{x}/" for x in _ar] + [f"features/{x}/" for x in ("hakone-5man", "hakone-10man", "atami-5man", "atami-10man", "kusatsu-winter", "yufuin-2haku", "beppu-1man", "kinugawa-heijitsu", "gero-gohan", "noboribetsu-size", "arima-renkyu", "kyoto-koyo", "kyoto-asagohan", "kyoto-46", "okinawa-month", "okinawa-ritou", "sapporo-yukimatsuri", "sapporo-1man", "hakone-rotenburo", "atami-youbi", "yufuin-month", "beppu-doyou", "izukogen-pet", "karuizawa-luxury", "kinosaki-kani", "ito-1man", "aki-rare", "akogare", "hc-hakone", "hc-kyoto", "hc-karuizawa", "hc-okinawa")] + [f"hotels/{h}/" for h in _hs] + ["otoku/", "rakuten-card/", "cards/", "about/", "privacy/", "disclosure/"]
 urls += sorted(os.path.relpath(r, OUT) + "/" for r, ds, fs in os.walk(f"{OUT}/tags") if "index.html" in fs)
+# 検索に出さないページ（noindex：掲載を休んでいる宿など）は、サイトマップに入れない（「出さない」のに「見て」と言う矛盾をなくす）
+def _indexable(u):
+    try: return "noindex" not in open(f"{OUT}/{u}index.html", encoding="utf-8").read(4000)
+    except OSError: return False
+urls = [u for u in urls if _indexable(u)]
 today = datetime.date.today().isoformat()
 write(f"{OUT}/sitemap.xml", '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + "".join(f"  <url><loc>https://yasumibi.com/{u}</loc><lastmod>{today}</lastmod></url>\n" for u in urls) + "</urlset>\n")
 print("built", len(FEATURES), "features")
