@@ -21,7 +21,7 @@ def logo_html(base, href=None):
     href = base if href is None else href
     return (f'<a class="brand" href="{href}" aria-label="YASUMIBI ホーム">'
             f'<img class="lg-l" src="{base}assets/img/logo.png" alt="YASUMIBI" width="714" height="120">'
-            f'<img class="lg-d" src="{base}assets/img/logo-dark.png" alt="" width="714" height="120"></a>')
+            f'</a>')   # 暗い色のロゴは使っていない（ダークモードなし）。読み込まないよう外した
 
 def esc(s): return html.escape(str(s), quote=True)
 def ver(*files):
@@ -124,6 +124,10 @@ _tx = [f for f in FEATURES if f[3] is None]; _ph = [f for f in FEATURES if f[3]]
 FEATURES = [x for pair in zip(_tx, _ph) for x in pair] + _tx[len(_ph):] + _ph[len(_tx):]   # 文字と写真を交互に
 feat_html = "".join(fcard(*f) for f in FEATURES[:TOP_N])
 v1 = ver("site.css"); v2 = ver("hotel.css", "hotel.js"); v3 = ver("top.css", "top.js")
+# トップの宿データは別ファイルに（HTMLに埋めると4MBになり、表示が遅くなるため。2026/11/2）
+_td = json.dumps(DATA, ensure_ascii=False, separators=(",", ":"))
+open(f"{OUT}/top-data.json", "w", encoding="utf-8").write(_td)
+TOP_V = hashlib.md5(_td.encode()).hexdigest()[:8]
 
 # ---- TOP5の2つを、はじめからHTMLに書いておく（あとからJSで入れると、下の段がずれる＝CLS）
 #      assets/top.js の card()・picks() と同じ中身。JSは読み込み後に同じものを描き直すだけ。
@@ -257,7 +261,7 @@ page = f"""<!doctype html>
 {footer(base)}
 
 {tabbar(base, "home")}
-<script>window.TOP = {json.dumps(DATA, ensure_ascii=False)};</script>
+<script>window.TOP_SRC = "/top-data.json?v={TOP_V}";</script>
 <script src="{base}assets/top.js?v={v3}"></script>
 <script src="{base}assets/kw.js?v={ver("kw.js")}" defer></script>
 </body></html>

@@ -11,7 +11,7 @@ def logo_html(base, href=None):
     href = base if href is None else href
     return (f'<a class="brand" href="{href}" aria-label="YASUMIBI ホーム">'
             f'<img class="lg-l" src="{base}assets/img/logo.png" alt="YASUMIBI" width="714" height="120">'
-            f'<img class="lg-d" src="{base}assets/img/logo-dark.png" alt="" width="714" height="120"></a>')
+            f'</a>')   # 暗い色のロゴは使っていない（ダークモードなし）。読み込まないよう外した
 
 
 def site_header(base, cur=""):
