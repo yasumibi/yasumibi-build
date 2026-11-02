@@ -225,11 +225,9 @@ for a in AREAS:
     body += f'<section class="rsec ar-more" aria-labelledby="arm-h"><h2 id="arm-h">ほかのエリアも見る</h2>{L.tiles_row(base, first=a["region"], skip=a["key"])}</section>'
     # 検索する人の言葉（エリア＋宿が安い日）に合わせる。検索の順位がよいエリアは、順位が落ちないよう今のタイトルのまま（Search Consoleで確かめてから）
     _lows = [x for x in (lowest_upcoming(n) for n in nos) if x]
-    if a["key"] in KEEP_TITLE or not _lows:
-        title = f"{nm}の宿・いちばん安い日（神日）｜★4.3以上の{len(nos)}軒・毎日更新｜YASUMIBI"
-    else:
-        title = f"{nm}の宿が安い日｜★4.3以上{len(nos)}軒・2名{plan_s(a['key'])}¥{min(_lows)[0]:,}〜｜YASUMIBI"
-    desc = f"{nm}の口コミ★4.3以上の宿{len(nos)}軒の料金を全日調べて、宿ごとにいちばん安く泊まれる日（神日）を表示。月・曜日・予算・こだわりで絞り込めます。毎日更新。"
+    # 「◯◯ 安い時期」で探す人の言葉に合わせる（2026/11/2 週次レポートの改善②）。食事条件は、そのエリアで比べている条件にする
+    title = f"{nm}の安い時期は？いちばん安い日（神日）がわかる｜★4.3以上の宿｜YASUMIBI"
+    desc = f"{nm}の★4.3以上・{plan_l(a['key'])}の宿{len(nos)}軒を、毎日の料金で比べて、月ごとにいちばん安い日（神日）を出しています。休みを、安い日に合わせるなら。"
     crumb = f'<a href="{base}">ホーム</a><span aria-hidden="true">›</span><a href="{base}#areas">エリア</a><span aria-hidden="true">›</span><span>{esc(nm)}</span>'
     write(f"{OUT}/areas/{a['key']}/index.html", page(f"areas/{a['key']}/", title, desc, crumb, f"{esc(nm)}、どの日に泊まる？",
                                                     f"{esc(nm)}の★4.3以上の宿{len(nos)}軒。宿ごとに、いちばん安い日（神日）がわかります。毎日更新。", body, base, cover(a["key"], base), LJS(base), "areas"))
