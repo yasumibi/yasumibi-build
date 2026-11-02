@@ -11,7 +11,12 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from tagarea import pages_for_area
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import img_v, place_of, lowest_upcoming, bk_attr
-KEEP_TITLE = {"kinugawa"}   # 検索で上位（2026/10/29時点で2位）。タイトルを変えずに様子を見るエリア
+KEEP_TITLE = {"kinugawa"}
+# 題名・説明文で「◯◯温泉」と書くエリア（ひとつの温泉地の名前で、「◯◯温泉」で探されるところ。「・」で2つ並ぶエリアや街は付けない）
+ONSEN = {"hakone", "atami", "kusatsu", "yufuin", "beppu", "arima", "kinosaki", "gero", "ito", "shuzenji", "kawaguchiko", "jozankei", "akan",
+         "nasu", "ikaho", "shima", "yugawara", "isawa", "yuzawa", "okuhida", "wakura", "dogo", "kurokawa", "ibusuki", "zao", "naruko",
+         "shiobara", "hanamaki", "bandaiatami", "iizaka", "higashiyama", "tsukioka", "unazuki", "awara", "nozawa", "hirugami", "izunagaoka",
+         "yumura", "misasa", "kaike", "tamatsukuri", "yubara", "kirishima", "tokachigawa", "yunoyama", "nagato", "yuda", "tsuetate", "totsukawa"}   # 検索で上位（2026/10/29時点で2位）。タイトルを変えずに様子を見るエリア
 from common import B_AREA_NAMES, B_AREA_LABEL, is_b, plan_s, plan_l, COND_PLAN
 from common import (site_header, tabbar, footer, og_meta, OUT, DATA, AREAS, AREA_JA, HOTELS, MONTHS, KY, KM,
                     month_prices, ASOF_BY_AREA, ASOF, TODAY)
@@ -226,8 +231,13 @@ for a in AREAS:
     # 検索する人の言葉（エリア＋宿が安い日）に合わせる。検索の順位がよいエリアは、順位が落ちないよう今のタイトルのまま（Search Consoleで確かめてから）
     _lows = [x for x in (lowest_upcoming(n) for n in nos) if x]
     # 「◯◯ 安い時期」で探す人の言葉に合わせる（2026/11/2 週次レポートの改善②）。食事条件は、そのエリアで比べている条件にする
-    title = f"{nm}の安い時期は？いちばん安い日（神日）がわかる｜★4.3以上の宿｜YASUMIBI"
-    desc = f"{nm}の★4.3以上・{plan_l(a['key'])}の宿{len(nos)}軒を、毎日の料金で比べて、月ごとにいちばん安い日（神日）を出しています。休みを、安い日に合わせるなら。"
+    #   検索語は「◯◯温泉 安い時期」「◯◯ 旅館 安い」が多い → 「安い時期」「宿」「安い」と、温泉地は「◯◯温泉」を題名に入れる。最安値でクリックされやすく
+    alab = f"{nm}温泉" if a["key"] in ONSEN else nm
+    if a["key"] in KEEP_TITLE or not _lows:
+        title = f"{nm}の宿・いちばん安い日（神日）｜★4.3以上の{len(nos)}軒・毎日更新｜YASUMIBI"
+    else:
+        title = f"{alab}の安い時期は？宿がいちばん安い日（神日）｜★4.3以上{len(nos)}軒・2名{plan_s(a['key'])}¥{min(_lows)[0]:,}〜｜YASUMIBI"
+    desc = f"{alab}の★4.3以上・{plan_l(a['key'])}の宿{len(nos)}軒を、毎日の料金で比べて、月ごとにいちばん安い日（神日）を出しています。休みを、安い日に合わせるなら。"
     crumb = f'<a href="{base}">ホーム</a><span aria-hidden="true">›</span><a href="{base}#areas">エリア</a><span aria-hidden="true">›</span><span>{esc(nm)}</span>'
     write(f"{OUT}/areas/{a['key']}/index.html", page(f"areas/{a['key']}/", title, desc, crumb, f"{esc(nm)}、どの日に泊まる？",
                                                     f"{esc(nm)}の★4.3以上の宿{len(nos)}軒。宿ごとに、いちばん安い日（神日）がわかります。毎日更新。", body, base, cover(a["key"], base), LJS(base), "areas"))
