@@ -233,13 +233,15 @@ for a in AREAS:
     # 「◯◯ 安い時期」で探す人の言葉に合わせる（2026/11/2 週次レポートの改善②）。食事条件は、そのエリアで比べている条件にする
     #   検索語は「◯◯温泉 安い時期」「◯◯ 旅館 安い」が多い → 「安い時期」「宿」「安い」と、温泉地は「◯◯温泉」を題名に入れる。最安値でクリックされやすく
     alab = f"{nm}温泉" if a["key"] in ONSEN else nm
+    # 最初の見出しも題名と同じ問いに。街（朝食付きで比べるエリア）は「ホテル」で探されるので言い方を分ける
+    ask = f"{nm}のホテルが安い時期は？" if is_b(a["key"]) else f"{alab}の安い時期は？"
     if a["key"] in KEEP_TITLE or not _lows:
         title = f"{nm}の宿・いちばん安い日（神日）｜★4.3以上の{len(nos)}軒・毎日更新｜YASUMIBI"
     else:
-        title = f"{alab}の安い時期は？宿がいちばん安い日（神日）｜★4.3以上{len(nos)}軒・2名{plan_s(a['key'])}¥{min(_lows)[0]:,}〜｜YASUMIBI"
+        title = f"{ask}{'いちばん安い日' if is_b(a['key']) else '宿がいちばん安い日'}（神日）｜★4.3以上{len(nos)}軒・2名{plan_s(a['key'])}¥{min(_lows)[0]:,}〜｜YASUMIBI"
     desc = f"{alab}の★4.3以上・{plan_l(a['key'])}の宿{len(nos)}軒を、毎日の料金で比べて、月ごとにいちばん安い日（神日）を出しています。休みを、安い日に合わせるなら。"
     crumb = f'<a href="{base}">ホーム</a><span aria-hidden="true">›</span><a href="{base}#areas">エリア</a><span aria-hidden="true">›</span><span>{esc(nm)}</span>'
-    write(f"{OUT}/areas/{a['key']}/index.html", page(f"areas/{a['key']}/", title, desc, crumb, f"{esc(nm)}、どの日に泊まる？",
+    write(f"{OUT}/areas/{a['key']}/index.html", page(f"areas/{a['key']}/", title, desc, crumb, esc(ask) if a["key"] not in KEEP_TITLE else f"{esc(nm)}、どの日に泊まる？",
                                                     f"{esc(nm)}の★4.3以上の宿{len(nos)}軒。宿ごとに、いちばん安い日（神日）がわかります。毎日更新。", body, base, cover(a["key"], base), LJS(base), "areas"))
     if gap or pen: made.append((a, len(nos), gap[:1]))
 
