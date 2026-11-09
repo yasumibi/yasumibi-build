@@ -10,7 +10,7 @@ import os, sys, json, html, hashlib, datetime, calendar, statistics, urllib.pars
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from tagarea import pages_for_area
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import img_v, place_of, lowest_upcoming, bk_attr
+from common import img_v, place_of, lowest_upcoming, bk_attr, area_summary
 KEEP_TITLE = {"kinugawa"}
 # 題名・説明文で「◯◯温泉」と書くエリア（ひとつの温泉地の名前で、「◯◯温泉」で探されるところ。「・」で2つ並ぶエリアや街は付けない）
 ONSEN = {"hakone", "atami", "kusatsu", "yufuin", "beppu", "arima", "kinosaki", "gero", "ito", "shuzenji", "kawaguchiko", "jozankei", "akan",
@@ -214,7 +214,14 @@ for a in AREAS:
     base = "../../"
     nm = a["name"]
     # いちばん上に、このエリアの宿の一覧（絞り込み・並び替えつき）。その下にランキング（宿が5軒以上のとき）
-    body = L.list_section(a["key"], base)
+    alab = f"{nm}温泉" if a["key"] in ONSEN else nm
+    # 最初の見出しも題名と同じ問いに。街（朝食付きで比べるエリア）は「ホテル」で探されるので言い方を分ける
+    ask = f"{nm}のホテルが安い時期は？" if is_b(a["key"]) else f"{alab}の安い時期は？"
+    # 最初の見出し（◯◯の安い時期は？）への答えの文。毎日の料金から作る（AIの回答や検索で引用されやすいように、答えを先に書く）
+    _as = area_summary(a["key"], alab, nos, f"2名{plan_s(a['key'])}・税込")
+    _sum = (f'<section class="hsum" aria-labelledby="asum-h"><h2 id="asum-h">{esc(alab)}の安い時期</h2><p>{"".join(esc(t) for t in _as)}</p>'
+            f'<small>{TODAY.month}/{TODAY.day}時点の楽天トラベルの料金から。毎日更新します。</small></section>') if _as else ""
+    body = _sum + L.list_section(a["key"], base)
     _tp = pages_for_area(a["key"])   # このエリアのタグ×エリアのページへのリンク（検索で入りやすいページに、サイトの中から道をつくる）
     if _tp:
         body += (f'<section class="rsec tg-sec" aria-labelledby="tgh"><h2 id="tgh">{esc(nm)}を、こだわりで探す</h2><ul class="tg-ar">'
@@ -232,9 +239,6 @@ for a in AREAS:
     _lows = [x for x in (lowest_upcoming(n) for n in nos) if x]
     # 「◯◯ 安い時期」で探す人の言葉に合わせる（2026/11/2 週次レポートの改善②）。食事条件は、そのエリアで比べている条件にする
     #   検索語は「◯◯温泉 安い時期」「◯◯ 旅館 安い」が多い → 「安い時期」「宿」「安い」と、温泉地は「◯◯温泉」を題名に入れる。最安値でクリックされやすく
-    alab = f"{nm}温泉" if a["key"] in ONSEN else nm
-    # 最初の見出しも題名と同じ問いに。街（朝食付きで比べるエリア）は「ホテル」で探されるので言い方を分ける
-    ask = f"{nm}のホテルが安い時期は？" if is_b(a["key"]) else f"{alab}の安い時期は？"
     if a["key"] in KEEP_TITLE or not _lows:
         title = f"{nm}の宿・いちばん安い日（神日）｜★4.3以上の{len(nos)}軒・毎日更新｜YASUMIBI"
     else:

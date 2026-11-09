@@ -378,3 +378,48 @@ def bk_attr(no, d, n=1):
     k = n == 1 and mv and p == min(mv)
     area = _AREA_OF.get(str(no), "")
     return f' data-p="{p}"' + (' data-k="1"' if k else "") + (' data-b="1"' if area and is_b(area) else "")
+
+
+# ---- エリアの「安い時期」のまとめ（エリアページの最初に出す答えの文。毎日の料金から作る）
+def area_summary(area, label, nos, unit=""):
+    """エリアの宿（nos）の料金から、安い月・高い月・いちばん安い宿と日・土曜泊との差を出して、2〜3文にする。"""
+    import statistics as _st
+    byh = {}
+    for no in nos:
+        src = PRH.get(str(no), {})
+        for k, v in src.items():
+            try: v = int(v or 0)
+            except (TypeError, ValueError): continue
+            if not v: continue
+            d = _dt.date.fromisoformat(k)
+            if d <= TODAY or d < WINDOW_START or d > WINDOW_END: continue
+            if (d.month == 12 and d.day >= 29) or (d.month == 1 and d.day <= 3): continue   # 年末年始は比べない
+            byh.setdefault(no, []).append((v, d))
+    if len(byh) < 2: return []
+    # 月ごと：宿ごとの「その月のいちばん安い日の料金」の中央値（宿が3軒以上ある月だけ）
+    mon = {}
+    for no, xs in byh.items():
+        mm = {}
+        for v, d in xs: mm.setdefault((d.year, d.month), []).append(v)
+        for k, vs in mm.items():
+            if len(vs) >= 7: mon.setdefault(k, []).append(min(vs))
+    mon = {k: _st.median(v) for k, v in mon.items() if len(v) >= max(2, min(3, len(byh)))}
+    out = []
+    if len(mon) >= 3:
+        order = sorted(mon, key=lambda k: (mon[k], k))
+        lo, hi = order[0], order[-1]
+        lo2 = [k for k in order[1:3] if mon[k] <= mon[lo] * 1.03]
+        lows = "と".join(f"{k[1]}月" for k in sorted([lo] + lo2[:1]))
+        diff = int(round((mon[hi] - mon[lo]) / 100.0)) * 100
+        out.append(f"{label}の宿が安い時期は、{lows}です。" + (f"高い{hi[1]}月と比べると、宿ごとのいちばん安い日の料金が¥{diff:,}ほど安くなります（{len(nos)}軒の中央値）。" if diff >= 1000 else ""))
+    v, d, no = min(((v, d, no) for no, xs in byh.items() for v, d in xs), key=lambda x: (x[0], x[1]))
+    nm = next((h["name"] for h in HOTELS_ALL if h["no"] == no), "")
+    out.append(f"この先半年でいちばん安いのは、{nm}の{d.month}/{d.day}({WD_JA[d.weekday()]})泊・¥{v:,}{'（' + unit + '）' if unit else ''}です。")
+    sat, wk = [], []
+    for xs in byh.values():
+        s_ = [v for v, d in xs if d.weekday() == 5]; w_ = [v for v, d in xs if d.weekday() in (6, 0, 1, 2, 3)]
+        if len(s_) >= 3 and len(w_) >= 5: sat.append(_st.median(s_)); wk.append(_st.median(w_))
+    if len(sat) >= 2:
+        g = int(round((_st.median(sat) - _st.median(wk)) / 100.0)) * 100
+        if g >= 1000: out.append(f"土曜泊は、日〜木泊より¥{g:,}ほど高めです（宿ごとの中央値）。")
+    return out
