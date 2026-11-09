@@ -377,7 +377,12 @@ def bk_attr(no, d, n=1):
     mv = [v for v in month_prices(no, d.year, d.month) if v]
     k = n == 1 and mv and p == min(mv)
     area = _AREA_OF.get(str(no), "")
-    return f' data-p="{p}"' + (' data-k="1"' if k else "") + (' data-b="1"' if area and is_b(area) else "")
+    # 土曜泊の平均（同じ月・年末年始を除く）。予約前シートで「土曜泊より −◯円」を出すのに使う（宿ページの satAvg と同じ考え方）
+    sat = ""
+    if n == 1:
+        sv = [v for i, v in enumerate(mv, 1) if v and _dt.date(d.year, d.month, i).weekday() == 5 and not ((d.month == 12 and i >= 29) or (d.month == 1 and i <= 3))]
+        if sv: sat = round(sum(sv) / len(sv))
+    return f' data-p="{p}"' + (' data-k="1"' if k else "") + (' data-b="1"' if area and is_b(area) else "") + (f' data-s="{sat}"' if sat and sat > p else "")
 
 
 # ---- エリアの「安い時期」のまとめ（エリアページの最初に出す答えの文。毎日の料金から作る）

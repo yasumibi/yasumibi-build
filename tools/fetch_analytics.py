@@ -14,7 +14,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.environ.get("YB_DATA", os.path.join(ROOT, "data"))
 JST = dt.timezone(dt.timedelta(hours=9))
 CF_SITE_TAG = os.environ.get("CF_SITE_TAG") or "0a93914d9d3d4e50838308c6548442f3"   # Cloudflare Web Analytics のサイト（yasumibi-site.pages.dev +2。秘密ではない）
-EVENTS = ["rakuten_travel", "rakuten_card", "other_card", "favorite_add", "search", "sheet_open"]
+EVENTS = ["rakuten_travel", "rakuten_card", "other_card", "favorite_add", "search", "sheet_open", "card_holder", "card_entry"]
 
 # ---- 対象の週
 if len(sys.argv) > 1:
@@ -87,6 +87,17 @@ def ga4():
                                     {"filter": {"fieldName": "eventName", "inListFilter": {"values": ["rakuten_travel", "rakuten_card", "other_card", "sheet_open"]}}})
     except Exception as e:
         err("ga4.events_by_source", e)
+    # カードの欄の見せ方ごと（2026/11/9）：rakuten_card・card_entry の view、card_holder の choice。GA4にカスタムディメンション view・choice の登録が必要
+    try:
+        g["card_by_view"] = run(["eventName", "customEvent:view"], ["eventCount"], 100, "eventCount",
+                                {"filter": {"fieldName": "eventName", "inListFilter": {"values": ["rakuten_card", "card_entry"]}}})
+    except Exception as e:
+        err("ga4.card_by_view（GA4にカスタムディメンション view を登録すると取れる）", e)
+    try:
+        g["card_holder"] = run(["customEvent:choice", "customEvent:place"], ["eventCount"], 50, "eventCount",
+                               {"filter": {"fieldName": "eventName", "stringFilter": {"value": "card_holder"}}})
+    except Exception as e:
+        err("ga4.card_holder（GA4にカスタムディメンション choice を登録すると取れる）", e)
     # 運営者の端末（?owner=1 → traffic_type=internal）が見分けられているか。GA4のフィルタが「テスト」の間だけ取れる
     try:
         g["internal_test"] = run(["testDataFilterName"], ["sessions", "screenPageViews"], 10, "sessions")

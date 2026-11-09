@@ -250,6 +250,7 @@ for meta in AREA["hotels"]:
             <div class="kl"><span class="tag">神日</span><span id="k-days"></span></div>
             <div class="kp"><span id="k-price" class="num"></span><span class="u">2名{PS}・税込</span></div>
           </div>
+          <p class="hsv" id="hsv"></p>
           <div class="hact">
             <button type="button" class="fav" id="fav" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.2-9.3C1.6 7.8 3.9 4.5 7.3 4.5c2 0 3.6 1.1 4.7 2.7 1.1-1.6 2.7-2.7 4.7-2.7 3.4 0 5.7 3.3 4.5 6.7-1.7 4.7-9.2 9.3-9.2 9.3z"/></svg><span>お気に入り</span></button>
           </div>
@@ -261,17 +262,8 @@ for meta in AREA["hotels"]:
       {_sum}
       <section class="sv" aria-labelledby="sv-h">
     <div class="sv-hd"><h2 id="sv-h">この宿をいちばん安く泊まるには</h2><span class="pr">PR</span></div>
-    <p class="sv-camp" data-ybcamp="">{camp_html()}</p>
-    <ol class="sv-rows" id="sv-rows"></ol>
-    <div class="sv-total"><span id="sv-tl">神日の宿代</span><b id="sv-total"></b></div>
-    <div class="sv-card">
-      <a href="{esc(RK_FACE[1])}" target="_blank" rel="nofollow sponsored noopener"><img src="{esc(RK_FACE[0])}" alt="楽天カードの券面" width="200" height="200" loading="lazy"></a>
-      <div><b>楽天カードで払うと</b><small>年会費永年無料<br>ポイントは宿代とは別に戻ってきます</small></div>
-    </div>
-    <ol class="sv-rows sv-pts" id="sv-pts"></ol>
-    <div class="sv-total"><span>戻ってくるポイント</span><b id="sv-ptotal"></b></div>
-    <p class="sv-note" id="sv-note">ポイントは目安です。{CAMP_NOTE}入会特典は初めて楽天カードを作る方が対象で、3,000ポイントは期間限定・3回以上の利用などの条件があります（{CARD_CAMP["checked"]}時点）。</p>
-    <a class="sv-apply" href="{CARD_AFF}" target="_blank" rel="nofollow sponsored noopener">楽天カードを申し込む（年会費無料）</a>
+    <p class="sv-price" id="sv-price"></p>
+    <div id="sv-card"></div>
     <a class="sv-go" href="{base}rakuten-card/">楽天カードについて詳しく見る <span aria-hidden="true">→</span></a>
   </section>
 
