@@ -127,7 +127,7 @@ made = []
 for t in LIVE:
     rows = rows_for(t)
     areas = {a["key"]: len(rows_for(t, a["key"])) for a in AREAS}   # 朝食付きのエリアは全国版に入らないので、エリアごとに数える
-    order = [a["key"] for a in AREAS if areas.get(a["key"], 0) >= 2]
+    order = [a["key"] for a in AREAS if areas.get(a["key"], 0) >= t.get("min", 2)]   # タグによっては3軒以上（温泉に入れるホテル）
     # 全エリア
     base = "../../"
     ach = "".join(f'<li><a href="{a}/">{esc(AREA_JA[a])}<small>{areas[a]}軒</small></a></li>' for a in order)
@@ -141,6 +141,9 @@ for t in LIVE:
 {FINE}"""
     title = f"全国の{t['q']}｜安い日がわかる★4.3以上{len(rows)}軒｜YASUMIBI"
     desc = f"全国の{t['q']}を、口コミ★4.3以上の{len(rows)}軒から。宿ごとにいちばん安く泊まれる日（神日）と料金がわかります。楽天トラベルの料金から毎日更新。"
+    if t.get("min", 2) >= 3:
+        title = f"街なかで温泉に入れるホテル｜安い日がわかる★4.3以上{len(rows)}軒｜YASUMIBI"
+        desc = f"東京・大阪・京都・札幌など街のエリアで、天然温泉に入れる★4.3以上のホテル{len(rows)}軒。宿ごとにいちばん安く泊まれる日（神日）と料金がわかります。毎日更新。"
     write(f"tags/{t['slug']}/", page(f"tags/{t['slug']}/", title, desc, [(t["name"], None)], body, base))
     made.append(f"tags/{t['slug']}/")
     # エリア別
@@ -156,6 +159,10 @@ for t in LIVE:
 {FINE}"""
         title = f"{AREA_JA[a]}で{t['q']}｜安い日がわかる★4.3以上{len(ar)}軒｜YASUMIBI"
         desc = f"{AREA_JA[a]}で{t['q']}を、口コミ★4.3以上の{len(ar)}軒から。宿ごとにいちばん安く泊まれる日（神日）と料金がわかります。楽天トラベルの料金から毎日更新。"
+        if t.get("min", 2) >= 3 and ar:   # 温泉に入れるホテル：説明文に実際の数字を入れる（探す人の「いつ・いくら」に答える）
+            r0 = ar[0]; _wd = "月火水木金土日"[r0["d"].weekday()]
+            desc = (f"{AREA_JA[a]}で温泉（天然温泉）に入れる★4.3以上のホテル{len(ar)}軒。いちばん安いのは{H[r0['no']]['name']}の"
+                    f"{r0['d'].month}/{r0['d'].day}({_wd})泊・¥{r0['p']:,}（2名{plan_s(a)}・税込）。宿ごとの神日がわかります。毎日更新。")
         write(f"tags/{t['slug']}/{a}/", page(f"tags/{t['slug']}/{a}/", title, desc, [(t["name"], f"{base}tags/{t['slug']}/"), (AREA_JA[a], None)], body, base))
         made.append(f"tags/{t['slug']}/{a}/")
 

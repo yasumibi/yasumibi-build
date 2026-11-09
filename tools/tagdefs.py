@@ -47,6 +47,17 @@ def meal(no):
 SEA = ("オーシャンビュー", "海一望", "海を一望", "海が見え", "海を望", "相模湾", "海を見渡", "全室オーシャン", "海側", "海の見える")
 MED = {no: statistics.median([p for _, p in nights(no)]) for no in H if len(nights(no)) >= 10}
 
+# 街なかの温泉ホテル（2026/11/9）：朝食付きで比べる街のエリアの宿で、天然温泉があるもの。温泉ではない大浴場だけの宿や、外の温泉に案内している宿は入れない
+_OFF = re.compile(r"温泉まで|近くの温泉|近隣の温泉|周辺の温泉|提携|利用券|割引|温泉街まで")
+def machi_onsen(no):
+    c = DET.get(no)
+    if not c or not is_b(H[no]["area"]): return False
+    f, intro = c[9], c[7]
+    if "温泉" in f: return True                      # 楽天の設備の一覧を優先
+    if _OFF.search(intro): return False
+    return bool(re.search(r"天然温泉|温泉大浴場|源泉|温泉付", intro))
+
+
 # q：検索する人の言い方（タグページの title・h1・説明文に使う。「熱海で犬と泊まれる宿」のように「◯◯で」に続けて自然な形）
 TAGS = [
     dict(slug="hc", name="ハイクラス", q="高級旅館・ハイクラスの宿", h1="ハイクラスの宿が、手の届く日。", both=True,
@@ -70,6 +81,9 @@ TAGS = [
     dict(slug="gohan", name="ごはんが評判", q="ごはんがおいしいと評判の宿", h1="ごはんが評判の宿の、神日。",
          rule="楽天トラベルの口コミで「食事」の評価が4.7以上の宿だけ。",
          f=lambda no: meal(no) >= 4.7, sub=lambda no: f"食事の評価 ★{meal(no):.2f}"),
+    dict(slug="onsen", name="温泉に入れるホテル", q="温泉に入れるホテル", h1="街なかで、温泉に入れるホテルの神日。", both=True, min=3,
+         rule="朝食付きで比べている街のエリアの宿のうち、楽天トラベルの設備に「温泉」がある宿、または宿の紹介文に「天然温泉」「温泉大浴場」「源泉」と書かれている宿だけ。温泉ではない大浴場だけの宿や、近くの温泉を案内している宿は入れません。",
+         f=machi_onsen),
     dict(slug="1man", name="1人1万円台", q="1人1万円台で泊まれる宿", h1="1人1万円台で泊まれる宿の、神日。",
          rule="2名1泊2食付きで4万円未満（1人2万円未満）になる日がある宿だけ。",
          f=lambda no: any(p < 40000 for _, p in nights(no)), per=True),

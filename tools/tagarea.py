@@ -20,7 +20,7 @@ def pages_for_area(area):
         out = []
         for t in TAGS:
             n = sum(1 for no in nos if _in(t, no, area))
-            if n >= MIN_N: out.append((t["slug"], t["name"], t["q"], n))
+            if n >= t.get("min", MIN_N): out.append((t["slug"], t["name"], t["q"], n))
         _CACHE[area] = out
     return _CACHE[area]
 
