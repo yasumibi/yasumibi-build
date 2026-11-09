@@ -192,7 +192,7 @@ def page(path, title, desc, crumb, h1, lead, body, base, cv="", js="", cur="feat
 {site_header(base, cur)}
 <main class="gin ok rkp">
   <nav class="crumb" aria-label="現在地">{crumb}</nav>
-  {cv}<header class="ok-hd"><h1>{h1}</h1><p>{lead}</p></header>
+  {cv}<header class="ok-hd"><h1>{h1}</h1>{f"<p>{lead}</p>" if lead else ""}</header>
   {body}
   <p class="fine">※{COND_PLAN}（2名合計・税込）。{KY}年{KM}月泊の料金で計算（年末年始・過ぎた日は除く）。料金は楽天トラベルの{esc(ASOF)}時点のもので、毎日更新しています。宿の写真：楽天トラベル</p>
 </main>
@@ -220,7 +220,7 @@ for a in AREAS:
     # 最初の見出し（◯◯の安い時期は？）への答えの文。毎日の料金から作る（AIの回答や検索で引用されやすいように、答えを先に書く）
     _as = area_summary(a["key"], alab, nos, f"2名{plan_s(a['key'])}・税込")
     _sum = (f'<section class="hsum" aria-labelledby="asum-h"><h2 id="asum-h">{esc(alab)}の安い時期</h2><p>{"".join(esc(t) for t in _as)}</p>'
-            f'<small>{TODAY.month}/{TODAY.day}時点の楽天トラベルの料金から。毎日更新します。</small></section>') if _as else ""
+            f'<small>{TODAY.month}/{TODAY.day}時点の楽天トラベルの料金（★4.3以上の{len(nos)}軒）から。差は宿ごとの料金の中央値です。毎日更新します。</small></section>') if _as else ""
     body = _sum + L.list_section(a["key"], base)
     _tp = pages_for_area(a["key"])   # このエリアのタグ×エリアのページへのリンク（検索で入りやすいページに、サイトの中から道をつくる）
     if _tp:
@@ -246,7 +246,7 @@ for a in AREAS:
     desc = f"{alab}の★4.3以上・{plan_l(a['key'])}の宿{len(nos)}軒を、毎日の料金で比べて、月ごとにいちばん安い日（神日）を出しています。休みを、安い日に合わせるなら。"
     crumb = f'<a href="{base}">ホーム</a><span aria-hidden="true">›</span><a href="{base}#areas">エリア</a><span aria-hidden="true">›</span><span>{esc(nm)}</span>'
     write(f"{OUT}/areas/{a['key']}/index.html", page(f"areas/{a['key']}/", title, desc, crumb, esc(ask) if a["key"] not in KEEP_TITLE else f"{esc(nm)}、どの日に泊まる？",
-                                                    f"{esc(nm)}の★4.3以上の宿{len(nos)}軒。宿ごとに、いちばん安い日（神日）がわかります。毎日更新。", body, base, cover(a["key"], base), LJS(base), "areas"))
+                                                    ("" if _as else f"{esc(nm)}の★4.3以上の宿{len(nos)}軒。宿ごとに、いちばん安い日（神日）がわかります。毎日更新。"), body, base, cover(a["key"], base), LJS(base), "areas"))
     if gap or pen: made.append((a, len(nos), gap[:1]))
 
 # 全国版：2食付きの宿と朝食付きの宿で、ランキングを分ける（違う条件の宿は同じ並びに入れない）

@@ -411,7 +411,7 @@ def area_summary(area, label, nos, unit=""):
         lo2 = [k for k in order[1:3] if mon[k] <= mon[lo] * 1.03]
         lows = "と".join(f"{k[1]}月" for k in sorted([lo] + lo2[:1]))
         diff = int(round((mon[hi] - mon[lo]) / 100.0)) * 100
-        out.append(f"{label}の宿が安い時期は、{lows}です。" + (f"高い{hi[1]}月と比べると、宿ごとのいちばん安い日の料金が¥{diff:,}ほど安くなります（{len(nos)}軒の中央値）。" if diff >= 1000 else ""))
+        out.append(f"{label}の宿が安い時期は、{lows}です。" + (f"高い{hi[1]}月と比べると、宿ごとのいちばん安い日の料金が¥{diff:,}ほど安くなります。" if diff >= 1000 else ""))
     v, d, no = min(((v, d, no) for no, xs in byh.items() for v, d in xs), key=lambda x: (x[0], x[1]))
     nm = next((h["name"] for h in HOTELS_ALL if h["no"] == no), "")
     out.append(f"この先半年でいちばん安いのは、{nm}の{d.month}/{d.day}({WD_JA[d.weekday()]})泊・¥{v:,}{'（' + unit + '）' if unit else ''}です。")
@@ -421,5 +421,5 @@ def area_summary(area, label, nos, unit=""):
         if len(s_) >= 3 and len(w_) >= 5: sat.append(_st.median(s_)); wk.append(_st.median(w_))
     if len(sat) >= 2:
         g = int(round((_st.median(sat) - _st.median(wk)) / 100.0)) * 100
-        if g >= 1000: out.append(f"土曜泊は、日〜木泊より¥{g:,}ほど高めです（宿ごとの中央値）。")
+        if g >= 1000: out.append(f"土曜泊は、日〜木泊より¥{g:,}ほど高めです。")
     return out
