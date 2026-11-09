@@ -95,6 +95,7 @@ FEATURES = [("weekend/", "今週末に泊まれる神日。", "直前でも、�
             ("features/okinawa-ritou/", "離島と本島、神日で比べると。", "沖縄・宮古島・石垣と本島", "ishigaki-kabira.jpg"),
             ("features/sapporo-yukimatsuri/", "雪まつりの週と、前後の週。", "札幌・2027年2月4日〜11日", "sapporo-snow.jpg"),
             ("features/sapporo-1man/", "1人7千円以下で泊まれる、札幌の宿。", "札幌・★4.3以上・朝食付き", "sapporo-odori-blue.jpg"),
+            ("features/machi-onsen-2man/", "2人で2万円未満。街なかで温泉に入れるホテル。", "東京・大阪・京都・札幌など・天然温泉", "tokyo-skytree.jpg"),
             ("features/hakone-rotenburo/", "部屋に露天風呂。土曜と平日で、いくら違う？", "箱根・露天風呂付き客室", "hakone-torii.jpg"),
             ("features/atami-youbi/", "熱海、何曜日に泊まると安い？", "熱海・曜日ごとの料金", "atami-panorama.jpg"),
             ("features/yufuin-month/", "由布院、いちばん安い月は？", "由布院・月ごとの神日", "yufuin-kinrinko.jpg"),

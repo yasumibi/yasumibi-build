@@ -560,6 +560,29 @@ write("sapporo-1man", page("sapporo-1man", "sapporo", "sapporo-odori-blue.jpg", 
       "1人あたり＝2名合計÷2。"))
 made.append("sapporo-1man")
 
+# 19. 街なかの温泉ホテル：2名で2万円未満（1泊朝食）になる日がある宿（2026/11/9 戦略部屋の依頼。タグ「温泉に入れるホテル」と同じ判定）
+from tagdefs import machi_onsen
+MO_MAX = 19999
+rows = []
+for no in H:
+    if not machi_onsen(no): continue
+    ns = [x for x in nights(no) if x[1] <= MO_MAX]
+    if ns:
+        d, v = min(ns, key=lambda x: (x[1], x[0])); rows.append((v, no, d, len(ns)))
+rows.sort()
+_mo_all = sum(1 for no in H if machi_onsen(no) and nights(no))
+_cities = {}
+for v, no, d, k in rows: _cities[H[no]["area"]] = _cities.get(H[no]["area"], 0) + 1
+_top = "・".join(AREA_JA[a] for a, _ in sorted(_cities.items(), key=lambda x: -x[1])[:4])
+its = [item(i + 1, no, yen(v), f"{AREA_JA[H[no]['area']]}・{lab(d)}泊・2名1泊朝食", f"2万円未満の日 {k}日", d) for i, (v, no, d, k) in enumerate(rows)]
+write("machi-onsen-2man", page("machi-onsen-2man", "tokyo", "tokyo-skytree.jpg", "街なかの温泉・2名で2万円未満", "2人で2万円未満。街なかで温泉に入れるホテルの神日。",
+      f"東京・大阪・京都・札幌など街のエリアで、天然温泉に入れる★4.3以上のホテル{_mo_all}軒のうち、2名1泊朝食で2万円未満になる日がある{len(rows)}軒を、安い順に並べました。",
+      sec("安い順", f"{len(rows)}軒（多い街：{_top}）。旅館まで行かなくても、温泉には入れる。", ol(its, 10),
+          (f"1位の{esc(H[rows[0][1]]['name'])}は、{lab(rows[0][2])}泊なら2人で{yen(rows[0][0])}。" if rows else "")),
+      "温泉に入れるホテル＝楽天トラベルの設備に「温泉」がある宿、または紹介文に「天然温泉」などと書かれている宿（温泉ではない大浴場だけの宿は入れていません）。料金は2名1泊朝食付きの合計・税込。",
+      place="街なかの温泉ホテル", place_href="tags/onsen/"))
+made.append("machi-onsen-2man")
+
 # ---- 既存エリアの2本目以降
 import re as _re
 def wk_sat(no):
