@@ -42,7 +42,7 @@ page = f"""<!doctype html>
 <meta name="description" content="口コミ★4.3以上の宿を、泊まる月・曜日・予算・こだわりで絞り込んで、いちばん安い日（神日）と料金を表示します。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,600..900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,600..900&display=swap" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,600..900&display=swap"></noscript>
 <link rel="stylesheet" href="{base}assets/site.css?v={v1}">
 <link rel="stylesheet" href="{base}assets/hotel.css?v={v2}">
 <link rel="stylesheet" href="{base}assets/top.css?v={v3}">

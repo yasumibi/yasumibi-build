@@ -109,7 +109,7 @@ page = f"""<!doctype html>
 {og_meta(esc(title), esc(desc), "rakuten-card/")}<link rel="canonical" href="https://yasumibi.com/rakuten-card/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,600..900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,600..900&display=swap" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,600..900&display=swap"></noscript>
 <link rel="stylesheet" href="{base}assets/site.css?v={v1}">
 <link rel="stylesheet" href="{base}assets/hotel.css?v={v2}">
 <link rel="stylesheet" href="{base}assets/top.css?v={v3}">

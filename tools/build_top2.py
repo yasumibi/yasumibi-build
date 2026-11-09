@@ -124,10 +124,6 @@ _tx = [f for f in FEATURES if f[3] is None]; _ph = [f for f in FEATURES if f[3]]
 FEATURES = [x for pair in zip(_tx, _ph) for x in pair] + _tx[len(_ph):] + _ph[len(_tx):]   # 文字と写真を交互に
 feat_html = "".join(fcard(*f) for f in FEATURES[:TOP_N])
 v1 = ver("site.css"); v2 = ver("hotel.css", "hotel.js"); v3 = ver("top.css", "top.js")
-# トップの宿データは別ファイルに（HTMLに埋めると4MBになり、表示が遅くなるため。2026/11/2）
-_td = json.dumps(DATA, ensure_ascii=False, separators=(",", ":"))
-open(f"{OUT}/top-data.json", "w", encoding="utf-8").write(_td)
-TOP_V = hashlib.md5(_td.encode()).hexdigest()[:8]
 
 # ---- TOP5の2つを、はじめからHTMLに書いておく（あとからJSで入れると、下の段がずれる＝CLS）
 #      assets/top.js の card()・picks() と同じ中身。JSは読み込み後に同じものを描き直すだけ。
@@ -149,13 +145,13 @@ def _pcard(h, i, m, v, days, gap):
             f'<span class="meta">{esc(place_of(h))}｜★{h["avg"]:.2f}<i class="mb">{"朝食付き" if is_b(h["area"]) else "2食付き"}</i></span>{body}</div>'
             f'<div class="acts"><a class="cal" href="../hotels/{h["slug"]}/">神日カレンダー<span aria-hidden="true">›</span></a>'
             f'<a class="bk" href="{_plink(h["no"], m, days[0])}"{bk_attr(h["no"], datetime.date(m["y"], m["m"], days[0]))} target="_blank" rel="noopener sponsored">楽天トラベルで見る</a></div></li>')
-def _picks(mi):
+def _picks(mi, lane="2"):
     m = months[mi]; k = f"{m['y']}-{m['m']:02d}"
     past = m["days"] if (m["y"], m["m"]) < (TODAY.year, TODAY.month) else (TODAY.day - 1 if (m["y"], m["m"]) == (TODAY.year, TODAY.month) else 0)
     nyr = lambda d: (m["m"] == 12 and d >= 29) or (m["m"] == 1 and d <= 3)
     rows = []
     for h in hotels:
-        if h.get("b"): continue                       # 条件の違う（朝食付きの）宿は同じランキングに入れない
+        if bool(h.get("b")) != (lane == "b"): continue   # 2食付きと朝食付きは同じランキングに入れない
         p = [0 if d < past else x for d, x in enumerate(h["p"].get(k, []))]
         vs = [p[d - 1] for d in range(1, m["days"] + 1) if p[d - 1] and not nyr(d)]
         if not vs: continue
@@ -169,6 +165,11 @@ def _picks(mi):
     return (f'{m["m"]}月泊で', "".join(_pcard(h, i, m, v, d, 0) for i, (h, v, d, g) in enumerate(cheap)),
             "".join(_pcard(h, i, m, v, d, g) for i, (h, v, d, g) in enumerate(gapr)))
 pk_m, pk_cheap, pk_gap = _picks(DEF_MI)
+# トップで使うのは「月×食事条件ごとのTOP5」だけ。全宿の料金（3.4MB）を送ってスマホで計算するのをやめ、
+# ページを作るときに全部の組み合わせを作って埋める（数十KB）。表示の速さ（LCP）と、押したときの反応（INP）のため。2026/11/9
+_top_picks = {f"{i}-{ln}": list(_picks(i, ln)) for i in range(len(months)) for ln in ("2", "b")}
+TOP_JS = json.dumps(dict(months=months, areas=DATA["areas"], picks=_top_picks), ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+if os.path.exists(f"{OUT}/top-data.json"): os.remove(f"{OUT}/top-data.json")   # 前の大きいファイルは消す
 
 page = f"""<!doctype html>
 <html lang="ja">
@@ -181,7 +182,7 @@ page = f"""<!doctype html>
 {og_meta(TOP_T, TOP_D, "")}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,600..900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,600..900&display=swap" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,600..900&display=swap"></noscript>
 <link rel="stylesheet" href="{base}assets/site.css?v={v1}">
 <link rel="stylesheet" href="{base}assets/hotel.css?v={v2}">
 <link rel="stylesheet" href="{base}assets/top.css?v={v3}">
@@ -261,7 +262,7 @@ page = f"""<!doctype html>
 {footer(base)}
 
 {tabbar(base, "home")}
-<script>window.TOP_SRC = "/top-data.json?v={TOP_V}";</script>
+<script>window.TOP = {TOP_JS};</script>
 <script src="{base}assets/top.js?v={v3}"></script>
 <script src="{base}assets/kw.js?v={ver("kw.js")}" defer></script>
 </body></html>
@@ -284,7 +285,7 @@ fpage = f"""<!doctype html>
 {og_meta(esc(_t), esc(_d), "features/")}<link rel="canonical" href="https://yasumibi.com/features/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,600..900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,600..900&display=swap" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,600..900&display=swap"></noscript>
 <link rel="stylesheet" href="{base}assets/site.css?v={v1}">
 <link rel="stylesheet" href="{base}assets/top.css?v={v3}">
 <link rel="icon" href="{base}assets/img/favicon-48.png" sizes="48x48" type="image/png"><link rel="icon" href="{base}assets/img/favicon-192.png" sizes="192x192" type="image/png">
