@@ -14,7 +14,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.environ.get("YB_DATA", os.path.join(ROOT, "data"))
 JST = dt.timezone(dt.timedelta(hours=9))
 CF_SITE_TAG = os.environ.get("CF_SITE_TAG") or "0a93914d9d3d4e50838308c6548442f3"   # Cloudflare Web Analytics のサイト（yasumibi-site.pages.dev +2。秘密ではない）
-EVENTS = ["rakuten_travel", "rakuten_card", "other_card", "favorite_add", "search"]
+EVENTS = ["rakuten_travel", "rakuten_card", "other_card", "favorite_add", "search", "sheet_open"]
 
 # ---- 対象の週
 if len(sys.argv) > 1:
@@ -72,6 +72,26 @@ def ga4():
         g["events_by_place"] = run(["eventName", "customEvent:page_type", "customEvent:place"], ["eventCount"], 200, "eventCount", ev_f)
     except Exception as e:
         err("ga4.events_by_place（カスタムディメンション未登録の可能性）", e)
+    # 流入元ごと：どのページに着地したか（各流入元の上位20）と、楽天・カードまで進んだか（2026/11/9 戦略部屋の依頼）
+    try:
+        rows = run(["sessionSource", "landingPage"], ["sessions", "engagedSessions"], 1000, "sessions")
+        by = {}
+        for r in rows:
+            by.setdefault(r["sessionSource"], [])
+            if len(by[r["sessionSource"]]) < 20: by[r["sessionSource"]].append({"landingPage": r["landingPage"], "sessions": r["sessions"], "engagedSessions": r["engagedSessions"]})
+        g["landing_by_source"] = by
+    except Exception as e:
+        err("ga4.landing_by_source", e)
+    try:
+        g["events_by_source"] = run(["sessionSource", "eventName"], ["eventCount"], 300, "eventCount",
+                                    {"filter": {"fieldName": "eventName", "inListFilter": {"values": ["rakuten_travel", "rakuten_card", "other_card", "sheet_open"]}}})
+    except Exception as e:
+        err("ga4.events_by_source", e)
+    # 運営者の端末（?owner=1 → traffic_type=internal）が見分けられているか。GA4のフィルタが「テスト」の間だけ取れる
+    try:
+        g["internal_test"] = run(["testDataFilterName"], ["sessions", "screenPageViews"], 10, "sessions")
+    except Exception as e:
+        err("ga4.internal_test（フィルタが有効・無効のときは取れない）", e)
     try:
         g["travel_by_hotel"] = run(["customEvent:hotel_no"], ["eventCount"], 30, "eventCount",
                                    {"filter": {"fieldName": "eventName", "stringFilter": {"value": "rakuten_travel"}}})

@@ -46,6 +46,10 @@ jobs:
           print(f"::notice title=GA4::{list(d['ga4'])} totals={d['ga4'].get('totals')}")
           print(f"::notice title=Cloudflare::{list(d['cloudflare'])} totals={d['cloudflare'].get('totals')} sites={d['cloudflare'].get('sites')}")
           sc = d.get('search_console') or {}; print(f"::notice title=Search Console::site={sc.get('site')} totals={sc.get('totals')} 途中の日={sc.get('provisional_days')}")
+          g = d['ga4']; lb = g.get('landing_by_source') or {}
+          print(f"::notice title=流入元×着地::{ {k: v[:3] for k, v in list(lb.items())[:4]} }")
+          print(f"::notice title=流入元×楽天・カード::{(g.get('events_by_source') or [])[:12]}")
+          print(f"::notice title=運営者の目印::{g.get('internal_test')}")
           for e in d['errors']: print(f"::warning title={e['where']}::{e['error'][:600]}")
           PY
       - name: 非公開の yasumibi-data に保存
