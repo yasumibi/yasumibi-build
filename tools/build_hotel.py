@@ -67,7 +67,7 @@ def tabbar(base, cur):
     return f'<nav class="tabbar" aria-label="メニュー">{a}</nav>'
 
 import sys as _sys; _sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import is_b, plan_s, plan_l, COND_PLAN, usual_price, is_hc, place_of, lowest_upcoming, WD_JA, summary_text
+from common import summary_rows, is_b, plan_s, plan_l, COND_PLAN, usual_price, is_hc, place_of, lowest_upcoming, WD_JA, summary_text
 from common import CARD_CAMP, CARD_BONUS, camp_html, camp_live
 from tagarea import pages_for_hotel
 from common import tabbar, footer, site_header, og_meta, load_area, logo_html, CARD_AFF, SLUG, jan_min, MONTHS, DEFAULT_YM, KY, KM, ASOF_BY_AREA, ASOF, AREA_JA, month_prices
@@ -222,9 +222,10 @@ for meta in AREA["hotels"]:
     else:
         title = f"{name}の安い日・最安値｜{place_of(meta)}｜YASUMIBI"
         desc = f"{name}（{place_of(meta)}）が安い日を、この先半年のすべての日で調べています。楽天トラベルの料金から毎日更新。"
-    _st = summary_text(meta["no"], name, f"2名{PS}・税込")   # その宿だけの安い日のまとめ（毎日の料金から）
-    _sum = (f'<section class="hsum" aria-labelledby="hsum-h"><h2 id="hsum-h">{esc(name)}の安い日</h2><p>{"".join(esc(t) for t in _st)}</p>'
-            f'<small>{H["asof"]}時点の楽天トラベルの料金から。毎日更新します。</small></section>') if _st else ""
+    _rows = summary_rows(meta["no"])   # 文章ではなく、数字が先に目に入る表にする（2026/11/10 案B）
+    _sum = (f'<section class="hsum" aria-labelledby="hsum-h"><h2 id="hsum-h">{esc(name)}の安い日</h2>'
+            f'<dl class="kv">{"".join(f"<dt>{k}</dt><dd>{v}</dd>" for k, v in _rows)}</dl>'
+            f'<small>2名{PS}・税込。{H["asof"]}時点の楽天トラベルの料金から、毎日更新します。</small></section>') if _rows else ""
     _ht = pages_for_hotel(meta["no"])   # この宿があてはまる「エリア×こだわり」のページへ
     _tags_html = ('<div class="htags"><h3>' + esc(H['area']) + 'で、同じこだわりの宿</h3><ul>'
                   + "".join(f'<li><a href="{base}tags/{s}/{meta["area"]}/">{esc(n)}<small>{c}軒</small></a></li>' for s, n, q, c in _ht) + "</ul></div>") if _ht else ""
@@ -244,8 +245,8 @@ for meta in AREA["hotels"]:
       </a>
       <div class="wrap">
         <div class="hcard">
-          <div class="chips"><span>{esc(place_of(meta))}</span><span class="star43"><i aria-hidden="true">★</i>{H['avg']:.2f}<small>口コミ{H['cnt']:,}件</small></span>{HCL}</div>
-          <h1>{esc(H['name'])}<small>{esc(H['full'])}</small></h1>
+          <div class="chips"><span class="star43"><i aria-hidden="true">★</i>{H['avg']:.2f}<small>口コミ{H['cnt']:,}件</small></span>{HCL}</div>
+          <h1>{esc(H['name'])}{f"<small>{esc(H['full'])}</small>" if H['full'] != H['name'] else ""}</h1>
           <div class="hk">
             <div class="kl"><span class="tag">神日</span><span id="k-days"></span></div>
             <div class="kp"><span id="k-price" class="num"></span><span class="u">2名{PS}・税込</span></div>

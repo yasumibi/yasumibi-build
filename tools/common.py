@@ -363,6 +363,36 @@ def summary_text(no, name="", unit=""):
     return out
 
 
+def summary_rows(no):
+    """宿ページの「◯◯の安い日」を、スマホで読みやすい表（見出し・中身）にする。中身はHTML。料金が少ない宿は空。"""
+    s = price_summary(no)
+    if not s: return []
+    v, d = s["low"]
+    n = sum(1 for x in s["days"] if x[0] == v)
+    rows = [("いちばん安い", f'<b>¥{v:,}</b>　{_md(d)}泊' + (f"など{n}日" if n > 1 else ""))]
+    if s["sat"] and s["wk"]:
+        sv, sd = s["sat"]; wv, wd_ = s["wk"]
+        if sv - wv >= 1000:
+            rows.append(("土曜泊", f"いちばん安くても ¥{sv:,}（{_md(sd)}）"))
+            rows.append(("日〜木泊なら", f'<span class="g">土曜より −¥{sv - wv:,}</span>'))
+        else:
+            rows.append(("土曜泊", f"¥{sv:,}（{_md(sd)}）。曜日の差が小さい宿"))
+    mm = s["mmin"]
+    if len(mm) >= 3:
+        lv, hv = min(mm.values()), max(mm.values())
+        los = sorted(k for k in mm if mm[k] == lv); his = sorted(k for k in mm if mm[k] == hv)
+        if hv >= lv * 1.05 and len(los) <= 3 and len(his) <= 2:
+            def j(ks):   # 続く月は「1〜3月」にまとめる（年をまたぐ 12月・1月 もつながりとみなす）
+                ms = [k[1] for k in ks]; out = []; i = 0
+                while i < len(ms):
+                    k2 = i
+                    while k2 + 1 < len(ms) and (ms[k2] % 12) + 1 == ms[k2 + 1]: k2 += 1
+                    out.append(f"{ms[i]}〜{ms[k2]}月" if k2 - i >= 2 else "・".join(f"{m}月" for m in ms[i:k2 + 1])); i = k2 + 1
+                return "・".join(out)
+            rows.append(("安い月", f"{j(los)}（高いのは{j(his)}）"))
+    return rows
+
+
 # ---- 予約前シート用：「楽天トラベルで見る」に付ける目印（料金・神日か・朝食付きか）。assets/bsheet.js が読む
 _AREA_OF = {str(h["no"]): h["area"] for h in HOTELS_ALL}
 def bk_attr(no, d, n=1):
