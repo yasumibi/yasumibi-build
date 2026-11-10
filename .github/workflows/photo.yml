@@ -1,0 +1,61 @@
+name: 写真を取り込む
+
+# Wikimedia Commons の写真を、大きめのサイズで assets/img に取り込む（手で動かす）。
+# クレジット（作者・ライセンス・出典）は credits.json に書く。CC0・CC BY・CC BY-SA・パブリックドメインだけ。
+on:
+  workflow_dispatch:
+    inputs:
+      title:
+        description: "Commons のファイル名（例: File:251128_Yubatake,_Kusatsu_14.jpg）"
+        required: true
+      name:
+        description: "保存する名前（例: kusatsu-yubatake-night-l.jpg）"
+        required: true
+      width:
+        description: "横幅（px）"
+        default: "1920"
+
+permissions:
+  contents: read
+
+jobs:
+  photo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with: { repository: yasumibi/yasumibi-site, token: "${{ secrets.SITE_PUSH_TOKEN }}", path: site }
+      - name: 取り込む
+        env:
+          TITLE: ${{ github.event.inputs.title }}
+          NAME: ${{ github.event.inputs.name }}
+          WIDTH: ${{ github.event.inputs.width }}
+        run: |
+          pip install -q pillow
+          python3 - <<'EOF'
+          import json, os, re, urllib.parse, urllib.request, io
+          from PIL import Image
+          t, name, w = os.environ["TITLE"], os.environ["NAME"], int(os.environ["WIDTH"])
+          assert re.fullmatch(r"[a-z0-9-]+\.jpg", name), "名前は英小文字・数字・ハイフンの .jpg"
+          ua = {"User-Agent": "YasumibiBot/1.0 (https://yasumibi.com)"}
+          q = urllib.parse.urlencode(dict(action="query", titles=t, prop="imageinfo", iiprop="url|extmetadata", iiurlwidth=w, format="json"))
+          d = json.load(urllib.request.urlopen(urllib.request.Request("https://commons.wikimedia.org/w/api.php?" + q, headers=ua)))
+          ii = next(iter(d["query"]["pages"].values()))["imageinfo"][0]; m = ii["extmetadata"]
+          lic = m.get("LicenseShortName", {}).get("value", "")
+          assert any(x in lic for x in ("CC0", "CC BY", "Public domain", "PD")), "ライセンスが合わない: " + lic
+          artist = re.sub(r"<[^>]+>", "", m.get("Artist", {}).get("value", "")).strip()
+          raw = urllib.request.urlopen(urllib.request.Request(ii["thumburl"], headers=ua)).read()
+          im = Image.open(io.BytesIO(raw)).convert("RGB")
+          im.save(f"site/assets/img/{name}", quality=80, optimize=True, progressive=True)
+          cf = "site/assets/img/credits.json"; c = json.load(open(cf, encoding="utf-8"))
+          c[name] = dict(title=t, artist=artist, license=lic, source=ii["descriptionurl"], edit="大きさを変更")
+          json.dump(c, open(cf, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+          print(name, im.size, os.path.getsize(f"site/assets/img/{name}") // 1024, "KB", lic, artist)
+          EOF
+      - name: 保存
+        working-directory: site
+        run: |
+          git config user.name "yasumibi-bot"; git config user.email "yasumibi@users.noreply.github.com"
+          git add assets/img
+          git diff --cached --quiet || git commit -m "写真を取り込む: ${{ github.event.inputs.name }}"
+          for i in 1 2 3; do git pull --rebase origin main && git push && break; sleep 5; done
