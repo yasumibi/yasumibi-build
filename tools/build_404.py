@@ -12,7 +12,7 @@ page = f"""<!doctype html>
 <main class="gin" style="padding:48px 16px 64px;max-width:640px">
   <h1 style="font-size:22px;margin:0">ページが見つかりません</h1>
   <p style="font-size:14px;line-height:1.8;color:var(--muted)">URLが変わったか、ページが削除された可能性があります。トップページから、宿と神日を探してください。</p>
-  <p><a href="/" style="font-weight:700">トップページへ →</a></p>
+  <p><a href="/" style="font-weight:600">トップページへ →</a></p>
 </main>
 {footer("/")}
 </body></html>
