@@ -26,6 +26,18 @@ def clean(s):
     return _html.unescape(s).replace("\t", " ").replace("\r", " ").replace("\n", " ").strip()
 
 
+def flat(v):
+    """API の値が文字列・リスト・{"item": …} のどれでも、文字列にする（リストは「、」でつなぐ）。"""
+    if v is None: return ""
+    if isinstance(v, str): return clean(v)
+    if isinstance(v, dict): return "、".join(x for x in (flat(y) for y in v.values()) if x)
+    if isinstance(v, list): return "、".join(x for x in (flat(y) for y in v) if x)
+    return clean(str(v))
+
+
+_SHOWN = []
+
+
 def get(no):
     q = dict(hotelNo=no, responseType="large", datumType=1)   # 緯度経度は世界測地系・度で
     old = fp.API; fp.API = API
@@ -68,9 +80,13 @@ def main():
         fac = "、".join(x.get("item", "") for x in (f.get("hotelFacilities") or []))
         det[h["no"]] = "\t".join(map(str, [h["no"], b.get("reviewAverage") or 0, b.get("reviewCount") or 0, rts, d.get("checkinTime", ""), d.get("checkoutTime", ""),
                                            f.get("hotelRoomNum") or 0, clean(b.get("hotelSpecial", "")), clean(b.get("userReview", "")), clean(fac)]))
-        ex = dict(bath_q=clean(f.get("bathQuality", "")), bath_t=clean(f.get("bathType", "")), bath=clean(f.get("aboutBath", "")),
-                  dinner=clean(f.get("dinnerPlace", "")), breakfast=clean(f.get("breakfastPlace", "")), meal=clean(f.get("aboutMealPlace", "")),
-                  parking=clean(b.get("parkingInformation", "")), special=clean(b.get("hotelSpecial", "")), room_img=b.get("roomImageUrl") or "",
+        if not _SHOWN:   # 1軒目だけ、項目の形をログに出す（中身は出さない）
+            _SHOWN.append(1)
+            print("  形:", {k: type(f.get(k)).__name__ for k in ("bathQuality", "bathType", "aboutBath", "dinnerPlace", "breakfastPlace", "aboutMealPlace")},
+                  "評価:", sorted(rt.keys()), flush=True)
+        ex = dict(bath_q=flat(f.get("bathQuality")), bath_t=flat(f.get("bathType")), bath=flat(f.get("aboutBath")),
+                  dinner=flat(f.get("dinnerPlace")), breakfast=flat(f.get("breakfastPlace")), meal=flat(f.get("aboutMealPlace")),
+                  parking=flat(b.get("parkingInformation")), special=flat(b.get("hotelSpecial")), room_img=b.get("roomImageUrl") or "",
                   rt={k: rt.get(k) for k in ("bathAverage", "dinnerAverage", "breakfastAverage", "roomAverage", "mealAverage") if rt.get(k)})
         extra[str(h["no"])] = {k: v for k, v in ex.items() if v}
         addr = (b.get("address1", "") or "") + (b.get("address2", "") or "")
