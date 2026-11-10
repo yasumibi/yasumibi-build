@@ -35,6 +35,19 @@ def flat(v):
     return clean(str(v))
 
 
+def collect(v, out=None, key=""):
+    """入れ子（リスト・{"bathType": …} など）をたどって、項目名ごとの値の一覧にする。"""
+    out = {} if out is None else out
+    if isinstance(v, dict):
+        for k, y in v.items(): collect(y, out, k)
+    elif isinstance(v, list):
+        for y in v: collect(y, out, key)
+    elif v not in (None, "") and key:
+        t = clean(str(v))
+        if t and t not in out.setdefault(key, []): out[key].append(t)
+    return out
+
+
 _SHOWN = []
 
 
@@ -64,7 +77,7 @@ def main():
         if ln.strip(): det[int(ln.split("\t", 1)[0])] = ln.rstrip("\n")
     all_ = os.environ.get("YB_INFO_ALL") == "1"
     areas = [x for x in (os.environ.get("YB_AREAS") or "").split(",") if x]
-    todo = [h for h in hotels if (not areas or h["area"] in areas) and (all_ or str(h["no"]) not in info["hotels"] or h["no"] not in det or "lat" not in info["hotels"][str(h["no"])] or (os.environ.get("YB_EXTRA_FILL") == "1" and str(h["no"]) not in extra))]
+    todo = [h for h in hotels if (not areas or h["area"] in areas) and (all_ or str(h["no"]) not in info["hotels"] or h["no"] not in det or "lat" not in info["hotels"][str(h["no"])] or (os.environ.get("YB_EXTRA_FILL") == "1" and extra.get(str(h["no"]), {}).get("v") != 2))]
     print(f"施設情報を取得：{len(todo)}軒", flush=True)
     changed = False
     for h in todo:
@@ -80,15 +93,18 @@ def main():
         fac = "、".join(x.get("item", "") for x in (f.get("hotelFacilities") or []))
         det[h["no"]] = "\t".join(map(str, [h["no"], b.get("reviewAverage") or 0, b.get("reviewCount") or 0, rts, d.get("checkinTime", ""), d.get("checkoutTime", ""),
                                            f.get("hotelRoomNum") or 0, clean(b.get("hotelSpecial", "")), clean(b.get("userReview", "")), clean(fac)]))
-        if not _SHOWN:   # 1軒目だけ、項目の形をログに出す（中身は出さない）
-            _SHOWN.append(1)
-            print("  形:", {k: type(f.get(k)).__name__ for k in ("bathQuality", "bathType", "aboutBath", "dinnerPlace", "breakfastPlace", "aboutMealPlace")},
-                  "評価:", sorted(rt.keys()), flush=True)
-        ex = dict(bath_q=flat(f.get("bathQuality")), bath_t=flat(f.get("bathType")), bath=flat(f.get("aboutBath")),
-                  dinner=flat(f.get("dinnerPlace")), breakfast=flat(f.get("breakfastPlace")), meal=flat(f.get("aboutMealPlace")),
+        cb = collect(f.get("aboutBath")); cb.update({k: v for k, v in collect({k: f.get(k) for k in ("bathType", "bathQuality", "bathBenefits")}).items() if v})
+        cm = collect(f.get("aboutMealPlace")); cm.update({k: v for k, v in collect({k: f.get(k) for k in ("dinnerPlace", "breakfastPlace")}).items() if v})
+        if not _SHOWN:   # 1軒目だけ、項目名をログに出す（中身は出さない）
+            _SHOWN.append(1); print("  お風呂:", sorted(cb), "食事:", sorted(cm), "評価:", sorted(rt.keys()), flush=True)
+        j = lambda xs: "、".join(xs or [])
+        ex = dict(bath_t=j(cb.get("bathType")), bath_q=j(cb.get("bathQuality")), bath_b=j(cb.get("bathBenefits")),
+                  bath=j([x for k, xs in cb.items() if k not in ("bathType", "bathQuality", "bathBenefits") for x in xs]),
+                  dinner=j(cm.get("dinnerPlace")), breakfast=j(cm.get("breakfastPlace")),
+                  meal=j([x for k, xs in cm.items() if k not in ("dinnerPlace", "breakfastPlace") for x in xs]),
                   parking=flat(b.get("parkingInformation")), special=flat(b.get("hotelSpecial")), room_img=b.get("roomImageUrl") or "",
                   rt={k: rt.get(k) for k in ("bathAverage", "dinnerAverage", "breakfastAverage", "roomAverage", "mealAverage") if rt.get(k)})
-        extra[str(h["no"])] = {k: v for k, v in ex.items() if v}
+        extra[str(h["no"])] = dict({k: v for k, v in ex.items() if v}, v=2)
         addr = (b.get("address1", "") or "") + (b.get("address2", "") or "")
         if h.get("added") != "2026-10-19":   # 最初の20軒の地区名は手で付けたものを残す
             v = loc_from_address(h["area"], addr)   # そのエリアの決まりだけを使う
