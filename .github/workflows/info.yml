@@ -1,0 +1,43 @@
+name: 施設情報の取り直し
+
+# 宿ページの「お風呂・食事の場所・駐車場・評価の内訳」を、まだ取っていない宿の分だけ取る（手で動かす）。
+# ふだんの取り直しは、毎日の料金更新の中で週1回（月曜）全宿。楽天APIは1秒1回まで（concurrency で毎日の更新と重ならない）。
+on:
+  workflow_dispatch:
+    inputs:
+      areas:
+        description: "取得するエリア（空欄＝全部。例: hakone,atami）"
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rakuten-api
+  cancel-in-progress: false
+
+jobs:
+  info:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/checkout@v5
+        with: { repository: yasumibi/yasumibi-data, token: "${{ secrets.SITE_PUSH_TOKEN }}", path: data }
+      - uses: actions/setup-python@v6
+        with: { python-version: "3.12" }
+      - name: 施設情報を取得
+        env:
+          RAKUTEN_APP_ID: ${{ secrets.RAKUTEN_APP_ID }}
+          RAKUTEN_ACCESS_KEY: ${{ secrets.RAKUTEN_ACCESS_KEY }}
+          YB_REFERER: https://yasumibi.com/
+          YB_AREAS: ${{ github.event.inputs.areas }}
+          YB_EXTRA_FILL: "1"
+        run: python3 tools/fetch_info.py
+      - name: 保存
+        working-directory: data
+        run: |
+          git config user.name "yasumibi-bot"; git config user.email "yasumibi@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || git commit -m "施設情報 $(TZ=Asia/Tokyo date +%Y-%m-%d)"
+          for i in 1 2 3; do git pull --rebase -X theirs origin main && git push && break; sleep 5; done

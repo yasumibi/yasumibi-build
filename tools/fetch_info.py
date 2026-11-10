@@ -14,6 +14,7 @@ API = "https://openapi.rakuten.co.jp/engine/api/Travel/HotelDetailSearch/2017042
 INFO_F = f"{ROOT}/data/hotel_info_20261021.json"
 DET_F = f"{ROOT}/data/hotel_detail_20261021.tsv"
 HOTELS_F = f"{ROOT}/data/hotels.json"
+EXTRA_F = f"{ROOT}/data/hotel_extra.json"   # 宿ページの「お風呂・食事の場所・駐車場・評価の内訳」（2026/11/10〜）
 JST = datetime.timezone(datetime.timedelta(hours=9))
 
 # 住所から地区名を決める決まりは common.py の LOC_RULES（エリアごと。箱根の決まりはほかのエリアに使わない）
@@ -45,12 +46,13 @@ def main():
         raise SystemExit("RAKUTEN_APP_ID / RAKUTEN_ACCESS_KEY が設定されていません")
     hotels = json.load(open(HOTELS_F))
     info = json.load(open(INFO_F))
+    extra = json.load(open(EXTRA_F)) if os.path.exists(EXTRA_F) else {}
     det = {}
     for ln in open(DET_F, encoding="utf-8"):
         if ln.strip(): det[int(ln.split("\t", 1)[0])] = ln.rstrip("\n")
     all_ = os.environ.get("YB_INFO_ALL") == "1"
     areas = [x for x in (os.environ.get("YB_AREAS") or "").split(",") if x]
-    todo = [h for h in hotels if (not areas or h["area"] in areas) and (all_ or str(h["no"]) not in info["hotels"] or h["no"] not in det or "lat" not in info["hotels"][str(h["no"])])]
+    todo = [h for h in hotels if (not areas or h["area"] in areas) and (all_ or str(h["no"]) not in info["hotels"] or h["no"] not in det or "lat" not in info["hotels"][str(h["no"])] or (os.environ.get("YB_EXTRA_FILL") == "1" and str(h["no"]) not in extra))]
     print(f"施設情報を取得：{len(todo)}軒", flush=True)
     changed = False
     for h in todo:
@@ -66,6 +68,11 @@ def main():
         fac = "、".join(x.get("item", "") for x in (f.get("hotelFacilities") or []))
         det[h["no"]] = "\t".join(map(str, [h["no"], b.get("reviewAverage") or 0, b.get("reviewCount") or 0, rts, d.get("checkinTime", ""), d.get("checkoutTime", ""),
                                            f.get("hotelRoomNum") or 0, clean(b.get("hotelSpecial", "")), clean(b.get("userReview", "")), clean(fac)]))
+        ex = dict(bath_q=clean(f.get("bathQuality", "")), bath_t=clean(f.get("bathType", "")), bath=clean(f.get("aboutBath", "")),
+                  dinner=clean(f.get("dinnerPlace", "")), breakfast=clean(f.get("breakfastPlace", "")), meal=clean(f.get("aboutMealPlace", "")),
+                  parking=clean(b.get("parkingInformation", "")), special=clean(b.get("hotelSpecial", "")), room_img=b.get("roomImageUrl") or "",
+                  rt={k: rt.get(k) for k in ("bathAverage", "dinnerAverage", "breakfastAverage", "roomAverage", "mealAverage") if rt.get(k)})
+        extra[str(h["no"])] = {k: v for k, v in ex.items() if v}
         addr = (b.get("address1", "") or "") + (b.get("address2", "") or "")
         if h.get("added") != "2026-10-19":   # 最初の20軒の地区名は手で付けたものを残す
             v = loc_from_address(h["area"], addr)   # そのエリアの決まりだけを使う
@@ -77,6 +84,7 @@ def main():
     if changed:
         info["fetched"] = datetime.datetime.now(JST).strftime("%Y-%m-%d")
         json.dump(info, open(INFO_F, "w"), ensure_ascii=False, indent=1)
+        json.dump(extra, open(EXTRA_F, "w"), ensure_ascii=False, indent=0, sort_keys=True)
         open(DET_F, "w", encoding="utf-8").write("\n".join(det[k] for k in det) + "\n")
         json.dump(hotels, open(HOTELS_F, "w"), ensure_ascii=False, indent=1)
     print("施設情報 完了")
