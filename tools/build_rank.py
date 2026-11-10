@@ -9,6 +9,7 @@
 import os, sys, json, html, hashlib, datetime, calendar, statistics, urllib.parse
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from tagarea import pages_for_area
+from autofeat import area_features
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import img_v, place_of, lowest_upcoming, bk_attr, area_summary
 KEEP_TITLE = {"kinugawa"}
@@ -226,6 +227,10 @@ for a in AREAS:
     if _tp:
         body += (f'<section class="rsec tg-sec" aria-labelledby="tgh"><h2 id="tgh">{esc(nm)}を、こだわりで探す</h2><ul class="tg-ar">'
                  + "".join(f'<li><a href="{base}tags/{s}/{a["key"]}/">{esc(n)}<small>{c}軒</small></a></li>' for s, n, q, c in _tp) + "</ul></section>")
+    _fe = area_features(a["key"])   # このエリアの特集（手で作ったもの＋条件を満たしている自動の特集）
+    if _fe:
+        body += (f'<section class="rsec tg-sec" aria-labelledby="feh"><h2 id="feh">{esc(nm)}の特集</h2><ul class="tg-ar">'
+                 + "".join(f'<li><a href="{base}features/{s}/">{esc(t.rstrip("。"))}</a></li>' for s, t in _fe) + "</ul></section>")
     gap = pen = near = []
     if len(nos) >= 5:
         gap, pen, near = rank_sets(nos)

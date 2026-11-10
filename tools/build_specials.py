@@ -114,12 +114,12 @@ def cover(img):
     return f'<figure class="cv"><img src="../../assets/img/{img}?v={img_v(img)}" alt="" width="960" height="540">{cr}</figure>'
 
 
-def page(slug, area, img, eyebrow, h1, lead, body, note, place=None, place_href=None):
+def page(slug, area, img, eyebrow, h1, lead, body, note, place=None, place_href=None, title=None, desc=None, robots="index,follow"):
     base = "../../"
     v = ver("site.css"), ver("hotel.css"), ver("top.css", "otoku.css", "rank.css")
     place = place or AREA_JA[area]; place_href = place_href or f"areas/{area}/"
-    title = f"{h1.rstrip('。')}｜{place}の特集｜YASUMIBI"
-    desc = f"{lead} ★4.3以上の宿だけを、楽天トラベルの料金で毎日調べています。"
+    title = title or f"{h1.rstrip('。')}｜{place}の特集｜YASUMIBI"
+    desc = desc or f"{lead} ★4.3以上の宿だけを、楽天トラベルの料金で毎日調べています。"
     crumb = (f'<a href="{base}">ホーム</a><span aria-hidden="true">›</span><a href="{base}{place_href}">{esc(place)}</a>'
              f'<span aria-hidden="true">›</span><span>特集</span>')
     return f"""<!doctype html>
@@ -127,7 +127,7 @@ def page(slug, area, img, eyebrow, h1, lead, body, note, place=None, place_href=
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="robots" content="index,follow">
+<meta name="robots" content="{robots}">
 <title>{esc(title)}</title>
 <meta name="description" content="{esc(desc)}">
 {og_meta(esc(title), esc(desc), f"features/{slug}/")}<link rel="canonical" href="https://yasumibi.com/features/{slug}/">
@@ -827,5 +827,83 @@ write("aki-rare", page("aki-rare", "kusatsu", "kusatsu-yubatake-night.jpg", "空
       body, f"空き＝大人2名・1室で予約できるプランがある日（この先半年・毎日取り直し）。空きが{RARE_MAX}日以上に増えた宿は、自動でこのページから外れます。食事付きの宿は1泊2食付き、朝食付きの宿は1泊朝食付きの料金です。",
       place="全国", place_href="ranking/"))
 made.append("aki-rare")
+
+# ---- 自動でつくる特集（型×エリア）。条件と一覧は tools/autofeat.py（2026/11/10 本人OK）
+import autofeat as AF
+from tagarea import pages_for_area as _tag_pages
+
+
+def af_related(area, me):
+    """同じエリアのほかの特集・タグ×エリアのページへのリンク（同じ見た目の丸いリンク）"""
+    nm = AREA_JA[area]
+    li = [f'<li><a href="../{s}/">{esc(t.rstrip("。"))}</a></li>' for s, t in AF.area_features(area) if s != me]
+    li += [f'<li><a href="../../tags/{s}/{area}/">{esc(n)}<small>{c}軒</small></a></li>' for s, n, q, c in _tag_pages(area)]
+    if not li: return ""
+    return f'<section class="rsec tg-sec"><h2>{esc(nm)}の、ほかの探し方</h2><ul class="tg-ar">{"".join(li)}</ul></section>'
+
+
+for _a, _t in AF.AUTO:
+    _sl = AF.slug(_a, _t); _nm = AREA_JA[_a]; _r = AF.evaluate(_a, _t); _n = _r["n"]; _pl = plan_l(_a)
+    _h1 = AF.heading(_a, _t); _eb = f"{_nm}・{AF.TYPE_LABEL[_t]}"; _note = "期間はこの先の半年。"
+    _title = _desc = None
+    if not _r["ok"]:
+        _lead = "いまの料金データでは、この特集の条件に当てはまる差が出ていません。毎日の料金で判定し直しています。"
+        _body = sec("いまは、お休み中", "料金の差がはっきりしたら、自動で戻ります。", "")
+        write(_sl, page(_sl, _a, AF.IMG[_a], _eb, _h1, _lead, _body + af_related(_a, _sl), _note, robots="noindex,follow"))
+        continue
+    if _t == "youbi":
+        wr, lo, hi = _r["wr"], _r["lo"], _r["hi"]; pct = _r["gap"] * 100; gy = _r["yen"]
+        _lead = (f"{_nm}の★4.3以上{_n}軒で、いちばん安いのは<b>{WD[lo]}曜泊</b>。いちばん高い{WD[hi]}曜泊より、"
+                 f"宿の料金の中央値で{gy:,.0f}円（{pct:.0f}%）安くなります。")
+        _title = f"{_nm}、何曜日に泊まると安い？｜★4.3以上{_n}軒の曜日別の料金｜YASUMIBI"
+        _desc = (f"{_nm}の★4.3以上・{_pl}の宿{_n}軒を泊まる曜日ごとに比べると、いちばん安いのは{WD[lo]}曜泊で、"
+                 f"{WD[hi]}曜泊より中央値で{gy:,.0f}円（{pct:.0f}%）安い。{WD[lo]}曜日のいちばん安い日を宿ごとに毎日更新。")
+        rows = []
+        for no in AF.area_nos(_a):
+            ns = [x for x in nights(no) if x[0].weekday() == lo]
+            sa = [v for d, v in nights(no) if d.weekday() == 5]
+            if ns:
+                d, v = min(ns, key=lambda x: (x[1], x[0])); rows.append((v, no, d, statistics.mean(sa) if sa else 0))
+        rows.sort()
+        its = [item(i + 1, no, yen(v), f"いちばん安い{WD[lo]}曜泊 {lab(d)}", (f"この宿の土曜泊（平均）より <b>−{sm - v:,.0f}円</b>" if sm > v else f"{WD[lo]}曜泊のいちばん安い日"), d)
+               for i, (v, no, d, sm) in enumerate(rows)]
+        _body = sec("曜日ごとの料金", f"{_nm}の宿の、泊まる曜日ごとの料金の中央値（2名{plan_s(_a)}）。",
+                    bars([(f"{WD[w]}曜泊", wr[w], "") for w in (6, 0, 1, 2, 3, 4, 5)]))
+        _body += sec(f"{WD[lo]}曜泊が安い宿", f"{WD[lo]}曜泊だけで、宿ごとにいちばん安い日。", ol(its, 8))
+    elif _t == "5man":
+        rows = _r["rows"]; a0 = rows[0]
+        _lead = (f"2名で4〜5.5万円（{_pl}）で泊まれる日がある{_nm}の★4.3以上の宿は{len(rows)}軒。"
+                 f"いちばん★が高いのは{esc(H[a0[2]]['name'])}（★{a0[0]:.2f}）で、{lab(a0[3])}なら{yen(a0[4])}です。")
+        _title = f"同じ5万円で、いちばん良い{_nm}の宿は？｜★4.3以上{len(rows)}軒を★の高い順に｜YASUMIBI"
+        _desc = (f"{_nm}の★4.3以上・{_pl}の宿のうち、2名4〜5.5万円の日がある{len(rows)}軒を口コミの★が高い順に。"
+                 f"1位は★{a0[0]:.2f}。5万円台で泊まれる日と、いちばん安い日を毎日更新。")
+        its = [item(i + 1, no, f"★{a:.2f}", f"5万円台で泊まれる日 {k}日", f"いちばん安い日 {lab(d)} <b>{yen(v)}</b>", d) for i, (a, c, no, d, v, k) in enumerate(rows)]
+        _body = sec("★の高い順", f"この先の半年で、2名4〜5.5万円の日がある宿だけ。★は{rows[-1][0]:.2f}〜{a0[0]:.2f}。", ol(its, 8))
+    elif _t == "2haku":
+        rows = _r["rows"]; b0 = rows[0]; pct = _r["med"] * 100
+        _lead = (f"{_nm}の★4.3以上の宿{len(rows)}軒で、2泊の合計がいちばん安くなる2日は、金・土の2泊より"
+                 f"宿ごとの中央値で{_r['yen']:,.0f}円（{pct:.0f}%）安くなります。いちばん安いのは{esc(H[b0[1]]['name'])}の"
+                 f"{lab(b0[2])}から2泊で{yen(b0[0])}（2名・2泊の合計）。")
+        _title = f"{_nm}、2泊するならこの2日｜金土より{pct:.0f}%安い2泊を宿ごとに｜YASUMIBI"
+        _desc = (f"{_nm}の★4.3以上・{_pl}の宿{len(rows)}軒で、2泊の合計がいちばん安くなる2日を宿ごとに。"
+                 f"金・土の2泊より中央値で{_r['yen']:,.0f}円（{pct:.0f}%）安い。毎日更新。")
+        its = [item(i + 1, no, yen(t), f"{lab(d)}〜2泊（2名合計）", (f"金・土の2泊（中央値）より <b>−{f - t:,.0f}円</b>" if f > t else f"★{H[no]['avg']:.2f}"), d, 2)
+               for i, (t, no, d, f) in enumerate(rows)]
+        _body = sec("2泊の合計が安い順", "続けて2泊できる日だけで計算しています。", ol(its, 8))
+        _note += "2泊とも同じ最安プランで計算した目安です（実際は連泊プランで変わることがあります）。金・土の2泊＝この先半年の、金曜から2泊の合計の中央値。"
+    elif _t == "doyou":
+        rows = _r["rows"]; med = _r["med"] * 100
+        _lead = (f"{_nm}の★4.3以上の宿は、土曜泊が日〜木泊よりふつう{med:.0f}%高くなります（宿ごとの中央値）。"
+                 f"そのなかで、土曜でも上がり幅が10%以内の宿が{len(rows)}軒あります。")
+        _title = f"土曜でも安い、{_nm}の宿｜土曜の値上がり10%以内の{len(rows)}軒｜YASUMIBI"
+        _desc = (f"{_nm}の★4.3以上・{_pl}の宿は土曜にふつう{med:.0f}%上がる。そのなかで土曜の値上がりが10%以内の{len(rows)}軒と、"
+                 f"いちばん安い土曜を毎日更新。土日しか休めない人へ。")
+        def _up(u): r = round(u * 100); return f"+{r}%" if r > 0 else (f"−{-r}%" if r < 0 else "±0%")
+        its = [item(i + 1, no, yen(v), f"いちばん安い土曜 {lab(d)}", f"土曜の値上がり <b>{_up(up)}</b>（土曜 {yen(sm)}／日〜木 {yen(wm)}・平均）", d)
+               for i, (up, no, sm, wm, d, v) in enumerate(rows)]
+        _body = sec("土曜でも値上がりが小さい宿", f"{_nm}で料金のある{_r['all']}軒のうち、土曜泊の平均が日〜木泊の平均の1.1倍以内の宿を、いちばん安い土曜の料金が安い順に。", ol(its, 8))
+        _note += "値上がり＝土曜泊の平均÷日〜木泊の平均。"
+    write(_sl, page(_sl, _a, AF.IMG[_a], _eb, _h1, _lead, _body + af_related(_a, _sl), _note, title=_title, desc=_desc))
+    made.append(_sl)
 
 print("specials built", made)
