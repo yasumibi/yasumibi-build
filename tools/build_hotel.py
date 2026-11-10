@@ -277,7 +277,7 @@ for meta in AREA["hotels"]:
           <button type="button" data-wd="wk" aria-pressed="false">日〜木泊</button>
         </div>
         <div class="hcal" id="hcal"></div>
-        <div class="legend"><span><i style="background:var(--marker);border:1px solid var(--ink)"></i>神日</span><span><i style="background:var(--near)"></i>+15%まで</span><span><i style="background:var(--warm)"></i>+35%まで</span><span><i style="background:var(--high-bar)"></i>それ以上</span><span><i style="background:repeating-linear-gradient(135deg,var(--sold) 0 3px,transparent 3px 6px)"></i>満室</span></div>
+        <div class="legend cal-lg"><span><i class="lg-min"></i>神日</span><span><i class="lg-t1"></i>+15%まで</span><span><i class="lg-t2"></i>+35%まで</span><span><i class="lg-t3"></i>それ以上</span><span><i class="lg-so"></i>満室</span></div>
       </section>
 
       <section class="blk alt" aria-labelledby="alth" id="alt" hidden>
