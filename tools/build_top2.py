@@ -116,13 +116,14 @@ def _pcard(h, i, m, v, days, gap):
             f'<span class="meta">{esc(place_of(h))}｜★{h["avg"]:.2f}<i class="mb">{"朝食付き" if is_b(h["area"]) else "2食付き"}</i></span>{body}</div>'
             f'<div class="acts"><a class="cal" href="../hotels/{h["slug"]}/">神日カレンダー<span aria-hidden="true">›</span></a>'
             f'<a class="bk" href="{_plink(h["no"], m, days[0])}"{bk_attr(h["no"], datetime.date(m["y"], m["m"], days[0]))} target="_blank" rel="noopener sponsored">楽天トラベルで見る</a></div></li>')
-def _picks(mi, lane="2"):
+def _picks(mi, lane="2", reg=None):
     m = months[mi]; k = f"{m['y']}-{m['m']:02d}"
     past = m["days"] if (m["y"], m["m"]) < (TODAY.year, TODAY.month) else (TODAY.day - 1 if (m["y"], m["m"]) == (TODAY.year, TODAY.month) else 0)
     nyr = lambda d: (m["m"] == 12 and d >= 29) or (m["m"] == 1 and d <= 3)
     rows = []
     for h in hotels:
         if bool(h.get("b")) != (lane == "b"): continue   # 2食付きと朝食付きは同じランキングに入れない
+        if reg and REG_OF.get(h["area"]) != reg: continue   # 地方で絞る（2026/11/10）
         p = [0 if d < past else x for d, x in enumerate(h["p"].get(k, []))]
         vs = [p[d - 1] for d in range(1, m["days"] + 1) if p[d - 1] and not nyr(d)]
         if not vs: continue
@@ -135,11 +136,60 @@ def _picks(mi, lane="2"):
     gapr = sorted([r for r in rows if r[3] > 0], key=lambda r: -r[3])[:5]
     return (f'{m["m"]}月泊で', "".join(_pcard(h, i, m, v, d, 0) for i, (h, v, d, g) in enumerate(cheap)),
             "".join(_pcard(h, i, m, v, d, g) for i, (h, v, d, g) in enumerate(gapr)))
-pk_m, pk_cheap, pk_gap = _picks(DEF_MI)
+# ---- TOP5は地方で絞る（全国だと各地のビジネスホテルが並びがち。2026/11/10）
+#      はじめは「関東・伊豆」。ほかの地方は top-picks/r<番号>.json に分けて置き、タブを押したときだけ読む（トップを重くしない）
+REG_OF = {a["key"]: a["region"] for a in LIVE}
+REGIONS = list(L.REGIONS)   # 地方の並びは「エリアから探す」のタブと同じ（北から南へ）
+DEF_REG = "関東・伊豆" if "関東・伊豆" in REGIONS else REGIONS[0]
+pk_m, pk_cheap, pk_gap = _picks(DEF_MI, "2", DEF_REG)
 # トップで使うのは「月×食事条件ごとのTOP5」だけ。全宿の料金（3.4MB）を送ってスマホで計算するのをやめ、
 # ページを作るときに全部の組み合わせを作って埋める（数十KB）。表示の速さ（LCP）と、押したときの反応（INP）のため。2026/11/9
-_top_picks = {f"{i}-{ln}": list(_picks(i, ln)) for i in range(len(months)) for ln in ("2", "b")}
-TOP_JS = json.dumps(dict(months=months, areas=DATA["areas"], picks=_top_picks), ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+def _reg_picks(reg): return {f"{i}-{ln}": list(_picks(i, ln, reg)) for i in range(len(months)) for ln in ("2", "b")}
+_top_picks = _reg_picks(DEF_REG)
+os.makedirs(f"{OUT}/top-picks", exist_ok=True)
+for _ri, _r in enumerate(["all"] + REGIONS):
+    if _r == DEF_REG: continue
+    with open(f"{OUT}/top-picks/r{_ri}.json", "w", encoding="utf-8") as _f:
+        json.dump(_reg_picks(None if _r == "all" else _r), _f, ensure_ascii=False, separators=(",", ":"))
+pk_tabs = ('<div class="at-tabs pk-tabs" role="tablist" aria-label="地方で絞る">'
+           + "".join(f'<button type="button" role="tab" aria-selected="{str(r == DEF_REG).lower()}" data-preg="{i}">{"全国" if r == "all" else esc(r)}</button>'
+                     for i, r in enumerate(["all"] + REGIONS)) + "</div>")
+
+# ---- いちばん上の写真（1枚・草津温泉 湯畑のライトアップ。2026/11/11）と、「今月の神日」の写真カード（★4.6以上の宿）
+#      写真には文字を重ねない。スマホは900px、PCは1440px の WebP。いちばん大きく見える要素なので先に読み込む（LCP）
+_CR = json.load(open(f"{OUT}/assets/img/credits.json", encoding="utf-8"))
+_HF = "kusatsu-night-hero"
+hero_html = (f'<figure class="hph"><img src="{base}assets/img/{_HF}-900.webp?v={img_v(_HF + "-900.webp")}" '
+             f'srcset="{base}assets/img/{_HF}-900.webp?v={img_v(_HF + "-900.webp")} 900w, {base}assets/img/{_HF}-1440.webp?v={img_v(_HF + "-1440.webp")} 1440w" '
+             f'sizes="100vw" width="1440" height="810" alt="ライトアップされた夜の草津温泉・湯畑" fetchpriority="high">'
+             '<figcaption>草津温泉・湯畑のライトアップ</figcaption></figure>')
+_c = _CR.get(_HF + "-1440.webp") or _CR.get("kusatsu-night-hero.jpg") or {}
+hero_credit = f'上の写真：草津温泉・湯畑（{esc(_c.get("artist", ""))}・{esc(_c.get("license", ""))}）。出典：Wikimedia Commons（明るさ・色味を調整）'
+
+def _kami(lane):
+    m = months[DEF_MI]; k = f"{m['y']}-{m['m']:02d}"; rows = []
+    nyr = lambda d: (m["m"] == 12 and d >= 29) or (m["m"] == 1 and d <= 3)
+    for h in hotels:
+        if bool(h.get("b")) != (lane == "b") or h["avg"] < 4.6: continue
+        p = h["p"].get(k, []); vs = [(x, d + 1) for d, x in enumerate(p) if x and not nyr(d + 1)]
+        if not vs: continue
+        v, d = min(vs); rows.append((h, v, d))
+    rows.sort(key=lambda r: (-r[0]["avg"], -r[0]["cnt"]))
+    seen = set(); out = []
+    for h, v, d in rows:
+        if h["area"] in seen: continue
+        seen.add(h["area"]); out.append((h, v, d))
+        if len(out) == 8: break
+    li = "".join(
+        f'<li><a href="{base}hotels/{h["slug"]}/"><img src="{esc(INFO[str(h["no"])].get("img") or h["thumb"])}" alt="" loading="lazy" decoding="async" width="400" height="500">'
+        f'<span class="st">★{h["avg"]:.2f}</span><span class="c"><span class="ar">{esc(place_of(h))}</span><b class="nm">{esc(h["name"])}</b>'
+        f'<span class="pr"><span class="tg">神日</span>{_lab(m, d)}<span class="v">¥{v:,}</span></span></span></a></li>' for h, v, d in out)
+    return f'<ul class="km-row" data-lane="{lane}"{" hidden" if lane == "b" else ""}>{li}</ul>' if out else ""
+_km = months[DEF_MI]
+kami_html = (f'<section class="kmc" aria-labelledby="kmh"><h2 id="kmh">{_km["m"]}月の<span class="kw">神日</span></h2>'
+             f'<p class="sub">★4.6以上の宿から。その宿の、{_km["m"]}月でいちばん安い日です（2名1泊・税込）</p>'
+             + _kami("2") + _kami("b") + '</section>')
+TOP_JS = json.dumps(dict(months=months, areas=DATA["areas"], picks=_top_picks, preg=(["all"] + REGIONS).index(DEF_REG), regs=["全国"] + REGIONS), ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
 if os.path.exists(f"{OUT}/top-data.json"): os.remove(f"{OUT}/top-data.json")   # 前の大きいファイルは消す
 
 page = f"""<!doctype html>
@@ -163,10 +213,14 @@ page = f"""<!doctype html>
 <body class="app top2">
 {site_header(base)}
 
-<section class="hero" id="search">
+<section class="hero hero-ph" id="search">
+  {hero_html}
   <div class="gin">
+    <div class="hcopy">
     <div class="shift"><div class="o"><small>これまで</small>休みの日に、安い宿を探す。</div><h1 class="n"><small>これから</small><b>安い日に、休みを合わせる。</b></h1></div>
+    <p class="lead">口コミ★4.3以上の宿だけを、毎日の料金で比べて、月ごとにいちばん安い日（神日）を出しています。</p>
     <p class="kexp"><span class="star"><i aria-hidden="true">★</i>口コミ4.3以上の宿だけ</span><span class="kd"><b>神日</b>＝その月いちばん安い日</span></p>
+    </div>
     <div class="sbox">
       {lane_html}
       <div class="stabs" role="tablist" aria-label="探し方">
@@ -199,10 +253,12 @@ page = f"""<!doctype html>
       </form>
       {tag_html}
     </div>
+    {kami_html}
   </div>
 </section>
 
 <main class="gin">
+
 
   <section class="areas" id="areas" aria-labelledby="ah">
     <div class="rhd"><h2 id="ah">エリアから探す</h2></div>
@@ -211,6 +267,7 @@ page = f"""<!doctype html>
 
   <section class="pick" aria-labelledby="pk1">
     <div class="rhd"><h2 id="pk1"><span class="pkl" id="pk-lane">食事付きの宿</span><span id="pk-m" class="pkm">{pk_m}</span>いちばん安い<span class="kw">神日</span></h2><span class="pkr"><span class="prt">PR</span><b class="top5">TOP5</b></span></div>
+    {pk_tabs}
     <ol class="rlist" id="p-cheap">{pk_cheap}</ol>
   </section>
   <section class="fstrip" aria-labelledby="fsh">
@@ -221,11 +278,11 @@ page = f"""<!doctype html>
 
   <section class="pick" aria-labelledby="pk2">
     <div class="rhd"><h2 id="pk2">ずらすと、超お得に泊まれる宿</h2><span class="pkr"><span class="prt">PR</span><b class="top5">TOP5</b></span></div>
-    <p class="rnote">土曜泊の平均と、その月の神日の差。</p>
+    <p class="rnote">土曜泊の平均と、その月の神日の差（<span id="pk-reg2">{esc(DEF_REG)}</span>）。</p>
     <ol class="rlist" id="p-gap">{pk_gap}</ol>
     <a class="pmore" id="pk-rank" href="{base}ranking/">ランキングをもっと見る ›</a>
   </section>
-  <p class="cond">※★4.3以上＝楽天トラベルの口コミ評価4.3以上（口コミ50件以上。ハイクラスの宿は20件以上・★4.6以上）の宿。{COND_PLAN}（2名合計・税込）。{ASOF}時点の楽天トラベルの料金。予約前に最新の料金をご確認ください。宿の写真：楽天トラベル</p>
+  <p class="cond">※★4.3以上＝楽天トラベルの口コミ評価4.3以上（口コミ50件以上。ハイクラスの宿は20件以上・★4.6以上）の宿。{COND_PLAN}（2名合計・税込）。{ASOF}時点の楽天トラベルの料金。予約前に最新の料金をご確認ください。宿の写真：楽天トラベル。{hero_credit}</p>
 
 
 </main>
