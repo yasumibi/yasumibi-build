@@ -186,8 +186,8 @@ def _kami(lane):
         f'<span class="pr"><span class="tg">神日</span>{_lab(m, d)}<span class="v">¥{v:,}</span></span></span></a></li>' for h, v, d in out)
     return f'<ul class="km-row" data-lane="{lane}"{" hidden" if lane == "b" else ""}>{li}</ul>' if out else ""
 _km = months[DEF_MI]
-kami_html = (f'<section class="kmc" aria-labelledby="kmh"><h2 id="kmh">{_km["m"]}月の<span class="kw">神日</span></h2>'
-             f'<p class="sub">★4.6以上の宿から。その宿の、{_km["m"]}月でいちばん安い日です（2名1泊・税込）</p>'
+kami_html = (f'<section class="kmc" aria-labelledby="kmh"><h2 id="kmh"><small class="keb">★4.6以上の人気の宿</small>{_km["m"]}月に、<span class="kw">いちばん安い日</span></h2>'
+             f'<p class="sub">評価の高い宿だけを選んで、{_km["m"]}月で最も安い日（<b>神日</b>）と料金を出しています。2名1泊・税込</p>'
              + _kami("2") + _kami("b") + '</section>')
 TOP_JS = json.dumps(dict(months=months, areas=DATA["areas"], picks=_top_picks, preg=(["all"] + REGIONS).index(DEF_REG), regs=["全国"] + REGIONS), ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
 if os.path.exists(f"{OUT}/top-data.json"): os.remove(f"{OUT}/top-data.json")   # 前の大きいファイルは消す
