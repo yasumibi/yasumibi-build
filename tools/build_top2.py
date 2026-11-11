@@ -4,7 +4,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # このリポジトリ
 OUT = os.environ.get("YB_OUT", os.path.join(os.path.dirname(ROOT), "yasumibi-site"))  # 公開用リポジトリ（隣に置く）
-from common import img_v, place_of, bk_attr
+from common import img_v, place_of, bk_attr, is_hc, usual_price
 from common import is_b, plan_s, plan_l, COND_PLAN
 from common import site_header, tabbar, footer, og_meta, load_area, AREAS, AREA_JA, MONTHS, DEFAULT_YM, ASOF, PRH, TODAY
 AREA = load_area()
@@ -167,28 +167,31 @@ _c = _CR.get(_HF + "-1440.webp") or _CR.get("kusatsu-night-hero.jpg") or {}
 hero_credit = f'上の写真：草津温泉・湯畑（{esc(_c.get("artist", ""))}・{esc(_c.get("license", ""))}）。出典：Wikimedia Commons（明るさ・色味を調整）'
 
 def _kami(lane):
+    """ハイクラスの宿（タグ「ハイクラス」と同じ基準）の、その月の神日。ふだんの料金（この先半年の中央値）との差も出す。1エリア1軒・8軒"""
     m = months[DEF_MI]; k = f"{m['y']}-{m['m']:02d}"; rows = []
     nyr = lambda d: (m["m"] == 12 and d >= 29) or (m["m"] == 1 and d <= 3)
     for h in hotels:
-        if bool(h.get("b")) != (lane == "b") or h["avg"] < 4.6: continue
+        if bool(h.get("b")) != (lane == "b") or h["avg"] < 4.6 or not is_hc(h["no"], h["area"]): continue
         p = h["p"].get(k, []); vs = [(x, d + 1) for d, x in enumerate(p) if x and not nyr(d + 1)]
         if not vs: continue
-        v, d = min(vs); rows.append((h, v, d))
-    rows.sort(key=lambda r: (-r[0]["avg"], -r[0]["cnt"]))
+        v, d = min(vs); u = usual_price(h["no"])
+        rows.append((h, v, d, (1 - v / u) if u else 0))
+    rows.sort(key=lambda r: (-r[3], -r[0]["avg"]))
     seen = set(); out = []
-    for h, v, d in rows:
-        if h["area"] in seen: continue
-        seen.add(h["area"]); out.append((h, v, d))
+    for r in rows:
+        if r[0]["area"] in seen: continue
+        seen.add(r[0]["area"]); out.append(r)
         if len(out) == 8: break
     li = "".join(
         f'<li><a href="{base}hotels/{h["slug"]}/"><img src="{esc(INFO[str(h["no"])].get("img") or h["thumb"])}" alt="" loading="lazy" decoding="async" width="400" height="500">'
-        f'<span class="st">★{h["avg"]:.2f}</span><span class="c"><span class="ar">{esc(place_of(h))}</span><b class="nm">{esc(h["name"])}</b>'
-        f'<span class="pr"><span class="tg">神日</span>{_lab(m, d)}<span class="v">¥{v:,}</span></span></span></a></li>' for h, v, d in out)
+        f'<span class="st">★{h["avg"]:.2f}</span>' + (f'<span class="off">ふだんより −{round(g * 100)}%</span>' if g >= 0.05 else "") +
+        f'<span class="c"><span class="ar">{esc(place_of(h))}</span><b class="nm">{esc(h["name"])}</b>'
+        f'<span class="pr"><span class="tg">神日</span>{_lab(m, d)}<span class="v">¥{v:,}</span></span></span></a></li>' for h, v, d, g in out)
     return f'<ul class="km-row" data-lane="{lane}"{" hidden" if lane == "b" else ""}>{li}</ul>' if out else ""
 _km = months[DEF_MI]
-kami_html = (f'<section class="kmc" aria-labelledby="kmh"><h2 id="kmh"><small class="keb">★4.6以上の人気の宿</small>{_km["m"]}月に、<span class="kw">いちばん安い日</span></h2>'
-             f'<p class="sub">評価の高い宿だけを選んで、{_km["m"]}月で最も安い日（<b>神日</b>）と料金を出しています。2名1泊・税込</p>'
-             + _kami("2") + _kami("b") + '</section>')
+kami_html = (f'<section class="kmc" aria-labelledby="kmh"><h2 id="kmh"><small class="keb">★4.6以上の高級宿・旅館</small>ハイクラスの宿が、<span class="kw">安く泊まれる日</span></h2>'
+             f'<p class="sub">憧れの宿も、{_km["m"]}月の神日（その月いちばん安い日）なら、ふだんよりこれだけ安く泊まれます。2名1泊・税込</p>'
+             + _kami("2") + _kami("b") + f'<a class="kmore" href="{base}tags/hc/">ハイクラスの宿をもっと見る ›</a></section>')
 TOP_JS = json.dumps(dict(months=months, areas=DATA["areas"], picks=_top_picks, preg=(["all"] + REGIONS).index(DEF_REG), regs=["全国"] + REGIONS), ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
 if os.path.exists(f"{OUT}/top-data.json"): os.remove(f"{OUT}/top-data.json")   # 前の大きいファイルは消す
 
