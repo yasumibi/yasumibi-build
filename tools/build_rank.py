@@ -106,8 +106,8 @@ F_NEAR = lambda s: (f"{s['near']}日", f"{s['ndays']}日のうち、ほぼ神日
 
 
 def _name(s): return esc(H[s["no"]]["name"])
-Q_GAP = lambda s: f"1位の{_name(s)}は、ずらすだけで{s['gap']:,}円。ラーメンなら{s['gap'] // 1000}杯ぶん。"
-Q_PEN = lambda s: (f"1位の{_name(s)}は、土曜でもほぼ平日料金。差は缶ビール{max(1, (s['sa'] - s['wa']) // 250)}本ぶん。"
+Q_GAP = lambda s: f"1位の{_name(s)}は、ずらすだけで{s['gap']:,}円安くなる。"
+Q_PEN = lambda s: (f"1位の{_name(s)}は、土曜でもほぼ平日料金。差は{s['sa'] - s['wa']:,}円。"
                    if s["sa"] > s["wa"] else f"1位の{_name(s)}は、土曜の方がむしろ安い。どういうこと。")
 Q_NEAR = lambda s: f"1位の{_name(s)}は、{s['ndays']}日のうち{s['near']}日がほぼ神日。もはや毎日が神日。"
 

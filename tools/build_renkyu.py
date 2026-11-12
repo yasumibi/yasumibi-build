@@ -117,8 +117,8 @@ def strip(c):
 def quip(c, r, k):
     nm = esc(H[r["no"]]["name"]); day = lab(r["lo"][0])
     if c["n"] >= 7: return f"有給1日で{c['n']}連休。しかも{nm}は{day}泊にすると{r['save']:,}円安い。使わない理由が見つからない。"
-    lines = [f"{nm}は{day}泊にするだけで{r['save']:,}円。有給1日ぶんの日給、宿が払ってくれたようなもの。",
-             f"{nm}、{day}泊なら{r['save']:,}円浮く。浮いたお金で、帰りにもう一軒寄れる。",
+    lines = [f"{nm}は{day}泊にするだけで{r['save']:,}円安くなる。",
+             f"{nm}、{day}泊なら{r['save']:,}円安い。",
              f"同じ連休、同じ宿。{day}に泊まるだけで{nm}は{r['save']:,}円の差。"]
     return lines[k % len(lines)]
 

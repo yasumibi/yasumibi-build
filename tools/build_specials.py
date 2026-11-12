@@ -194,7 +194,7 @@ for no in area_nos("hakone"):
 rows.sort(key=lambda r: -r[0])
 its = [item(i + 1, no, f"−{p * 100:.0f}%", f"{lab(hi[0])} {yen(hi[1])} → 神日", f"神日 {lab(lo[0])} <b>{yen(lo[1])}</b>（{hi[1] - lo[1]:,}円安い）", lo[0])
        for i, (p, no, hi, lo) in enumerate(rows)]
-q = (f"1位の{esc(H[rows[0][1]]['name'])}は、同じ宿なのに{rows[0][2][1] - rows[0][3][1]:,}円の差。差額で、もう1泊できるかもしれない。" if rows else "")
+q = (f"1位の{esc(H[rows[0][1]]['name'])}は、同じ宿なのに{rows[0][2][1] - rows[0][3][1]:,}円の差。" if rows else "")
 write("hakone-10man", page("hakone-10man", "hakone", "hakone-torii.jpg", "箱根・2人で10万円の宿",
       "10万円の宿が、手の届く日。", "いちばん高い日が2人で9万円を超える宿だけ。その宿がいちばん下がる日と、下がり幅を並べました。",
       sec("値下がり幅の大きい順", "この先の半年で、いちばん高い日と神日の差。", ol(its), q), "期間はこの先の半年。"))
@@ -286,7 +286,7 @@ its = [item(i + 1, no, yen(t), f"{lab(d)}〜2泊（2名合計）", (f"金・土�
        for i, (t, no, d, fs) in enumerate(rows)]
 q = ""
 if rows and rows[0][3] and rows[0][3] > rows[0][0]:
-    q = f"1位の{esc(H[rows[0][1]]['name'])}は、金土の2泊と比べて{rows[0][3] - rows[0][0]:,}円安い。浮いたお金で、湯の坪街道を食べ歩き。"
+    q = f"1位の{esc(H[rows[0][1]]['name'])}は、金土の2泊と比べて{rows[0][3] - rows[0][0]:,}円安い。"
 write("yufuin-2haku", page("yufuin-2haku", "yufuin", "yufuin-kinrinko-sunny.jpg", "由布院・連泊", "由布院、2泊するならこの2日。",
       "せっかくの由布院は、ゆっくり2泊。2泊の合計がいちばん安くなる2日を、宿ごとに探しました。",
       sec("2泊の合計が安い順", "続けて2泊できる日だけで計算しています。", ol(its), q), "2泊とも同じ最安プランで計算した目安です（実際は連泊プランで変わることがあります）。"))
@@ -556,7 +556,7 @@ rows.sort()
 its = [item(i + 1, no, f"1人 {yen(v // 2)}", f"2名合計 {yen(v)}・{lab(d)}", f"★{H[no]['avg']:.2f}・1人7千円以下の日 {k}日", d) for i, (v, no, d, k) in enumerate(rows)]
 write("sapporo-1man", page("sapporo-1man", "sapporo", "sapporo-odori-blue.jpg", "札幌・1人7千円以下", "1人7千円以下で泊まれる、札幌の宿。",
       f"★4.3以上・朝食付きで、1人7千円（2人で1万4千円）以下になる日がある宿を、安い順に並べました。札幌の★4.3以上の宿{len(SP)}軒のうち{len(rows)}軒です。",
-      sec("1人あたりが安い順", f"{len(rows)}軒に、1人7千円以下の日があります。", ol(its, 8), "浮いたぶんで、スープカレーとジンギスカン。" if rows else ""),
+      sec("1人あたりが安い順", f"{len(rows)}軒に、1人7千円以下の日があります。", ol(its, 8)),
       "1人あたり＝2名合計÷2。"))
 made.append("sapporo-1man")
 
