@@ -235,10 +235,10 @@ for a in AREAS:
     if len(nos) >= 5:
         gap, pen, near = rank_sets(nos)
         body += when_block(nos)
-        body += ranking_block("gap", "ずらすだけで、浮く。", "土曜の予定を神日にずらしたときの差額。", gap, F_GAP, base, quip=Q_GAP)
-        body += ranking_block("pen", "土曜でも、ほぼ平日。", "土曜の値上がりが小さい宿。", pen, F_PEN, base, quip=Q_PEN)
-        body += ranking_block("cospa", "★4.5以上なのに、この値段。", "口コミ★4.5以上の宿を、神日の料金が安い順に。", cospa(nos), F_COSPA, base, quip=Q_COSPA)
-        body += ranking_block("near", "いつ行っても、だいたい安い。", "神日に近い料金の日が多い宿。日程を選ばない。", near, F_NEAR, base, quip=Q_NEAR)
+        body += ranking_block("gap", "土曜から神日にずらすと安い宿", "土曜泊の平均料金と、神日の料金の差が大きい順。", gap, F_GAP, base, quip=Q_GAP)
+        body += ranking_block("pen", "土曜泊でも料金が上がりにくい宿", "土曜泊と日〜木泊の料金の差が小さい順。", pen, F_PEN, base, quip=Q_PEN)
+        body += ranking_block("cospa", "口コミ★4.5以上で、神日の料金が安い宿", "口コミ★4.5以上の宿を、神日の料金が安い順。", cospa(nos), F_COSPA, base, quip=Q_COSPA)
+        body += ranking_block("near", "日程を問わず、料金が安定している宿", "神日に近い料金の日が多い順。", near, F_NEAR, base, quip=Q_NEAR)
     body += f'<section class="rsec ar-more" aria-labelledby="arm-h"><h2 id="arm-h">ほかのエリアも見る</h2>{L.tiles_row(base, first=a["region"], skip=a["key"])}</section>'
     # 検索する人の言葉（エリア＋宿が安い日）に合わせる。検索の順位がよいエリアは、順位が落ちないよう今のタイトルのまま（Search Consoleで確かめてから）
     _lows = [x for x in (lowest_upcoming(n) for n in nos) if x]
@@ -268,15 +268,15 @@ for L in LANES:
     sw = (f'<p class="gd-next">このページは<b>{cond}</b>の宿どうしで比べています。'
           f'<a href="{base}{L["other"][0]}">{L["other"][1]}のランキングを見る →</a></p>') if any(is_b(H[no]["area"]) != L["b"] for no in H) else ""
     body = sw
-    body += ranking_block("gap", "全国・ずらすだけで、浮く。", "土曜の予定を神日にずらしたときの差額。", gap, F_GAP, base, True, 5, quip=Q_GAP)
-    body += ranking_block("pen", "全国・土曜でも、ほぼ平日。", "土曜の値上がりが小さい宿。", pen, F_PEN, base, True, 5, quip=Q_PEN)
-    body += ranking_block("cospa", "全国・★4.5以上なのに、この値段。", "口コミ★4.5以上の宿を、神日の料金が安い順に。", cospa(allnos), F_COSPA, base, True, 5, quip=Q_COSPA)
+    body += ranking_block("gap", "全国・土曜から神日にずらすと安い宿", "土曜泊の平均料金と、神日の料金の差が大きい順。", gap, F_GAP, base, True, 5, quip=Q_GAP)
+    body += ranking_block("pen", "全国・土曜泊でも料金が上がりにくい宿", "土曜泊と日〜木泊の料金の差が小さい順。", pen, F_PEN, base, True, 5, quip=Q_PEN)
+    body += ranking_block("cospa", "全国・口コミ★4.5以上で、神日の料金が安い宿", "口コミ★4.5以上の宿を、神日の料金が安い順。", cospa(allnos), F_COSPA, base, True, 5, quip=Q_COSPA)
     body += f'<section class="rsec"><h2>エリア別のランキング</h2><div class="reg"><ul>{links}</ul></div></section>'
     tl = "全国の宿ランキング" if not L["b"] else "全国の宿ランキング（朝食付き）"
     crumb = (f'<a href="{base}">ホーム</a><span aria-hidden="true">›</span>' +
              (f'<a href="{base}ranking/">ランキング</a><span aria-hidden="true">›</span><span>朝食付きの宿</span>' if L["b"] else '<span>ランキング</span>'))
-    write(f"{OUT}/{L['path']}index.html", page(L["path"], f"{tl}｜ずらし甲斐・土曜ペナルティ・コスパ（{KY}年{KM}月）｜YASUMIBI",
+    write(f"{OUT}/{L['path']}index.html", page(L["path"], f"{tl}｜土曜からずらすと安い宿・土曜も安い宿・★4.5以上（{KY}年{KM}月）｜YASUMIBI",
           f"口コミ★4.3以上の宿（{cond}）の料金を全日調べて、日をずらすと安くなる宿、土曜でも高くならない宿をランキング。毎日更新。",
-          crumb, "日をずらすと、いくら浮く？" if not L["b"] else "朝食付きの宿、日をずらすといくら浮く？",
+          crumb, "日をずらすと安くなる宿ランキング" if not L["b"] else "朝食付きの宿・日をずらすと安くなる宿ランキング",
           f"全国{len(mine)}エリア・{len(allnos)}軒（{cond}）、{KM}月の料金で比べました。毎日更新。", body, base))
 print("rank built", [(a["key"], n) for a, n, _ in made])

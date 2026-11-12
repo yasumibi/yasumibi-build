@@ -611,7 +611,7 @@ its = [item(i + 1, no, f"−{g:,.0f}円", f"土曜 {yen(ws[0])} → 日〜木 {y
 body = ""
 if rows:
     gs = [r[0] for r in rows]
-    body += sec("土曜をやめると、いくら浮く？", f"露天風呂付き客室のある箱根の宿{len(rows)}軒の、土曜泊と日〜木泊の平均の差。中央値は<b>{statistics.median(gs):,.0f}円</b>。", "", "")
+    body += sec("土曜泊と日〜木泊の料金の差", f"露天風呂付き客室のある箱根の宿{len(rows)}軒の、土曜泊と日〜木泊の平均の差。中央値は<b>{statistics.median(gs):,.0f}円</b>。", "", "")
 body += sec("平日に泊まると差が大きい宿", "土曜泊の平均と、日〜木泊の平均の差が大きい順。", ol(its),
             f"1位の{esc(H[rows[0][1]]['name'])}は、平日にすると平均{rows[0][0]:,.0f}円安くなります。" if its else "")
 write("hakone-rotenburo", page("hakone-rotenburo", "hakone", "hakone-torii.jpg", "箱根・露天風呂付き客室", "部屋に露天風呂。土曜と平日で、いくら違う？",
