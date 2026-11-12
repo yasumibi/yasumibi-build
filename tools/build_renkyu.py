@@ -116,10 +116,10 @@ def strip(c):
 
 def quip(c, r, k):
     nm = esc(H[r["no"]]["name"]); day = lab(r["lo"][0])
-    if c["n"] >= 7: return f"有給1日で{c['n']}連休。しかも{nm}は{day}泊にすると{r['save']:,}円安い。使わない理由が見つからない。"
-    lines = [f"{nm}は{day}泊にするだけで{r['save']:,}円安くなる。",
-             f"{nm}、{day}泊なら{r['save']:,}円安い。",
-             f"同じ連休、同じ宿。{day}に泊まるだけで{nm}は{r['save']:,}円の差。"]
+    if c["n"] >= 7: return f"有給1日で{c['n']}連休になります。{nm}は{day}泊にすると{r['save']:,}円安くなります。"
+    lines = [f"{nm}は{day}泊にすると{r['save']:,}円安くなります。",
+             f"{nm}は、{day}泊なら{r['save']:,}円安くなります。",
+             f"同じ連休・同じ宿でも、{nm}は{day}泊にすると{r['save']:,}円安くなります。"]
     return lines[k % len(lines)]
 
 

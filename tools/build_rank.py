@@ -106,14 +106,14 @@ F_NEAR = lambda s: (f"{s['near']}日", f"{s['ndays']}日のうち、ほぼ神日
 
 
 def _name(s): return esc(H[s["no"]]["name"])
-Q_GAP = lambda s: f"1位の{_name(s)}は、ずらすだけで{s['gap']:,}円安くなる。"
-Q_PEN = lambda s: (f"1位の{_name(s)}は、土曜でもほぼ平日料金。差は{s['sa'] - s['wa']:,}円。"
-                   if s["sa"] > s["wa"] else f"1位の{_name(s)}は、土曜の方がむしろ安い。どういうこと。")
-Q_NEAR = lambda s: f"1位の{_name(s)}は、{s['ndays']}日のうち{s['near']}日がほぼ神日。もはや毎日が神日。"
+Q_GAP = lambda s: f"1位の{_name(s)}は、土曜から神日にずらすと{s['gap']:,}円安くなります。"
+Q_PEN = lambda s: (f"1位の{_name(s)}は、土曜泊でも、日〜木泊との差は{s['sa'] - s['wa']:,}円です。"
+                   if s["sa"] > s["wa"] else f"1位の{_name(s)}は、土曜泊のほうが日〜木泊より安くなっています。")
+Q_NEAR = lambda s: f"1位の{_name(s)}は、{s['ndays']}日のうち{s['near']}日が神日に近い料金です。"
 
 
 F_COSPA = lambda s: (yen(s["mn"]), f"★{H[s['no']]['avg']:.2f}・{KM}月の神日の料金")
-Q_COSPA = lambda s: f"1位の{_name(s)}は、★{H[s['no']]['avg']:.2f}で{yen(s['mn'])}。2人で割ると、1人{yen(s['mn'] // 2)}。"
+Q_COSPA = lambda s: f"1位の{_name(s)}は、★{H[s['no']]['avg']:.2f}で{yen(s['mn'])}（1人あたり{yen(s['mn'] // 2)}）です。"
 
 
 def cospa(nos):
@@ -236,8 +236,8 @@ for a in AREAS:
         gap, pen, near = rank_sets(nos)
         body += when_block(nos)
         body += ranking_block("gap", "ずらすだけで、浮く。", "土曜の予定を神日にずらしたときの差額。", gap, F_GAP, base, quip=Q_GAP)
-        body += ranking_block("pen", "土曜でも、ほぼ平日。", "土日しか休めない人の味方。土曜の値上がりが小さい宿。", pen, F_PEN, base, quip=Q_PEN)
-        body += ranking_block("cospa", "★4.5以上なのに、この値段。", "口コミ★4.5以上の宿を、神日の料金が安い順に。いわゆるコスパの良い宿。", cospa(nos), F_COSPA, base, quip=Q_COSPA)
+        body += ranking_block("pen", "土曜でも、ほぼ平日。", "土曜の値上がりが小さい宿。", pen, F_PEN, base, quip=Q_PEN)
+        body += ranking_block("cospa", "★4.5以上なのに、この値段。", "口コミ★4.5以上の宿を、神日の料金が安い順に。", cospa(nos), F_COSPA, base, quip=Q_COSPA)
         body += ranking_block("near", "いつ行っても、だいたい安い。", "神日に近い料金の日が多い宿。日程を選ばない。", near, F_NEAR, base, quip=Q_NEAR)
     body += f'<section class="rsec ar-more" aria-labelledby="arm-h"><h2 id="arm-h">ほかのエリアも見る</h2>{L.tiles_row(base, first=a["region"], skip=a["key"])}</section>'
     # 検索する人の言葉（エリア＋宿が安い日）に合わせる。検索の順位がよいエリアは、順位が落ちないよう今のタイトルのまま（Search Consoleで確かめてから）
@@ -270,7 +270,7 @@ for L in LANES:
     body = sw
     body += ranking_block("gap", "全国・ずらすだけで、浮く。", "土曜の予定を神日にずらしたときの差額。", gap, F_GAP, base, True, 5, quip=Q_GAP)
     body += ranking_block("pen", "全国・土曜でも、ほぼ平日。", "土曜の値上がりが小さい宿。", pen, F_PEN, base, True, 5, quip=Q_PEN)
-    body += ranking_block("cospa", "全国・★4.5以上なのに、この値段。", "口コミ★4.5以上の宿を、神日の料金が安い順に。いわゆるコスパの良い宿。", cospa(allnos), F_COSPA, base, True, 5, quip=Q_COSPA)
+    body += ranking_block("cospa", "全国・★4.5以上なのに、この値段。", "口コミ★4.5以上の宿を、神日の料金が安い順に。", cospa(allnos), F_COSPA, base, True, 5, quip=Q_COSPA)
     body += f'<section class="rsec"><h2>エリア別のランキング</h2><div class="reg"><ul>{links}</ul></div></section>'
     tl = "全国の宿ランキング" if not L["b"] else "全国の宿ランキング（朝食付き）"
     crumb = (f'<a href="{base}">ホーム</a><span aria-hidden="true">›</span>' +
