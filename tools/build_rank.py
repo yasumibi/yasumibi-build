@@ -68,19 +68,18 @@ H = {h["no"]: h for h in HOTELS if str(h["no"]) in INFO}
 built_hotels = set(os.listdir(f"{OUT}/hotels")) if os.path.isdir(f"{OUT}/hotels") else set()
 
 
-def item(i, s, big, small, base, show_area=False):
+def item(i, s, sub, base, show_area=False):
     h = H[s["no"]]; info = INFO[str(s["no"])]
     hp = f"{base}hotels/{h['slug']}/" if h["slug"] in built_hotels else None
-    kd = "・".join(lab(KY, KM, d) for d in s["kd"][:2]) + (f" ほか{len(s['kd'])-2}日" if len(s["kd"]) > 2 else "")
+    kd = "・".join(lab(KY, KM, d) for d in s["kd"][:2]) + (f"など{len(s['kd'])}日" if len(s["kd"]) > 2 else "")
     name = f'<a class="rn" href="{hp}">{esc(h["name"])}</a>' if hp else f'<span class="rn">{esc(h["name"])}</span>'
     where = place_of(h) if show_area else h.get("loc", "")   # 「エリア・地区」。同じ名前は1回だけ
     return f"""<li class="ri">
   <span class="rk">{i}</span>
   <img class="rt" src="{esc(info.get('thumb',''))}" alt="" loading="lazy" width="96" height="64">
   <div class="rb">
-    {name}<span class="rm">{esc(where)}｜口コミ {h.get('avg',0):.2f}<i class="mb">{'朝食付き' if is_b(h['area']) else '2食付き'}</i></span>
-    <div class="rv"><b>{big}</b><span>{small}</span></div>
-    <div class="rk2">神日 {kd} <b>{yen(s['mn'])}</b></div>
+    {name}<span class="rm">{esc(where)}｜★{h.get('avg',0):.2f}<i class="mb">{'朝食付き' if is_b(h['area']) else '2食付き'}</i></span>
+    <div class="rp"><span class="lb">神日 {kd}</span><b>{yen(s['mn'])}</b></div>{f'<div class="rs">{sub}</div>' if sub else ''}
   </div>
   <a class="rgo" href="{esc(rk_link(s['no'], KY, KM, s['kd'][0]))}"{bk_attr(s['no'], datetime.date(KY, KM, s['kd'][0]))} target="_blank" rel="noopener sponsored">楽天トラベルで見る</a>
 </li>"""
@@ -88,11 +87,11 @@ def item(i, s, big, small, base, show_area=False):
 
 def ranking_block(rid, title, lead, rows, fmt, base, show_area=False, n=TOPN, quip=None):
     if not rows: return ""
-    q = f'<p class="quip">{quip(rows[0])}</p>' if quip else ""
-    lis = "".join(item(i + 1, s, *fmt(s), base, show_area) for i, s in enumerate(rows[:n]))
+    q = ""   # 1位の宿をくり返す一言はやめた（文字を減らす。2026/11/12）
+    lis = "".join(item(i + 1, s, fmt(s), base, show_area) for i, s in enumerate(rows[:n]))
     more = ""
     if len(rows) > n:
-        lis2 = "".join(item(i + 1, s, *fmt(s), base, show_area) for i, s in enumerate(rows[n:n + 10], start=n))
+        lis2 = "".join(item(i + 1, s, fmt(s), base, show_area) for i, s in enumerate(rows[n:n + 10], start=n))
         more = f'<details class="rmore"><summary>{n + 1}位から見る</summary><ol class="rl">{lis2}</ol></details>'
     return f"""<section class="rsec" id="{rid}" aria-labelledby="{rid}-h">
   <h2 id="{rid}-h">{title}</h2><p class="rlead">{lead}</p>{q}
@@ -100,9 +99,11 @@ def ranking_block(rid, title, lead, rows, fmt, base, show_area=False, n=TOPN, qu
 </section>"""
 
 
-F_GAP = lambda s: (f"−{s['gap']:,}円", f"土曜 {yen(s['sa'])} → 神日")
-F_PEN = lambda s: (f"+{max(0, s['sa'] - s['wa']):,}円", "土曜の追加料金（日〜木と比べて）")
-F_NEAR = lambda s: (f"{s['near']}日", f"{s['ndays']}日のうち、ほぼ神日の日")
+# 行の下の一言：何と比べて、いくら安い（高い）かを文で書く。記号（−・→・+0円）だけで伝えない。2026/11/12
+F_GAP = lambda s: f"土曜泊の平均（{yen(s['sa'])}）より <b>{s['gap']:,}円安い</b>"
+F_PEN = lambda s: ("土曜泊のほうが、日〜木泊より安い" if s["sa"] < s["wa"] else "土曜泊も、日〜木泊と同じ料金" if s["sa"] == s["wa"]
+                   else f"土曜泊は、日〜木泊より <b class=\"up\">{s['sa'] - s['wa']:,}円高い</b>")
+F_NEAR = lambda s: f"{s['ndays']}日のうち{s['near']}日が、神日に近い料金"
 
 
 def _name(s): return esc(H[s["no"]]["name"])
@@ -112,7 +113,7 @@ Q_PEN = lambda s: (f"1位の{_name(s)}は、土曜泊でも、日〜木泊との
 Q_NEAR = lambda s: f"1位の{_name(s)}は、{s['ndays']}日のうち{s['near']}日が神日に近い料金です。"
 
 
-F_COSPA = lambda s: (yen(s["mn"]), f"★{H[s['no']]['avg']:.2f}・{KM}月の神日の料金")
+F_COSPA = lambda s: ""   # ★と神日の料金は行に出ている
 Q_COSPA = lambda s: f"1位の{_name(s)}は、★{H[s['no']]['avg']:.2f}で{yen(s['mn'])}（1人あたり{yen(s['mn'] // 2)}）です。"
 
 

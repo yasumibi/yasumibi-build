@@ -177,7 +177,7 @@ def first_rows(area, base):
     rows.sort(key=lambda r: r[1])                    # Pythonのsortも安定ソート＝JSと同じ順
     out = []
     for i, (h, v, days) in enumerate(rows[:FIRST]):
-        dl = "・".join(lab(y, m, d) for d in days[:2]) + (f" ほか{len(days) - 2}日" if len(days) > 2 else "")
+        dl = "・".join(lab(y, m, d) for d in days[:2]) + (f"など{len(days)}日" if len(days) > 2 else "")
         meta = f'{esc(h["loc"])}｜★{h["avg"]:.2f}' if area else f'{esc(place_of(h))}｜★{h["avg"]:.2f}<i class="mb">{meal_ja(h["area"])}</i>'
         if "hc" in h["t"]: meta += '<i class="hcm">ハイクラス</i>'
         out.append(f'<li class="ri"><span class="rk">{i + 1}</span><a href="{base}hotels/{h["slug"]}/"><img class="rt" src="{h["thumb"]}" alt="" loading="lazy" width="96" height="64"></a>'

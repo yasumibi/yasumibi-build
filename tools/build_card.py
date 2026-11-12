@@ -60,13 +60,13 @@ def ex_card(r):
     h = r["h"]; slug, name, _ = SLUG[h["no"]]
     return f"""<article class="exc">
   <div class="exh"><a href="../hotels/{slug}/">{esc(name)}</a><span>{esc(place_of(h))}｜{KY}年{KM}月・2名{plan_s(h['area'])}</span></div>
-  <div class="exn"><span>土曜泊の平均より</span><b>−{r['save']:,}<small>円</small></b></div>
+  <div class="exn"><span>土曜泊の平均より</span><b>{r['save']:,}<small>円安い</small></b></div>
   {bar(r)}
   <ul class="lg">
-    <li><i class="s-day"></i>神日（{lab(r['d'])}）にずらす <b>−{r['sa'] - r['mn']:,}円</b></li>
+    <li><i class="s-day"></i>神日（{lab(r['d'])}）に泊まると安くなる分 <b>{r['sa'] - r['mn']:,}円</b></li>
     <li><i class="s-real"></i>神日の宿代 <b>{yen(r['mn'])}</b><span class="from">（土曜の平均 {yen(r['sa'])}）</span></li>
-    <li class="ptl">楽天カードで払うと、宿代とは別に <b>+{r['pts']:,}円分</b><span class="from">（楽天カード以外より多い分）</span></li>
-    <li class="ptl">はじめての方は、入会特典 <b>+{CARD_BONUS:,}円分</b></li>
+    <li class="ptl">楽天カードで払うと増えるポイント <b>+{r['pts']:,}円分</b></li>
+    <li class="ptl">はじめての方の入会特典 <b>+{CARD_BONUS:,}円分</b></li>
   </ul>
 </article>"""
 
@@ -124,8 +124,8 @@ page = f"""<!doctype html>
 
   <header class="rc-hero">
     <p class="eb">神日 × 楽天カード</p>
-    <h1>同じ宿が、<br>土曜より <em>−{best['save']:,}円</em>。</h1>
-    <p class="sub">{esc(SLUG[best['h']['no']][1])}（{KY}年{KM}月・2名{plan_s(best['h']['area'])}）の試算</p>
+    <h1>神日と楽天カードで、<br>旅費を安くする方法</h1>
+    <p class="sub">例：{esc(SLUG[best['h']['no']][1])}（{esc(AREA_JA.get(best['h']['area'], ''))}）は、神日に泊まると土曜泊の平均より{best['save']:,}円安くなります（{KY}年{KM}月・2名{plan_s(best['h']['area'])}）。</p>
     <ol class="steps3">
       <li><b>1</b><span>神日に<br>泊まる</span></li>
       <li><b>2</b><span>楽天カードで<br>払う</span></li>

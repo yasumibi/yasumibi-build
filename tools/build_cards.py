@@ -64,7 +64,7 @@ def _example():
     return f"""<div class="cx-ex">
     <p class="cx-h">たとえば、この宿なら</p>
     <p class="cx-w"><a href="{base}hotels/{slug}/">{esc(name)}</a>（{esc(place_of(h))}）<br>{d.month}/{d.day}({WD_JA[d.weekday()]})泊・2名{plan_s(h['area'])} <b>¥{v:,}</b></p>
-    <ul class="cx-r"><li><span>楽天カードで事前決済<small>楽天カード以外で払うより多い分{'（合計2.5倍）' if camp_ok(d) else '（カード通常分）'}</small></span><b>+{x:,}円分</b></li>
+    <ul class="cx-r"><li><span>楽天カードで払うと増えるポイント<small>{'事前決済・エントリーで合計2.5倍' if camp_ok(d) else 'カードの通常分'}</small></span><b>+{x:,}円分</b></li>
       <li><span>はじめての方は入会特典<small>2,000円分＋条件達成で3,000円分</small></span><b>+{CARD_BONUS:,}円分</b></li></ul>
     <p class="cx-t"><span>宿代とは別に戻ってくるポイント</span><b>最大{x + CARD_BONUS:,}円分</b></p>
   </div>"""
@@ -78,7 +78,7 @@ rakuten = f"""<article class="cd main" id="rakuten">
   </div>
   {spec([("年会費", "永年無料"), ("入会特典", "5,000ポイント<small>うち3,000は期間限定ポイント・3回以上の利用などの条件あり</small>"),
          ("楽天トラベル", (f"ポイント2.5倍<small>エントリー・事前決済が必要。{CARD_CAMP['book_end_ja']}までの予約・{CARD_CAMP['out_last_ja']}チェックアウトまでの宿泊</small>" if camp_live()
-                    else "事前決済でポイントが増える<small>カード利用100円につき1ポイント（楽天カード以外で払うより多い分）</small>"))])}
+                    else "事前決済でポイントが増える<small>カード利用100円につき1ポイント（楽天カードで払うと増える分）</small>"))])}
   {EXAMPLE}
   <a class="c-apply" href="{CARD_AFF}" target="_blank" rel="nofollow sponsored noopener">楽天カードを申し込む（年会費無料）</a>
   <a class="ok-more" href="{base}rakuten-card/">ほかの宿で、いくら戻るかを見る →</a>

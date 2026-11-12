@@ -58,17 +58,18 @@ def item(i, r, base, t):
     hp = f"{base}hotels/{h['slug']}/" if h["slug"] in built else None
     name = f'<a class="rn" href="{hp}">{esc(h["name"])}</a>' if hp else f'<span class="rn">{esc(h["name"])}</span>'
     big = f"1人 {yen(r['p'] // 2)}" if t.get("per") else yen(r["p"])
-    more = f" ほか{r['n'] - 1}日" if r["n"] > 1 else ""
+    more = f"など{r['n']}日" if r["n"] > 1 else ""
     sub = []
     if t.get("sub"): sub.append(t["sub"](no))
-    if r["med"] and r["med"] > r["p"]: sub.append(f"いつもより <b>−{int(r['med'] - r['p']):,}円</b>")
-    sub_html = f'<div class="rk2">{"・".join(sub)}</div>' if sub else ""
+    if t.get("per"): sub.append(f"2名で{yen(r['p'])}")
+    if r["med"] and r["med"] > r["p"]: sub.append(f"ふだんの料金より <b>{int(r['med'] - r['p']):,}円安い</b>")
+    sub_html = f'<div class="rs">{"・".join(sub)}</div>' if sub else ""
     return f"""<li class="ri">
   <span class="rk">{i}</span>
   <img class="rt" src="{esc(info.get('thumb',''))}" alt="" loading="lazy" width="96" height="64">
   <div class="rb">
     {name}<span class="rm">{esc(place_of(h))}｜★{h.get('avg',0):.2f}</span>
-    <div class="rv"><b>{big}</b><span><i class="kd">神日</i>{lab(r['d'])}泊{more}・2名{plan_s(h['area'])}{'（2名で' + yen(r['p']) + '）' if t.get('per') else ''}</span></div>
+    <div class="rp"><span class="lb">神日 {lab(r['d'])}泊{more}</span><b>{big}</b></div>
     {sub_html}
   </div>
   <a class="rgo" href="{esc(rk_link(no, r['d']))}"{bk_attr(no, r['d'])} target="_blank" rel="noopener sponsored">楽天トラベルで見る</a>

@@ -107,9 +107,9 @@ def _plink(no, m, d):
     q = urllib.parse.quote(u, safe="-_.!~*'()")   # JSの encodeURIComponent と同じ
     return f"https://hb.afl.rakuten.co.jp/hgc/{AFF}/?pc={q}&m={q}"
 def _pcard(h, i, m, v, days, gap):
-    dl = "・".join(_lab(m, d) for d in days[:3]) + (f" ほか{len(days) - 3}日" if len(days) > 3 else "")
+    dl = "・".join(_lab(m, d) for d in days[:3]) + (f"など{len(days)}日" if len(days) > 3 else "")
     body = (f'<div class="pr"><span class="tg">神日</span><span class="d">{dl}</span><span class="v">¥{v:,}</span></div>'
-            + (f'<div class="gap">土曜泊の平均より <b>−{gap:,}円</b></div>' if gap
+            + (f'<div class="gap">土曜泊の平均より <b>{gap:,}円安い</b></div>' if gap
                else f'<div class="pt">楽天カードなら +{card_extra(v, datetime.date(m["y"], m["m"], days[0])):,}円分</div>'))
     return (f'<li class="rc"><a class="ph" href="../hotels/{h["slug"]}/"><img src="{h["thumb"]}" alt="" loading="lazy" width="300" height="200"></a>'
             f'<div class="inf"><span class="rk">{i + 1}</span><a class="nm" href="../hotels/{h["slug"]}/">{h["name"]}</a>'
@@ -184,7 +184,7 @@ def _kami(lane):
         if len(out) == 8: break
     li = "".join(
         f'<li><a href="{base}hotels/{h["slug"]}/"><img src="{esc(INFO[str(h["no"])].get("img") or h["thumb"])}" alt="" loading="lazy" decoding="async" width="400" height="500">'
-        f'<span class="st">★{h["avg"]:.2f}</span>' + (f'<span class="off">ふだんより −{round(g * 100)}%</span>' if g >= 0.05 else "") +
+        f'<span class="st">★{h["avg"]:.2f}</span>' + (f'<span class="off">ふだんより{round(g * 100)}%安い</span>' if g >= 0.05 else "") +
         f'<span class="c"><span class="ar">{esc(place_of(h))}</span><b class="nm">{esc(h["name"])}</b>'
         f'<span class="pr"><span class="tg">神日</span>{_lab(m, d)}<span class="v">¥{v:,}</span></span></span></a></li>' for h, v, d, g in out)
     return f'<ul class="km-row" data-lane="{lane}"{" hidden" if lane == "b" else ""}>{li}</ul>' if out else ""

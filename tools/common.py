@@ -22,7 +22,7 @@ def site_header(base, cur=""):
     return f"""<header class="gh">
   <div class="gin">
     {logo_html(base)}
-    <span class="gtag">休み日を、安い日に。</span>
+    <span class="gtag">安い日に、休みを合わせる。</span>
     <nav class="gnav" aria-label="メインメニュー">{nav}</nav>
   </div>
 </header>
@@ -99,7 +99,7 @@ def plan_l(area):
 
 
 # 注記に使う条件の文（朝食付きのエリアがあれば、どこかを書き添える）
-COND_PLAN = ("大人2名・1室・1泊2食付き" + (f"（{B_AREA_LABEL}は1泊朝食付き）" if B_AREA_NAMES else "") + "の最安プラン")
+COND_PLAN = ("大人2名・1室・1泊2食付き" + ("（街のエリアは1泊朝食付き。くわしくは「YASUMIBIについて」）" if B_AREA_NAMES else "") + "の最安プラン")   # エリア名を40個並べると読めないので短く（2026/11/12）
 
 
 def _add_months(y, m, k):

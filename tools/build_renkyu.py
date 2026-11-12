@@ -96,8 +96,8 @@ def item(i, r, base):
   <img class="rt" src="{esc(info.get('thumb',''))}" alt="" loading="lazy" width="96" height="64">
   <div class="rb">
     {name}<span class="rm">{esc(place_of(h))}｜★{h.get('avg',0):.2f}</span>
-    <div class="rv"><b>−{r['save']:,}円</b><span>{lab(r['ref'][0])}泊 {yen(r['ref'][1])} → {lab(r['lo'][0])}泊</span></div>
-    <div class="rk2">いちばん安い夜 {lab(r['lo'][0])} <b>{yen(r['lo'][1])}</b></div>
+    <div class="rp"><span class="lb">いちばん安い夜 {lab(r['lo'][0])}泊</span><b>{yen(r['lo'][1])}</b></div>
+    <div class="rs">{lab(r['ref'][0])}泊（{yen(r['ref'][1])}）より <b>{r['save']:,}円安い</b></div>
   </div>
   <a class="rgo" href="{esc(rk_link(r['no'], r['lo'][0]))}"{bk_attr(r['no'], r['lo'][0])} target="_blank" rel="noopener sponsored">楽天トラベルで見る</a>
 </li>"""
@@ -137,7 +137,6 @@ def section(k, c, base):
   <h2 id="r{c['leave']:%m%d}-h"><span class="rky-l">{lab(c['leave'])}を休むと</span><span class="rky-n">{c['n']}連休</span></h2>
   <p class="rlead">{lab(c['a'])}〜{lab(c['b'])}｜{sub}（+{gain}日）</p>
   {strip(c)}{note}
-  <p class="quip">{quip(c, rows[0], k)}</p>
   <ol class="rl">{item(1, rows[0], base)}</ol>{more}
 </section>"""
 

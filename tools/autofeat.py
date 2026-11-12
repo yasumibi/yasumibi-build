@@ -111,8 +111,8 @@ def evaluate(area, t):
 
 def heading(area, t):
     a = AREA_JA[area]
-    return {"youbi": f"{a}の宿の、曜日ごとの料金。", "5man": f"同じ5万円で、いちばん良い{a}の宿。",
-            "2haku": f"{a}、2泊するならこの2日。", "doyou": f"土曜でも安い、{a}の宿。"}[t]
+    return {"youbi": f"{a}の宿の曜日ごとの料金", "5man": f"2人で5万円前後の{a}の宿（★の高い順）",
+            "2haku": f"{a}で2泊の合計が安い日", "doyou": f"土曜泊でも料金が上がりにくい{a}の宿"}[t]
 
 
 def live():
@@ -141,39 +141,39 @@ MANUAL = {"hakone": ["hakone-5man", "hakone-10man", "hakone-rotenburo", "hc-hako
 
 # 手で作った特集（一覧のカード）：(href, 見出し, 小さい文字, 写真)
 FEATURE_CARDS = [
-    ("features/hakone-5man/", "同じ5万円で、いちばん良い宿。", "箱根・予算を固定して★の高い順", "hakone-fuji-ship.jpg"),
-    ("features/hakone-10man/", "10万円の宿が、手の届く日。", "箱根・高級宿の値下がり幅", "hakone-torii.jpg"),
-    ("features/atami-5man/", "金曜の夜に、熱海へ。", "熱海・金曜泊がいちばん安い日", "atami-panorama.jpg"),
-    ("features/atami-10man/", "海が見える宿の、神日。", "熱海・ご褒美の一泊", "atami-panorama.jpg"),
-    ("features/kusatsu-winter/", "冬の草津、いちばん安い週。", "草津・12〜3月を週ごとに", "kusatsu-yubatake.jpg"),
-    ("features/yufuin-2haku/", "由布院、2泊するならこの2日。", "由布院・連泊の合計が安い2日", "yufuin-kinrinko-sunny.jpg"),
-    ("features/beppu-1man/", "1人1万円台で泊まれる別府。", "別府・1人2万円未満の日がある宿", "beppu-chinoike.jpg"),
-    ("features/kinugawa-heijitsu/", "平日1泊、いちばん安い鬼怒川。", "鬼怒川・日〜木泊だけで", "kinugawa-cover.jpg"),
-    ("features/gero-gohan/", "ごはんの★が高い宿の、神日。", "下呂・食事の評価が高い順", "gero-cover.jpg"),
-    ("features/noboribetsu-size/", "客室数と神日の料金。", "登別・宿の大きさと料金", "noboribetsu-jigokudani-day.jpg"),
-    ("features/arima-renkyu/", "有馬、連休でも安い日。", "有馬・3連休以上の夜だけで", "arima-view.jpg"),
-    ("features/kyoto-koyo/", "紅葉の11月と、1月。", "京都・11月と1月の料金差", "kyoto-kiyomizu-autumn.jpg"),
-    ("features/kyoto-asagohan/", "朝ごはんで選ぶ、京都の宿。", "京都・食事の評価が高い順", "kyoto-inari.jpg"),
-    ("features/kyoto-46/", "★4.6以上の京都に、1人1万円台で。", "京都・★4.6以上の宿だけ", "kyoto-inari.jpg"),
-    ("features/okinawa-month/", "沖縄の宿がいちばん安い月。", "沖縄・月ごとの神日", "ishigaki-bay.jpg"),
-    ("features/okinawa-ritou/", "離島と本島、神日で比べると。", "沖縄・宮古島・石垣と本島", "ishigaki-kabira.jpg"),
-    ("features/sapporo-yukimatsuri/", "雪まつりの週と、前後の週。", "札幌・2027年2月4日〜11日", "sapporo-snow.jpg"),
-    ("features/sapporo-1man/", "1人7千円以下で泊まれる、札幌の宿。", "札幌・★4.3以上・朝食付き", "sapporo-odori-blue.jpg"),
-    ("features/machi-onsen-2man/", "2人で2万円未満。街なかで温泉に入れるホテル。", "東京・大阪・京都・札幌など・天然温泉", "tokyo-skytree.jpg"),
-    ("features/hakone-rotenburo/", "露天風呂付き客室の、土曜と平日の料金差。", "箱根・露天風呂付き客室", "hakone-torii.jpg"),
-    ("features/atami-youbi/", "熱海の宿の、曜日ごとの料金。", "熱海・曜日ごとの料金", "atami-panorama.jpg"),
-    ("features/yufuin-month/", "由布院の宿がいちばん安い月。", "由布院・月ごとの神日", "yufuin-kinrinko.jpg"),
-    ("features/beppu-doyou/", "土曜の値上がりが小さい、別府の宿。", "別府・土曜泊", "beppu-chinoike.jpg"),
-    ("features/izukogen-pet/", "ペットと泊まれる、伊豆高原の神日。", "伊豆高原・ペット同宿可", "izukogen-jogasaki.jpg"),
-    ("features/karuizawa-luxury/", "軽井沢の高級ホテルが、下がる日。", "軽井沢・いつもより下がる順", "karuizawa-kumoba-pond.jpg"),
-    ("features/kinosaki-kani/", "かにの季節の城崎、いちばん安い日。", "城崎・11〜3月", "kinosaki-willow-day.jpg"),
-    ("features/ito-1man/", "1人1万円台で泊まれる伊東。", "伊東・2食付きで1人2万円未満", "ito-okawa-river-day.jpg"),
-    ("features/aki-rare/", "空きが出にくい人気宿、いま空いている日。", "全国・空きの少ない人気宿", "kusatsu-yubatake-night.jpg"),
-    ("features/akogare/", "憧れの宿が、手の届く日。", "全国・ハイクラスの宿の神日", "hakone-fuji-ship.jpg"),
-    ("features/hc-hakone/", "箱根のハイクラス宿が、下がる日。", "箱根・ハイクラス", "hakone-torii.jpg"),
-    ("features/hc-kyoto/", "京都のハイクラスホテルが、下がる日。", "京都・ハイクラス", "kyoto-kiyomizu-autumn.jpg"),
-    ("features/hc-karuizawa/", "軽井沢のハイクラス宿が、下がる日。", "軽井沢・ハイクラス", "karuizawa-kumoba-pond.jpg"),
-    ("features/hc-okinawa/", "沖縄のハイクラスリゾートが、下がる日。", "沖縄・ハイクラス", "onna-beach-sunny.jpg")]
+    ("features/hakone-5man/", "2人で5万円前後の箱根の宿（★の高い順）", "箱根・予算を固定して★の高い順", "hakone-fuji-ship.jpg"),
+    ("features/hakone-10man/", "箱根の10万円の宿が安くなる日", "箱根・高級宿の値下がり幅", "hakone-torii.jpg"),
+    ("features/atami-5man/", "熱海の宿、金曜泊がいちばん安い日", "熱海・金曜泊がいちばん安い日", "atami-panorama.jpg"),
+    ("features/atami-10man/", "熱海の海が見える宿の神日", "熱海・海が見える宿", "atami-panorama.jpg"),
+    ("features/kusatsu-winter/", "冬の草津の宿がいちばん安い週", "草津・12〜3月を週ごとに", "kusatsu-yubatake.jpg"),
+    ("features/yufuin-2haku/", "由布院で2泊の合計が安い日", "由布院・連泊の合計が安い2日", "yufuin-kinrinko-sunny.jpg"),
+    ("features/beppu-1man/", "1人1万円台で泊まれる別府の宿", "別府・1人2万円未満の日がある宿", "beppu-chinoike.jpg"),
+    ("features/kinugawa-heijitsu/", "鬼怒川の宿、平日でいちばん安い日", "鬼怒川・日〜木泊だけで", "kinugawa-cover.jpg"),
+    ("features/gero-gohan/", "下呂の食事の評価が高い宿の神日", "下呂・食事の評価が高い順", "gero-cover.jpg"),
+    ("features/noboribetsu-size/", "登別の宿の客室数と神日の料金", "登別・宿の大きさと料金", "noboribetsu-jigokudani-day.jpg"),
+    ("features/arima-renkyu/", "有馬の宿、連休中でも安い日", "有馬・3連休以上の夜だけで", "arima-view.jpg"),
+    ("features/kyoto-koyo/", "京都の宿、11月と1月の料金差", "京都・11月と1月の料金差", "kyoto-kiyomizu-autumn.jpg"),
+    ("features/kyoto-asagohan/", "京都の朝食の評価が高い宿", "京都・食事の評価が高い順", "kyoto-inari.jpg"),
+    ("features/kyoto-46/", "1人1万円台で泊まれる、京都の★4.6以上の宿", "京都・★4.6以上の宿だけ", "kyoto-inari.jpg"),
+    ("features/okinawa-month/", "沖縄の宿がいちばん安い月", "沖縄・月ごとの神日", "ishigaki-bay.jpg"),
+    ("features/okinawa-ritou/", "沖縄の離島と本島の神日の比較", "沖縄・宮古島・石垣と本島", "ishigaki-kabira.jpg"),
+    ("features/sapporo-yukimatsuri/", "さっぽろ雪まつりの週と前後の週の料金", "札幌・2027年2月4日〜11日", "sapporo-snow.jpg"),
+    ("features/sapporo-1man/", "1人7千円以下で泊まれる札幌の宿", "札幌・★4.3以上・朝食付き", "sapporo-odori-blue.jpg"),
+    ("features/machi-onsen-2man/", "2人で2万円未満、温泉に入れる街なかのホテル", "東京・大阪・京都・札幌など・天然温泉", "tokyo-skytree.jpg"),
+    ("features/hakone-rotenburo/", "箱根の露天風呂付き客室、土曜と平日の料金差", "箱根・露天風呂付き客室", "hakone-torii.jpg"),
+    ("features/atami-youbi/", "熱海の宿の曜日ごとの料金", "熱海・曜日ごとの料金", "atami-panorama.jpg"),
+    ("features/yufuin-month/", "由布院の宿がいちばん安い月", "由布院・月ごとの神日", "yufuin-kinrinko.jpg"),
+    ("features/beppu-doyou/", "土曜泊でも料金が上がりにくい別府の宿", "別府・土曜泊", "beppu-chinoike.jpg"),
+    ("features/izukogen-pet/", "ペットと泊まれる伊豆高原の宿の神日", "伊豆高原・ペット同宿可", "izukogen-jogasaki.jpg"),
+    ("features/karuizawa-luxury/", "軽井沢の高級ホテルが安くなる日", "軽井沢・いつもより下がる順", "karuizawa-kumoba-pond.jpg"),
+    ("features/kinosaki-kani/", "かにの季節（11〜3月）に城崎の宿が安い日", "城崎・11〜3月", "kinosaki-willow-day.jpg"),
+    ("features/ito-1man/", "1人1万円台で泊まれる伊東の宿", "伊東・2食付きで1人2万円未満", "ito-okawa-river-day.jpg"),
+    ("features/aki-rare/", "空きが出にくい人気宿の、空いている日", "全国・空きの少ない人気宿", "kusatsu-yubatake-night.jpg"),
+    ("features/akogare/", "全国のハイクラスの宿が安くなる日", "全国・ハイクラスの宿の神日", "hakone-fuji-ship.jpg"),
+    ("features/hc-hakone/", "箱根のハイクラスの宿が安くなる日", "箱根・ハイクラス", "hakone-torii.jpg"),
+    ("features/hc-kyoto/", "京都のハイクラスのホテルが安くなる日", "京都・ハイクラス", "kyoto-kiyomizu-autumn.jpg"),
+    ("features/hc-karuizawa/", "軽井沢のハイクラスの宿が安くなる日", "軽井沢・ハイクラス", "karuizawa-kumoba-pond.jpg"),
+    ("features/hc-okinawa/", "沖縄のハイクラスのリゾートが安くなる日", "沖縄・ハイクラス", "onna-beach-sunny.jpg")]
 
 
 def area_features(area):

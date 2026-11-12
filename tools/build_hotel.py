@@ -89,7 +89,7 @@ def months_for(h):
 
 def peer_li(h):
     v = jan_min(h["p"]); ds = [i + 1 for i, x in enumerate(h["p"]) if x == v]
-    dl = "・".join(f"{KM}/{d}({wd(KY, KM, d)})" for d in ds[:2]) + (f" ほか{len(ds)-2}日" if len(ds) > 2 else "")
+    dl = "・".join(f"{KM}/{d}({wd(KY, KM, d)})" for d in ds[:2]) + (f"など{len(ds)}日" if len(ds) > 2 else "")
     return (f'<li><a href="../{SLUG[h["no"]][0]}/"><img class="pth" src="{esc(INFO.get(str(h["no"]),{}).get("thumb",""))}" alt="" loading="lazy" width="72" height="48"><span class="pn">{esc(SLUG[h["no"]][1])}<small>{esc(h["loc"])}・口コミ {h["avg"]:.2f}</small></span>'
             f'<span class="pv">{yen(v)}<small>神日 {dl}</small></span></a></li>')
 
@@ -281,7 +281,7 @@ for meta in AREA["hotels"]:
       </section>
 
       <section class="blk alt" aria-labelledby="alth" id="alt" hidden>
-        <div class="sh"><h2 id="alth">同じ日なら、こっちも安い</h2><span class="j" id="alt-j"></span></div>
+        <div class="sh"><h2 id="alth">同じ日に安い、近くの宿</h2><span class="j" id="alt-j"></span></div>
         <ul class="peers" id="alt-list"></ul>
         <p class="note" id="alt-note"></p>
       </section>
@@ -345,7 +345,7 @@ otoku = ohead + f"""
 <main class="gin ok">
   <nav class="crumb" aria-label="現在地"><a href="{TOPU}">ホーム</a><span aria-hidden="true">›</span><span>さらに安く</span></nav>
   <header class="ok-hd">
-    <h1>旅費を、もう一段下げる。</h1>
+    <h1>旅費をさらに安くする3つの方法</h1>
     <p>同じ宿でも、泊まる日と払い方で旅費は変わります。YASUMIBIがすすめるのは、この3つの順番です。</p>
   </header>
 

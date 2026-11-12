@@ -30,12 +30,12 @@ AREA_JA = {"hakone": "箱根", "atami": "熱海"}
 TIER_JA = {"mid": "2人で5万円前後", "high": "2人で10万円前後"}
 
 FEATURES = [
-    dict(slug="hakone-5man", area="hakone", tier="mid", no="01", title="箱根の神日", sub="2人で5万円前後の人気宿5軒、1月の最安日",
+    dict(slug="hakone-5man", area="hakone", tier="mid", no="01", title="箱根の神日", sub="2人で5万円前後の人気宿5軒、1月のいちばん安い日",
          img="hakone-fuji-ship.jpg", credit="Photo: Guilhem Vellut / CC BY 2.0"),
-    dict(slug="hakone-10man", area="hakone", tier="high", no="02", title="箱根、10万円の夜", sub="天悠、富士屋ホテルほか5軒の最安日",
+    dict(slug="hakone-10man", area="hakone", tier="high", no="02", title="箱根の10万円の宿", sub="天悠、富士屋ホテルなど5軒のいちばん安い日",
          img="hakone-torii.jpg", credit="Photo: Guilhem Vellut / CC BY 2.0"),
-    dict(slug="atami-5man", area="atami", tier="mid", no="03", title="熱海の神日", sub="2人で5万円前後の人気宿5軒、1月の最安日", img="atami-panorama.jpg", credit="Photo: Photos of Japan / CC0"),
-    dict(slug="atami-10man", area="atami", tier="high", no="04", title="熱海、10万円の夜", sub="迎賓館、大観荘ほか5軒の最安日", img="atami-fireworks.jpg", credit="Photo: Izunosuke / CC BY 3.0（明るさ・切り抜きを調整）"),
+    dict(slug="atami-5man", area="atami", tier="mid", no="03", title="熱海の神日", sub="2人で5万円前後の人気宿5軒、1月のいちばん安い日", img="atami-panorama.jpg", credit="Photo: Photos of Japan / CC0"),
+    dict(slug="atami-10man", area="atami", tier="high", no="04", title="熱海の10万円の宿", sub="迎賓館、大観荘など5軒のいちばん安い日", img="atami-fireworks.jpg", credit="Photo: Izunosuke / CC BY 3.0（明るさ・切り抜きを調整）"),
 ]
 
 def wd(d): return WD[(datetime.date(Y, M, d).weekday() + 1) % 7]
@@ -60,12 +60,13 @@ def stats(hs):
 
 def findings(s):
     gap, gh, hi, lo = s["gap"]
-    li = [f'<li><b>{lab(s["best_day"])}泊</b>5軒中{s["best_cnt"]}軒がその宿の最安値（神日）</li>',
-          f'<li><b>最大の価格差</b>{esc(gh["name"])}：{lab(hi[1])}泊 {yen(hi[0])} → {lab(lo[1])}泊 {yen(lo[0])}（差額 {gap:,}円）</li>']
+    # 要点は■の箇条書き3行。記号（→）や「最高値比」のような言葉は使わない（2026/11/12）
+    li = [f'<li>{lab(s["best_day"])}泊は、5軒中{s["best_cnt"]}軒がその宿のいちばん安い日</li>',
+          f'<li>料金差がいちばん大きいのは{esc(gh["name"])}。{lab(hi[1])}泊 {yen(hi[0])}、{lab(lo[1])}泊 {yen(lo[0])}（{gap:,}円安い）</li>']
     if s["sat_same"]:
-        li.append(f'<li><b>土曜泊</b>神日と同額で泊まれるのは{"・".join(esc(h["name"]) for h in s["sat_same"])}のみ</li>')
+        li.append(f'<li>土曜泊でもいちばん安い日と同じ料金なのは、{"・".join(esc(h["name"]) for h in s["sat_same"])}だけ</li>')
     else:
-        li.append('<li><b>土曜泊</b>5軒とも神日より割高</li>')
+        li.append('<li>土曜泊は、5軒ともいちばん安い日より高い</li>')
     return '<ul class="find">' + "".join(li) + "</ul>"
 
 import hashlib
@@ -124,7 +125,7 @@ for f in FEATURES:
     gap, gh, hi, lo = s["gap"]
     bd = s["best_day"]
     n = s["best_cnt"]
-    h1 = f"{lab(bd)}泊、5軒中{n}軒が神日。" if n >= 2 else f"{AREA_JA[f['area']]}の5軒、{M}月の神日。"
+    h1 = (f"{AREA_JA[f['area']]}の人気宿5軒、{M}月は{lab(bd)}泊がいちばん安い" if n >= 2 else f"{AREA_JA[f['area']]}の人気宿5軒の、{M}月の神日")
     lede = h1
     finds = findings(s)
     spec = (f'<dl class="spec"><dt>対象</dt><dd>{AREA_JA[f["area"]]}・{TIER_JA[f["tier"]]}の人気宿5軒</dd>'
@@ -155,11 +156,6 @@ for f in FEATURES:
     <div class="eyebrow">特集{f['no']}｜{AREA_JA[f['area']]}・{TIER_JA[f['tier']]}・{Y}年{M}月泊</div>
     <h1>{esc(h1)}</h1>
     {finds}
-    <div class="figs">
-      <div><div class="n">{ND*5}</div><div class="t">調査した料金<br>（5軒×{ND}日）</div></div>
-      <div><div class="n">{n}/5</div><div class="t">{lab(bd)}泊が<br>神日の宿</div></div>
-      <div><div class="n">{pct}%</div><div class="t">最大差の宿の<br>最高値比の料金</div></div>
-    </div>
     {spec}
   </div>
 </div>
@@ -216,7 +212,7 @@ for area in ("hakone", "atami"):
         for h in hs:
             mn = min(v for v in h["p"] if v)
             days = [i + 1 for i, v in enumerate(h["p"]) if v == mn]
-            dt = "・".join(lab(d) for d in days[:3]) + (f" ほか{len(days)-3}日" if len(days) > 3 else "")
+            dt = "・".join(lab(d) for d in days[:3]) + (f"など{len(days)}日" if len(days) > 3 else "")
             items.append(f'<li><a href="{esc(link_for(h["no"], days[0]))}" target="_blank" rel="noopener sponsored"><img class="th" src="{esc(thumb_of(h["no"]))}" alt="" loading="lazy" width="300" height="200"><span class="bx"><span class="tier">{TIER_JA[tier]} ／ {esc(h["loc"])}</span>'
                          f'<span class="nm">{esc(h["name"])}<span class="dt"><span class="kami">神日</span>{dt}</span></span></span>'
                          f'<span class="p">{yen(mn)}<small>楽天トラベルで見る →</small></span></a></li>')
@@ -225,9 +221,9 @@ for area in ("hakone", "atami"):
 f1 = FEATURES[0]; s1 = f1["stats"]; g1 = s1["gap"]
 toc = "".join(f'<li><a href="features/{f["slug"]}/"><span class="no">{f["no"]}</span><span class="tt">{esc(f["title"])}。<span class="sub">{esc(f["sub"])}</span></span><span class="ar" aria-hidden="true">→</span></a></li>' for f in FEATURES)
 toc += '<li><div class="soonrow"><span class="no">05</span><span class="tt">旅費をカードで払ったときのポイント還元<span class="sub">ポイント還元の試算</span></span><span class="soon">準備中</span></div></li>'
-top = HEAD.format(ver=VER, canon="", title="神日カレンダー｜YASUMIBI 休み日を、安い日に。", desc="神日カレンダーは、人気宿の料金を全日調べて最安日（神日）を示すYASUMIBIのカレンダー。箱根・熱海の宿の安い日がひと目でわかる。", base="", bodycls="", og="") + f"""<div class="wrap">
+top = HEAD.format(ver=VER, canon="", title="神日カレンダー｜YASUMIBI 安い日に、休みを合わせる。", desc="神日カレンダーは、人気宿の料金を全日調べて最安日（神日）を示すYASUMIBIのカレンダー。箱根・熱海の宿の安い日がひと目でわかる。", base="", bodycls="", og="") + f"""<div class="wrap">
   <h1 class="mast" aria-label="YASUMIBI">YASUMIBI</h1>
-  <div class="tagrow"><span>休み日を、安い日に。</span><b>神日カレンダー</b></div>
+  <div class="tagrow"><span>安い日に、休みを合わせる。</span><b>神日カレンダー</b></div>
 
   <div class="cover">
     {photo_block(f1, "", seal=f'<span class="k">最大の差</span><span class="v">¥{g1[0]:,}</span><span class="s">同じ宿、泊まる日だけの差</span>')}
