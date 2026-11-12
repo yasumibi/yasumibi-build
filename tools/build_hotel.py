@@ -25,6 +25,9 @@ def esc(s): return html.escape(str(s), quote=True)
 def yen(v): return "¥{:,}".format(v)
 def wd(y, m, d): return WD[(datetime.date(y, m, d).weekday() + 1) % 7]
 
+_BUILT = set()   # この回にページを作った宿
+
+
 def ver(*files):
     h = hashlib.md5()
     for f in files: h.update(open(f"{OUT}/assets/{f}", "rb").read())
@@ -324,6 +327,7 @@ for meta in AREA["hotels"]:
     """
     os.makedirs(f"{OUT}/hotels/{slug}", exist_ok=True)
     open(f"{OUT}/hotels/{slug}/index.html", "w", encoding="utf-8").write(page)
+    _BUILT.add(slug)
     # お気に入りの比較ページ用（その宿の料金だけの小さなデータ）
     H["place"] = place_of(meta)
     json.dump({k: H[k] for k in ("slug", "no", "name", "area", "areaKey", "loc", "place", "avg", "cnt", "thumb", "months", "aff", "plan")},
@@ -409,7 +413,7 @@ print("hotel + otoku built", mn0, kd, pts0, diff0)
 
 # いま掲載していない宿（空きが少ない・基準を下回った）のページは、古い料金を出さずに「休止中」にする（お気に入りや検索から来た人のため）
 from common import HOTELS_ALL, HOTELS as _HS
-_on = {h["no"] for h in _HS}
+_on = {h["no"] for h in _HS if h["slug"] in _BUILT}   # 実際にページを作った宿だけ（料金が取れず作らなかった宿は休止中に）
 _rest = 0
 for _h in HOTELS_ALL:
     if _h["no"] in _on: continue
@@ -425,5 +429,24 @@ for _h in HOTELS_ALL:
 <p><a href="/areas/{_h['area']}/">{esc(_an)}の宿を見る</a>　／　<a href="/">トップへ</a></p>
 </main></body></html>""")
     if os.path.exists(f"{_d}/data.json"): os.remove(f"{_d}/data.json")
+    _rest += 1
+# 宿の一覧から外れた宿（hotels.json に無い）のページも、古い料金を残さず「休止中」に（2026/11/12。過去の料金が出たままになっていた）
+import re as _re
+_known = {_h["slug"] for _h in HOTELS_ALL}
+for _sl in sorted(os.listdir(f"{OUT}/hotels")):
+    _p = f"{OUT}/hotels/{_sl}/index.html"
+    if _sl in _known or not os.path.isfile(_p): continue
+    _old = open(_p, encoding="utf-8").read()
+    if 'content="noindex' in _old[:2000]: continue
+    _m = _re.search(r"<title>([^｜<]+)", _old); _nm = _m.group(1).strip() if _m else "この宿"
+    open(_p, "w", encoding="utf-8").write(f"""<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,follow">
+<title>{esc(_nm)}｜いまは掲載していません｜YASUMIBI</title><link rel="stylesheet" href="/assets/site.css"></head>
+<body><main style="max-width:640px;margin:0 auto;padding:48px 16px;line-height:1.8">
+<h1 style="font-size:20px">{esc(_nm)}</h1>
+<p>この宿は、いまは掲載していません。</p>
+<p><a href="/">トップへ</a>　／　<a href="/search/">宿をさがす</a></p>
+</main></body></html>""")
+    if os.path.exists(f"{OUT}/hotels/{_sl}/data.json"): os.remove(f"{OUT}/hotels/{_sl}/data.json")
     _rest += 1
 print("休止中のページ", _rest)
