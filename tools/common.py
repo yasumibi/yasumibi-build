@@ -310,6 +310,17 @@ def img_v(name):
     return _IMGV[name]
 
 
+def tile_img(base, img, sizes, attrs=""):
+    """一覧のタイル用の写真。軽い WebP（tools/make_webp.py で作る 480px・640px）があればそれを使い、なければ元の JPG。
+    sizes は画面での表示幅（ブラウザが画面に合った大きさを選ぶ）。見た目は JPG と同じ"""
+    stem = img.rsplit(".", 1)[0]
+    w = [x for x in (480, 640) if os.path.exists(f"{OUT}/assets/img/{stem}-{x}.webp")]
+    if len(w) == 2:
+        ss = ", ".join(f"{base}assets/img/{stem}-{x}.webp?v={img_v(f'{stem}-{x}.webp')} {x}w" for x in w)
+        return f'<img src="{base}assets/img/{stem}-640.webp?v={img_v(stem + "-640.webp")}" srcset="{ss}" sizes="{sizes}" alt="" loading="lazy" decoding="async"{attrs}>'
+    return f'<img src="{base}assets/img/{img}?v={img_v(img)}" alt="" loading="lazy"{attrs}>'
+
+
 # ---- その宿だけの「安い日のまとめ」（毎日の料金から作る文。宿ページの最初に出す）
 def price_summary(no):
     """この先半年の料金から、いちばん安い日・土曜泊と日〜木泊の差・月ごとの差を出す。料金が少なければ None。"""

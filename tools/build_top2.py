@@ -4,7 +4,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # このリポジトリ
 OUT = os.environ.get("YB_OUT", os.path.join(os.path.dirname(ROOT), "yasumibi-site"))  # 公開用リポジトリ（隣に置く）
-from common import img_v, place_of, bk_attr, is_hc, usual_price
+from common import img_v, tile_img, place_of, bk_attr, is_hc, usual_price
 from common import is_b, plan_s, plan_l, COND_PLAN
 from common import site_header, tabbar, footer, og_meta, load_area, AREAS, AREA_JA, MONTHS, DEFAULT_YM, ASOF, PRH, TODAY
 AREA = load_area()
@@ -84,7 +84,7 @@ FEATURES = [f for f in FEATURES if f[3] is None or os.path.isdir(f"{OUT}/{f[0]}"
 TILE = {"weekend/": '<span class="tile">直前でも<b>今週末</b></span>', "renkyu/2027/": '<span class="tile">2027年の<b>連休</b></span>', "otoku-days/": '<span class="tile">予約は<b>5と0の日</b></span>', "renkyu/": '<span class="tile t-ren">有給1日で<b>何連休？</b></span>', "ranking/": '<span class="tile t-rank">ずらすと<b>いくら浮く？</b></span>'}
 base = ""
 def fcard(s, t, sub, img):
-    vis = TILE.get(s) or f'<img src="{base}assets/img/{img}?v={img_v(img)}" alt="" loading="lazy">'
+    vis = TILE.get(s) or tile_img(base, img, "236px")
     return f'<li><a href="{base}{s}">{vis}<span class="ft">{esc(t)}</span><span class="fs">{esc(sub)}</span></a></li>'
 strip_html = "".join(fcard(*f) for f in FEATURES)
 _tg = json.load(open(f"{OUT}/tags/tags.json")) if os.path.exists(f"{OUT}/tags/tags.json") else []
@@ -145,10 +145,10 @@ pk_m, pk_cheap, pk_gap = _picks(DEF_MI, "2", DEF_REG)
 # トップで使うのは「月×食事条件ごとのTOP5」だけ。全宿の料金（3.4MB）を送ってスマホで計算するのをやめ、
 # ページを作るときに全部の組み合わせを作って埋める（数十KB）。表示の速さ（LCP）と、押したときの反応（INP）のため。2026/11/9
 def _reg_picks(reg): return {f"{i}-{ln}": list(_picks(i, ln, reg)) for i in range(len(months)) for ln in ("2", "b")}
-_top_picks = _reg_picks(DEF_REG)
+# トップに埋めるのは、はじめに見える「関東・伊豆 × いまの月」の分だけ（2026/11/12。ほかの月・地方は top-picks/ から読む）
+_top_picks = {k: v for k, v in _reg_picks(DEF_REG).items() if k.startswith(f"{DEF_MI}-")}
 os.makedirs(f"{OUT}/top-picks", exist_ok=True)
 for _ri, _r in enumerate(["all"] + REGIONS):
-    if _r == DEF_REG: continue
     with open(f"{OUT}/top-picks/r{_ri}.json", "w", encoding="utf-8") as _f:
         json.dump(_reg_picks(None if _r == "all" else _r), _f, ensure_ascii=False, separators=(",", ":"))
 pk_tabs = ('<div class="at-tabs pk-tabs" role="tablist" aria-label="地方で絞る">'

@@ -24,6 +24,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5
+        with: { path: build }
+      - uses: actions/checkout@v5
         with: { repository: yasumibi/yasumibi-site, token: "${{ secrets.SITE_PUSH_TOKEN }}", path: site }
       - name: 取り込む
         env:
@@ -52,6 +54,7 @@ jobs:
           json.dump(c, open(cf, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
           print(name, im.size, os.path.getsize(f"site/assets/img/{name}") // 1024, "KB", lic, artist)
           EOF
+          python3 build/tools/make_webp.py site   # 一覧のタイル用の軽い WebP（480・640px）
       - name: 保存
         working-directory: site
         run: |
