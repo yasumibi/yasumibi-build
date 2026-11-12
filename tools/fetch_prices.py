@@ -133,42 +133,23 @@ def fetch_date(nos, d):
     return result
 
 
-def due(d, today):
-    """その日付を今日取り直すか。近い日ほど頻繁に。"""
+def due(d, today, last=""):
+    """その日付を今日取り直すか。近い日ほど頻繁に。last は前回取った日時（"2026-11-13T03:12" か、古い形式の "2026-11-13"）。
+    楽天の規約（表示する料金は少なくとも1週間に1回取り直す）に合わせ、遠い日付も5日ごと・遅くとも6日で取り直す。
+    定時実行が遅れたり1日止まったりしても、前回から間隔が空いた日付は次の回で必ず取る（2026/11/13）。"""
     gap = (d - today).days
     near = int(os.environ.get("YB_NEAR", "30"))      # ここまでは毎日
     mid = int(os.environ.get("YB_MID", "90"))        # ここまでは YB_EVERY 日に1回
     every = int(os.environ.get("YB_EVERY", "3"))
-    far = int(os.environ.get("YB_FAR_EVERY", "7"))   # それより先は週1回
+    far = int(os.environ.get("YB_FAR_EVERY", "5"))   # それより先は5日に1回（週1回だと、実行の遅れで7日を超えることがあった）
     if gap <= near: return True
-    if gap <= mid: return d.toordinal() % every == today.toordinal() % every
-    return d.toordinal() % far == today.toordinal() % far
+    n = every if gap <= mid else far
+    try: age = (today - datetime.date.fromisoformat(last[:10])).days
+    except Exception: return True
+    return age > n or d.toordinal() % n == today.toordinal() % n   # ふだんは n 日ごと。止まった日があっても n+1 日（遠い日付は6日）で必ず取る
 
 
-HIST_DIR = f"{DATA}/history"
-
-
-def save_history(area, old, new, today):
-    """料金の履歴：前回から変わった値だけを、日付ごとのファイルに残す（0＝満室・プランなしになった）。
-    history/<取得日>/<エリア>.json.gz に {宿番号: {泊まる日: 料金}}。初めてのエリアは全部を入れる。
-    """
-    import gzip
-    first = not any(os.path.exists(f"{HIST_DIR}/{d}/{area}.json.gz") for d in (os.listdir(HIST_DIR) if os.path.isdir(HIST_DIR) else []))
-    diff = {}
-    for no in set(old) | set(new):
-        a, b = old.get(no, {}), new.get(no, {})
-        for k in set(a) | set(b):
-            if k < today.isoformat(): continue
-            if first or a.get(k) != b.get(k): diff.setdefault(no, {})[k] = int(b.get(k) or 0)
-    if not diff: return
-    os.makedirs(f"{HIST_DIR}/{today.isoformat()}", exist_ok=True)
-    f = f"{HIST_DIR}/{today.isoformat()}/{area}.json.gz"
-    if os.path.exists(f):                        # 同じ日に2回取ったら重ねる
-        prev = json.load(gzip.open(f, "rt"))
-        for no, v in diff.items(): prev.setdefault(no, {}).update(v)
-        diff = prev
-    with gzip.open(f, "wt") as g: json.dump(diff, g, separators=(",", ":"))
-    print(f"[{area}] 料金の履歴：{sum(len(v) for v in diff.values())}件の変化を記録", flush=True)
+# 料金の履歴（history/）は持たない。楽天ウェブサービスの規約・FAQに合わせ、表示に必要な「各日付の最新の料金」だけを prices/ に置く（2026/11/13）
 
 
 def run_area(area, nos, today, lim, force):
@@ -180,7 +161,7 @@ def run_area(area, nos, today, lim, force):
     hotels = pr.setdefault("hotels", {})
     old = json.loads(json.dumps(hotels))
     known = set(pr.get("hotel_set", []))
-    fetched = pr.setdefault("fetched", {})            # 日付ごとに、最後に取った日
+    fetched = pr.setdefault("fetched", {})            # 日付ごとに、最後に取った日時（日本時間 "YYYY-MM-DDTHH:MM"。ページの「取得日時」に出す）
     keep = min(today, WINDOW_START).isoformat()       # 今日から先は、月の残りが少なくても取る（直前ページ用）
     for k in [k for k in fetched if k < keep]: fetched.pop(k)
     new = [n for n in nos if n not in known]          # 新しく足した宿は、全日付を取る
@@ -196,7 +177,7 @@ def run_area(area, nos, today, lim, force):
         if out_of_time():
             cut = True; print(f"[{area}] 時間切れのため {d} 以降は次回に回します（取れた分は保存）", flush=True); break
         ds = d.isoformat()
-        targets = nos if (force or lim > 0 or ds not in fetched or due(d, today)) else [n for n in new if upto.get(str(n), "") < ds]
+        targets = nos if (force or lim > 0 or ds not in fetched or due(d, today, fetched.get(ds, ""))) else [n for n in new if upto.get(str(n), "") < ds]
         if targets:
             got = fetch_date(targets, d); tried += 1
             if len(got) < len(targets): fails += 1
@@ -205,7 +186,7 @@ def run_area(area, nos, today, lim, force):
                 if v: hotels[str(no)][d.isoformat()] = v
                 else: hotels[str(no)].pop(d.isoformat(), None)
             calls_days += 1
-            if targets is nos and len(got) == len(targets): fetched[ds] = today.isoformat()
+            if targets is nos and len(got) == len(targets): fetched[ds] = datetime.datetime.now(JST).strftime("%Y-%m-%dT%H:%M")
             for no in got:
                 if no in new: upto[str(no)] = ds
         d += datetime.timedelta(days=1)
@@ -218,7 +199,6 @@ def run_area(area, nos, today, lim, force):
         print(f"[{area}] 取れた料金が前回の半分未満です。APIの異常の可能性があるため、このエリアは保存しません。"); return False
     if tried and fails > tried * 0.1:
         print(f"[{area}] 取得できなかった日が多すぎます（{fails}/{tried}）。このエリアは保存しません。"); return False
-    save_history(area, old, hotels, today)
     pr["asof"] = f"{today.year}年{today.month}月{today.day}日"; pr["asof_date"] = today.isoformat()
     if lim == 0 and not cut: pr["hotel_set"] = sorted(set(nos)); pr.pop("new_upto", None)
     pr["source"] = "楽天トラベル 空室検索API（VacantHotelSearch）"
