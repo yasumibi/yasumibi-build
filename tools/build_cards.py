@@ -8,7 +8,7 @@
 """
 import os, sys, html, hashlib
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import is_b, plan_s, plan_l, COND_PLAN
+from common import is_b, plan_s, plan_l, COND_PLAN, FETCHED, fa_label, PRICE_NOTE
 from common import site_header, tabbar, footer, og_meta, OUT, CARD_AFF
 from common import CARD_CAMP, CARD_BONUS, camp_live, camp_ok, card_extra, lowest_upcoming, place_of, SLUG, load_area, WD_JA
 
@@ -63,7 +63,7 @@ def _example():
     h, (v, d) = best; slug, name, _ = SLUG[h["no"]]; x = card_extra(v, d)
     return f"""<div class="cx-ex">
     <p class="cx-h">たとえば、この宿なら</p>
-    <p class="cx-w"><a href="{base}hotels/{slug}/">{esc(name)}</a>（{esc(place_of(h))}）<br>{d.month}/{d.day}({WD_JA[d.weekday()]})泊・2名{plan_s(h['area'])} <b>¥{v:,}</b></p>
+    <p class="cx-w"><a href="{base}hotels/{slug}/">{esc(name)}</a>（{esc(place_of(h))}）<br>{d.month}/{d.day}({WD_JA[d.weekday()]})泊・2名{plan_s(h['area'])} <b>¥{v:,}</b>{f'<small class="fa">{fa_label(FETCHED.get(h["area"], {}).get(d.isoformat(), ""))}取得（楽天トラベル）<a href="{base}{PRICE_NOTE}">料金について</a></small>' if FETCHED.get(h["area"], {}).get(d.isoformat()) else ''}</p>
     <ul class="cx-r"><li><span>楽天カードで払うと増えるポイント<small>{'事前決済・エントリーで合計2.5倍' if camp_ok(d) else 'カードの通常分'}</small></span><b>+{x:,}円分</b></li>
       <li><span>はじめての方は入会特典<small>2,000円分＋条件達成で3,000円分</small></span><b>+{CARD_BONUS:,}円分</b></li></ul>
     <p class="cx-t"><span>宿代とは別に戻ってくるポイント</span><b>最大{x + CARD_BONUS:,}円分</b></p>

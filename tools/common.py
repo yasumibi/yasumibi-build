@@ -136,10 +136,30 @@ def load_prices():
             k = fn[:-5]
             hotels.update(d.get("hotels", {}))
             asof[k] = d.get("asof", ""); asof_d[k] = d.get("asof_date", "")
+            FETCHED[k] = d.get("fetched", {})
     return hotels, asof, asof_d
 
 
+FETCHED = {}   # {エリア: {泊まる日: 取得日時 "YYYY-MM-DDTHH:MM"（古い記録は "YYYY-MM-DD"）}}。楽天の規約に合わせ、料金のそばに取得日時を出すため
 PRH, ASOF_BY_AREA, ASOF_DATE_BY_AREA = load_prices()
+
+
+def fa_label(v):
+    """取得日時の表示：「11/13 3:12」（時刻の記録がない古い分は「11/13」）。"""
+    if not v: return ""
+    y, m, d = v[:10].split("-"); t = v[11:16] if len(v) >= 16 else ""
+    return f"{int(m)}/{int(d)}" + (f" {int(t[:2])}:{t[3:5]}" if t else "")
+
+
+def fa_range(area, dates):
+    """その日付たちの取得日時の範囲：「取得 11/10 4:01〜11/13 3:12」（同じなら1つ）。"""
+    vs = sorted(v for v in (FETCHED.get(area, {}).get(k, "") for k in dates) if v)
+    if not vs: return ""
+    a, b = fa_label(vs[0]), fa_label(vs[-1])
+    return f"取得 {a}" + (f"〜{b}" if b != a else "")
+
+
+PRICE_NOTE = "about/#price-note"   # 「料金について」（楽天ウェブサービスの免責事項）
 # サイト全体の「時点」は、いちばん古いエリアの取得日（正直に、古い方を出す）
 _old = min((v, k) for k, v in ASOF_DATE_BY_AREA.items() if v) if any(ASOF_DATE_BY_AREA.values()) else ("", "")
 ASOF = ASOF_BY_AREA.get(_old[1], "") or next(iter(ASOF_BY_AREA.values()), "")
@@ -385,7 +405,7 @@ def summary_rows(no):
         sv, sd = s["sat"]; wv, wd_ = s["wk"]
         if sv - wv >= 1000:
             rows.append(("土曜泊", f"いちばん安くても ¥{sv:,}（{_md(sd)}）"))
-            rows.append(("日〜木泊なら", f'<span class="g">土曜より −¥{sv - wv:,}</span>'))
+            rows.append(("日〜木泊なら", f'<span class="g">土曜泊より {sv - wv:,}円安い</span>'))
         else:
             rows.append(("土曜泊", f"¥{sv:,}（{_md(sd)}）。曜日の差が小さい宿"))
     mm = s["mmin"]

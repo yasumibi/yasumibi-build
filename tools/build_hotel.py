@@ -72,6 +72,7 @@ def tabbar(base, cur):
 import sys as _sys; _sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import summary_rows, is_b, plan_s, plan_l, COND_PLAN, usual_price, is_hc, place_of, lowest_upcoming, WD_JA, summary_text
 from common import CARD_CAMP, CARD_BONUS, camp_html, camp_live
+from common import FETCHED, PRH, fa_label, fa_range, PRICE_NOTE
 from tagarea import pages_for_hotel
 from common import tabbar, footer, site_header, og_meta, load_area, logo_html, CARD_AFF, SLUG, jan_min, MONTHS, DEFAULT_YM, KY, KM, ASOF_BY_AREA, ASOF, AREA_JA, month_prices
 AREA = load_area()
@@ -93,7 +94,7 @@ def months_for(h):
 def peer_li(h):
     v = jan_min(h["p"]); ds = [i + 1 for i, x in enumerate(h["p"]) if x == v]
     dl = "・".join(f"{KM}/{d}({wd(KY, KM, d)})" for d in ds[:2]) + (f"など{len(ds)}日" if len(ds) > 2 else "")
-    return (f'<li><a href="../{SLUG[h["no"]][0]}/"><img class="pth" src="{esc(INFO.get(str(h["no"]),{}).get("thumb",""))}" alt="" loading="lazy" width="72" height="48"><span class="pn">{esc(SLUG[h["no"]][1])}<small>{esc(h["loc"])}・口コミ {h["avg"]:.2f}</small></span>'
+    return (f'<li><a href="../{SLUG[h["no"]][0]}/"><img class="pth" src="{esc(INFO.get(str(h["no"]),{}).get("thumb",""))}" alt="" loading="lazy" width="72" height="48"><span class="pn">{esc(SLUG[h["no"]][1])}<small>{esc(h["loc"])}・★{h["avg"]:.2f}</small></span>'
             f'<span class="pv">{yen(v)}<small>神日 {dl}</small></span></a></li>')
 
 
@@ -187,6 +188,9 @@ for meta in AREA["hotels"]:
     months, asof = months_for(meta)
     H = dict(slug=slug, no=meta["no"], name=name, full=full, area=AREA_JA[meta["area"]], sub=meta["loc"], tier=TIER_JA[meta["tier"]],
              avg=meta["avg"], cnt=meta["cnt"], asof=asof, aff=AFF, months=months)
+    # 泊まる日ごとの取得日時（楽天の規約：1時間に1回より少ない更新なので、料金のそばに更新日時を出す）
+    _fe = FETCHED.get(meta["area"], {}); _pr = PRH.get(str(meta["no"]), {})
+    H["fa"] = {k: fa_label(v) for k, v in _fe.items() if k in _pr}
     info = INFO[str(meta["no"])]
     H["thumb"] = info.get("thumb", ""); H["areaKey"] = meta["area"]; H["loc"] = meta["loc"]
     PS, PL = plan_s(meta["area"]), plan_l(meta["area"]); H["plan"] = PS
@@ -228,7 +232,7 @@ for meta in AREA["hotels"]:
     _rows = summary_rows(meta["no"])   # 文章ではなく、数字が先に目に入る表にする（2026/11/10 案B）
     _sum = (f'<section class="hsum" aria-labelledby="hsum-h"><h2 id="hsum-h">{esc(name)}の安い日</h2>'
             f'<dl class="kv">{"".join(f"<dt>{k}</dt><dd>{v}</dd>" for k, v in _rows)}</dl>'
-            f'<small>2名{PS}・税込。{H["asof"]}時点の楽天トラベルの料金から、毎日更新します。</small></section>') if _rows else ""
+            f'<small>2名{PS}・税込。{fa_range(meta["area"], PRH.get(str(meta["no"]), {}).keys())}（楽天トラベル）。<a class="fa-l" href="{base}{PRICE_NOTE}">料金について</a></small></section>') if _rows else ""
     _ht = pages_for_hotel(meta["no"])   # この宿があてはまる「エリア×こだわり」のページへ
     _tags_html = ('<div class="htags"><h3>' + esc(H['area']) + 'で、同じこだわりの宿</h3><ul>'
                   + "".join(f'<li><a href="{base}tags/{s}/{meta["area"]}/">{esc(n)}<small>{c}軒</small></a></li>' for s, n, q, c in _ht) + "</ul></div>") if _ht else ""
@@ -308,7 +312,7 @@ for meta in AREA["hotels"]:
         <ul class="peers">{peer_html}</ul>
       </section>
 
-      <div class="cond">※大人2名・1室・{PL}の最安プラン（2名合計・税込）。{H['asof']}時点の楽天トラベルの料金。予約前に最新の料金をご確認ください。ポイントは、楽天カードで事前決済すると楽天カード以外で払うより多くもらえる分の目安です{CAMP_COND}。条件は楽天トラベルのキャンペーンページでご確認ください。宿の写真：楽天トラベル</div>
+      <div class="cond">※大人2名・1室・{PL}の最安プラン（2名合計・税込）。楽天トラベルから取得した料金で、取得日時は泊まる日ごとに異なります（日付を押すと表示）。<a href="{base}{PRICE_NOTE}">料金について</a>。予約前に最新の料金をご確認ください。ポイントは、楽天カードで事前決済すると楽天カード以外で払うより多くもらえる分の目安です{CAMP_COND}。条件は楽天トラベルのキャンペーンページでご確認ください。宿の写真：楽天トラベル</div>
     </div>
     """ + footer(base) + f"""
     <div class="bar" id="bar">
