@@ -75,13 +75,13 @@ max_opts = '<option value="0" selected>こだわらない</option>' + "".join(f'
 FEATURES = [("weekend/", "今週末に泊まれる神日。", "直前でも、いつもより安い宿", None),
             ("renkyu/2027/", "2027年の連休カレンダー。", "祝日と、有給で何連休になるか", None),
             ("otoku-days/", "楽天で、さらに安くなる日。", "5と0のつく日・スーパーSALE", None),
-            ("renkyu/", "有給1日で、何連休？", "連休のいちばん安い夜を毎日計算", None),
+            ("renkyu/", "有給1日でつくれる連休", "連休のいちばん安い夜を毎日計算", None),
             ("ranking/", "日をずらすと安くなる宿", "全国の宿ランキング・毎日更新", None)]
 # 写真つきの特集：手で作ったもの＋自動でつくる特集（条件を満たしているものだけ）
 from autofeat import FEATURE_CARDS, live as af_live, card_sub as af_sub, IMG as AF_IMG
 FEATURES += FEATURE_CARDS + [(f"features/{sl}/", hd, af_sub(a, t), AF_IMG[a]) for a, t, sl, hd in af_live()]
 FEATURES = [f for f in FEATURES if f[3] is None or os.path.isdir(f"{OUT}/{f[0]}")]
-TILE = {"weekend/": '<span class="tile">直前でも<b>今週末</b></span>', "renkyu/2027/": '<span class="tile">2027年の<b>連休</b></span>', "otoku-days/": '<span class="tile">予約は<b>5と0の日</b></span>', "renkyu/": '<span class="tile t-ren">有給1日で<b>何連休？</b></span>', "ranking/": '<span class="tile t-rank">ずらすと<b>安い宿</b></span>'}
+TILE = {"weekend/": '<span class="tile">直前でも<b>今週末</b></span>', "renkyu/2027/": '<span class="tile">2027年の<b>連休</b></span>', "otoku-days/": '<span class="tile">予約は<b>5と0の日</b></span>', "renkyu/": '<span class="tile t-ren">有給1日で<b>つくれる連休</b></span>', "ranking/": '<span class="tile t-rank">ずらすと<b>安い宿</b></span>'}
 base = ""
 def fcard(s, t, sub, img):
     vis = TILE.get(s) or tile_img(base, img, "236px")

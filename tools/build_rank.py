@@ -147,7 +147,7 @@ def when_block(nos):
         bars += f'<li class="w{cls}"><span class="wm">{m}月</span><span class="wb"><i style="width:{w:.0f}%"></i></span><b>{yen(v)}</b></li>'
     best = min(rows, key=lambda r: r[2]); worst = max(rows, key=lambda r: r[2])
     return f"""<section class="rsec when" aria-labelledby="when-h">
-  <h2 id="when-h">いつ行く？</h2>
+  <h2 id="when-h">月ごとの料金</h2>
   <p class="rlead">いちばん安いのは<b>{best[1]}月</b>。{('いちばん高い' + str(worst[1]) + '月とは、1泊' + format(round(worst[2] - best[2]), ',') + '円の差。') if worst[2] > best[2] else ''}</p>
   <ul class="wl">{bars}</ul>
 </section>"""
@@ -217,10 +217,10 @@ for a in AREAS:
     # いちばん上に、このエリアの宿の一覧（絞り込み・並び替えつき）。その下にランキング（宿が5軒以上のとき）
     alab = f"{nm}温泉" if a["key"] in ONSEN else nm
     # 最初の見出しも題名と同じ問いに。街（朝食付きで比べるエリア）は「ホテル」で探されるので言い方を分ける
-    ask = f"{nm}のホテルが安い時期は？" if is_b(a["key"]) else f"{alab}の安い時期は？"
+    ask = f"{nm}のホテルが安い時期" if is_b(a["key"]) else f"{alab}の安い時期"
     # 最初の見出し（◯◯の安い時期は？）への答えの文。毎日の料金から作る（AIの回答や検索で引用されやすいように、答えを先に書く）
     _as = area_summary(a["key"], alab, nos, f"2名{plan_s(a['key'])}・税込")
-    _sum = (f'<section class="hsum" aria-labelledby="asum-h"><h2 id="asum-h">{esc(alab)}の安い時期</h2><p>{"".join(esc(t) for t in _as)}</p>'
+    _sum = (f'<section class="hsum" aria-labelledby="asum-h"><h2 id="asum-h">{esc(alab)}の安い時期のまとめ</h2><p>{"".join(esc(t) for t in _as)}</p>'
             f'<small>{TODAY.month}/{TODAY.day}時点の楽天トラベルの料金（★4.3以上の{len(nos)}軒）から。差は宿ごとの料金の中央値です。毎日更新します。</small></section>') if _as else ""
     body = _sum + L.list_section(a["key"], base)
     _tp = pages_for_area(a["key"])   # このエリアのタグ×エリアのページへのリンク（検索で入りやすいページに、サイトの中から道をつくる）
@@ -247,10 +247,10 @@ for a in AREAS:
     if a["key"] in KEEP_TITLE or not _lows:
         title = f"{nm}の宿・いちばん安い日（神日）｜★4.3以上の{len(nos)}軒・毎日更新｜YASUMIBI"
     else:
-        title = f"{ask}{'いちばん安い日' if is_b(a['key']) else '宿がいちばん安い日'}（神日）｜★4.3以上{len(nos)}軒・2名{plan_s(a['key'])}¥{min(_lows)[0]:,}〜｜YASUMIBI"
+        title = f"{ask}・{'いちばん安い日' if is_b(a['key']) else '宿がいちばん安い日'}（神日）｜★4.3以上{len(nos)}軒・2名{plan_s(a['key'])}¥{min(_lows)[0]:,}〜｜YASUMIBI"
     desc = f"{alab}の★4.3以上・{plan_l(a['key'])}の宿{len(nos)}軒を、毎日の料金で比べて、月ごとにいちばん安い日（神日）を出しています。休みを、安い日に合わせるなら。"
     crumb = f'<a href="{base}">ホーム</a><span aria-hidden="true">›</span><a href="{base}#areas">エリア</a><span aria-hidden="true">›</span><span>{esc(nm)}</span>'
-    write(f"{OUT}/areas/{a['key']}/index.html", page(f"areas/{a['key']}/", title, desc, crumb, esc(ask) if a["key"] not in KEEP_TITLE else f"{esc(nm)}、どの日に泊まる？",
+    write(f"{OUT}/areas/{a['key']}/index.html", page(f"areas/{a['key']}/", title, desc, crumb, esc(ask) if a["key"] not in KEEP_TITLE else f"{esc(nm)}の宿がいちばん安い日",
                                                     ("" if _as else f"{esc(nm)}の★4.3以上の宿{len(nos)}軒。宿ごとに、いちばん安い日（神日）がわかります。毎日更新。"), body, base, cover(a["key"], base), LJS(base), "areas"))
     if gap or pen: made.append((a, len(nos), gap[:1]))
 

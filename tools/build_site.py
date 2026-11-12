@@ -224,7 +224,7 @@ for area in ("hakone", "atami"):
 
 f1 = FEATURES[0]; s1 = f1["stats"]; g1 = s1["gap"]
 toc = "".join(f'<li><a href="features/{f["slug"]}/"><span class="no">{f["no"]}</span><span class="tt">{esc(f["title"])}。<span class="sub">{esc(f["sub"])}</span></span><span class="ar" aria-hidden="true">→</span></a></li>' for f in FEATURES)
-toc += '<li><div class="soonrow"><span class="no">05</span><span class="tt">旅費をカードで払うと、いくら戻る？<span class="sub">ポイント還元の試算</span></span><span class="soon">準備中</span></div></li>'
+toc += '<li><div class="soonrow"><span class="no">05</span><span class="tt">旅費をカードで払ったときのポイント還元<span class="sub">ポイント還元の試算</span></span><span class="soon">準備中</span></div></li>'
 top = HEAD.format(ver=VER, canon="", title="神日カレンダー｜YASUMIBI 休み日を、安い日に。", desc="神日カレンダーは、人気宿の料金を全日調べて最安日（神日）を示すYASUMIBIのカレンダー。箱根・熱海の宿の安い日がひと目でわかる。", base="", bodycls="", og="") + f"""<div class="wrap">
   <h1 class="mast" aria-label="YASUMIBI">YASUMIBI</h1>
   <div class="tagrow"><span>休み日を、安い日に。</span><b>神日カレンダー</b></div>

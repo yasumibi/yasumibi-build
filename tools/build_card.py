@@ -91,7 +91,7 @@ _tb = 100000 * 10 // 11
 P10 = (_tb // 100, _tb // 100 + 1000 + _tb // 200, _tb // 100 + 1000 + _tb // 100 + _tb // 200)  # 以外・楽天カード・プレミアム
 best = max(ex, key=lambda r: r["save"])
 base = "../"
-title = "楽天カードで旅費はいくら下がる？楽天トラベルのポイントと入会特典｜YASUMIBI"
+title = "楽天カードで楽天トラベルを予約したときのポイントと入会特典｜YASUMIBI"
 desc = ("楽天トラベルを楽天カードで事前決済するとポイント2.5倍。" if camp_live() else "楽天トラベルを楽天カードで事前決済すると、ポイントが増えます。") + "温泉宿の実際の料金で、神日と組み合わせた節約額を試算。入会特典や上位カードとの違いも。"
 v1 = ver("site.css"); v2 = ver("hotel.css"); v3 = ver("top.css", "otoku.css")
 apply = f'<a class="c-apply" href="{CARD_AFF}" target="_blank" rel="nofollow sponsored noopener">楽天カードを申し込む（年会費無料）</a>'

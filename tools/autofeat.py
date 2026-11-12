@@ -111,7 +111,7 @@ def evaluate(area, t):
 
 def heading(area, t):
     a = AREA_JA[area]
-    return {"youbi": f"{a}、何曜日に泊まると安い？", "5man": f"同じ5万円で、いちばん良い{a}の宿。",
+    return {"youbi": f"{a}の宿の、曜日ごとの料金。", "5man": f"同じ5万円で、いちばん良い{a}の宿。",
             "2haku": f"{a}、2泊するならこの2日。", "doyou": f"土曜でも安い、{a}の宿。"}[t]
 
 
@@ -150,19 +150,19 @@ FEATURE_CARDS = [
     ("features/beppu-1man/", "1人1万円台で泊まれる別府。", "別府・1人2万円未満の日がある宿", "beppu-chinoike.jpg"),
     ("features/kinugawa-heijitsu/", "平日1泊、いちばん安い鬼怒川。", "鬼怒川・日〜木泊だけで", "kinugawa-cover.jpg"),
     ("features/gero-gohan/", "ごはんの★が高い宿の、神日。", "下呂・食事の評価が高い順", "gero-cover.jpg"),
-    ("features/noboribetsu-size/", "大きな宿ほど、安い？", "登別・客室数と神日", "noboribetsu-jigokudani-day.jpg"),
+    ("features/noboribetsu-size/", "客室数と神日の料金。", "登別・宿の大きさと料金", "noboribetsu-jigokudani-day.jpg"),
     ("features/arima-renkyu/", "有馬、連休でも安い日。", "有馬・3連休以上の夜だけで", "arima-view.jpg"),
-    ("features/kyoto-koyo/", "紅葉の11月と、1月。", "京都・同じ宿でいくら違う？", "kyoto-kiyomizu-autumn.jpg"),
+    ("features/kyoto-koyo/", "紅葉の11月と、1月。", "京都・11月と1月の料金差", "kyoto-kiyomizu-autumn.jpg"),
     ("features/kyoto-asagohan/", "朝ごはんで選ぶ、京都の宿。", "京都・食事の評価が高い順", "kyoto-inari.jpg"),
     ("features/kyoto-46/", "★4.6以上の京都に、1人1万円台で。", "京都・★4.6以上の宿だけ", "kyoto-inari.jpg"),
-    ("features/okinawa-month/", "沖縄、いちばん安い月は？", "沖縄・月ごとの神日", "ishigaki-bay.jpg"),
+    ("features/okinawa-month/", "沖縄の宿がいちばん安い月。", "沖縄・月ごとの神日", "ishigaki-bay.jpg"),
     ("features/okinawa-ritou/", "離島と本島、神日で比べると。", "沖縄・宮古島・石垣と本島", "ishigaki-kabira.jpg"),
     ("features/sapporo-yukimatsuri/", "雪まつりの週と、前後の週。", "札幌・2027年2月4日〜11日", "sapporo-snow.jpg"),
     ("features/sapporo-1man/", "1人7千円以下で泊まれる、札幌の宿。", "札幌・★4.3以上・朝食付き", "sapporo-odori-blue.jpg"),
     ("features/machi-onsen-2man/", "2人で2万円未満。街なかで温泉に入れるホテル。", "東京・大阪・京都・札幌など・天然温泉", "tokyo-skytree.jpg"),
-    ("features/hakone-rotenburo/", "部屋に露天風呂。土曜と平日で、いくら違う？", "箱根・露天風呂付き客室", "hakone-torii.jpg"),
-    ("features/atami-youbi/", "熱海、何曜日に泊まると安い？", "熱海・曜日ごとの料金", "atami-panorama.jpg"),
-    ("features/yufuin-month/", "由布院、いちばん安い月は？", "由布院・月ごとの神日", "yufuin-kinrinko.jpg"),
+    ("features/hakone-rotenburo/", "露天風呂付き客室の、土曜と平日の料金差。", "箱根・露天風呂付き客室", "hakone-torii.jpg"),
+    ("features/atami-youbi/", "熱海の宿の、曜日ごとの料金。", "熱海・曜日ごとの料金", "atami-panorama.jpg"),
+    ("features/yufuin-month/", "由布院の宿がいちばん安い月。", "由布院・月ごとの神日", "yufuin-kinrinko.jpg"),
     ("features/beppu-doyou/", "土曜の値上がりが小さい、別府の宿。", "別府・土曜泊", "beppu-chinoike.jpg"),
     ("features/izukogen-pet/", "ペットと泊まれる、伊豆高原の神日。", "伊豆高原・ペット同宿可", "izukogen-jogasaki.jpg"),
     ("features/karuizawa-luxury/", "軽井沢の高級ホテルが、下がる日。", "軽井沢・いつもより下がる順", "karuizawa-kumoba-pond.jpg"),
