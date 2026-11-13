@@ -155,16 +155,16 @@ pk_tabs = ('<div class="at-tabs pk-tabs" role="tablist" aria-label="地方で絞
            + "".join(f'<button type="button" role="tab" aria-selected="{str(r == DEF_REG).lower()}" data-preg="{i}">{"全国" if r == "all" else esc(r)}</button>'
                      for i, r in enumerate(["all"] + REGIONS)) + "</div>")
 
-# ---- いちばん上の写真（1枚・草津温泉 湯畑のライトアップ。2026/11/11）と、「今月の神日」の写真カード（★4.6以上の宿）
+# ---- いちばん上の写真（1枚・久米島 はての浜を空から。2026/11/13。旅行らしさを優先して草津の夜景から変更）と、「今月の神日」の写真カード（★4.6以上の宿）
 #      写真には文字を重ねない。スマホは900px、PCは1440px の WebP。いちばん大きく見える要素なので先に読み込む（LCP）
 _CR = json.load(open(f"{OUT}/assets/img/credits.json", encoding="utf-8"))
-_HF = "kusatsu-night-hero"
+_HF = "kumejima-hatenohama-hero"
 hero_html = (f'<figure class="hph"><img src="{base}assets/img/{_HF}-900.webp?v={img_v(_HF + "-900.webp")}" '
              f'srcset="{base}assets/img/{_HF}-900.webp?v={img_v(_HF + "-900.webp")} 900w, {base}assets/img/{_HF}-1440.webp?v={img_v(_HF + "-1440.webp")} 1440w" '
-             f'sizes="100vw" width="1440" height="810" alt="ライトアップされた夜の草津温泉・湯畑" fetchpriority="high">'
-             '<figcaption>草津温泉・湯畑のライトアップ</figcaption></figure>')
-_c = _CR.get(_HF + "-1440.webp") or _CR.get("kusatsu-night-hero.jpg") or {}
-hero_credit = f'上の写真：草津温泉・湯畑（{esc(_c.get("artist", ""))}・{esc(_c.get("license", ""))}）。出典：Wikimedia Commons（明るさ・色味を調整）'
+             f'sizes="100vw" width="1440" height="964" alt="空から見た久米島・はての浜（青い海に白い砂浜が伸びる）" fetchpriority="high">'
+             '<figcaption>久米島・はての浜</figcaption></figure>')
+_c = _CR.get(_HF + "-1440.webp") or _CR.get("kumejima-hatenohama-hero.jpg") or {}
+hero_credit = f'上の写真：久米島・はての浜（{esc(_c.get("artist", ""))}・{esc(_c.get("license", ""))}）。出典：Wikimedia Commons（明るさ・色味を調整）'
 
 def _kami(lane):
     """ハイクラスの宿（タグ「ハイクラス」と同じ基準）の、その月の神日。ふだんの料金（この先半年の中央値）との差も出す。1エリア1軒・8軒"""
