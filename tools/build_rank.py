@@ -240,6 +240,12 @@ for a in AREAS:
         body += ranking_block("pen", "土曜泊でも料金が上がりにくい宿", "土曜泊と日〜木泊の料金の差が小さい順。", pen, F_PEN, base, quip=Q_PEN)
         body += ranking_block("cospa", "口コミ★4.5以上で、神日の料金が安い宿", "口コミ★4.5以上の宿を、神日の料金が安い順。", cospa(nos), F_COSPA, base, quip=Q_COSPA)
         body += ranking_block("near", "日程を問わず、料金が安定している宿", "神日に近い料金の日が多い順。", near, F_NEAR, base, quip=Q_NEAR)
+    # このエリアの宿をすべて（たたんだ一覧）。一覧・ランキングに出ない宿のページにも、検索エンジンがたどり着けるように（2026/11/16）
+    _all = sorted((H[n] for n in nos if n in H and H[n]["slug"] in built_hotels), key=lambda h: (-h["avg"], h["name"]))
+    if _all:
+        body += (f'<details class="allh"><summary>{esc(nm)}の宿をすべて見る（{len(_all)}軒）</summary><ul>'
+                 + "".join(f'<li><a href="{base}hotels/{h["slug"]}/">{esc(h["name"])}</a><small>★{h["avg"]:.2f}</small></li>' for h in _all)
+                 + '</ul></details>')
     body += f'<section class="rsec ar-more" aria-labelledby="arm-h"><h2 id="arm-h">ほかのエリアも見る</h2>{L.tiles_row(base, first=a["region"], skip=a["key"])}</section>'
     # 検索する人の言葉（エリア＋宿が安い日）に合わせる。検索の順位がよいエリアは、順位が落ちないよう今のタイトルのまま（Search Consoleで確かめてから）
     _lows = [x for x in (lowest_upcoming(n) for n in nos) if x]
