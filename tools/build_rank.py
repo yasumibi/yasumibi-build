@@ -249,7 +249,9 @@ for a in AREAS:
         title = f"{nm}の宿・いちばん安い日（神日）｜★4.3以上の{len(nos)}軒・毎日更新｜YASUMIBI"
     else:
         title = f"{ask}・{'いちばん安い日' if is_b(a['key']) else '宿がいちばん安い日'}（神日）｜★4.3以上{len(nos)}軒・2名{plan_s(a['key'])}¥{min(_lows)[0]:,}〜｜YASUMIBI"
-    desc = f"{alab}の★4.3以上・{plan_l(a['key'])}の宿{len(nos)}軒を、毎日の料金で比べて、月ごとにいちばん安い日（神日）を出しています。休みを、安い日に合わせるなら。"
+    # 検索結果の説明文に、答え（安い時期・いちばん安い日）を先に出す（2026/11/16。「◯◯ 安い時期」で表示されてもクリックされていなかった）
+    desc = ("".join(_as[:2]) + f"★4.3以上の{len(nos)}軒の料金を毎日比べています。") if _as else \
+           f"{alab}の★4.3以上・{plan_l(a['key'])}の宿{len(nos)}軒を、毎日の料金で比べて、月ごとにいちばん安い日（神日）を出しています。休みを、安い日に合わせるなら。"
     crumb = f'<a href="{base}">ホーム</a><span aria-hidden="true">›</span><a href="{base}#areas">エリア</a><span aria-hidden="true">›</span><span>{esc(nm)}</span>'
     write(f"{OUT}/areas/{a['key']}/index.html", page(f"areas/{a['key']}/", title, desc, crumb, esc(ask) if a["key"] not in KEEP_TITLE else f"{esc(nm)}の宿がいちばん安い日",
                                                     ("" if _as else f"{esc(nm)}の★4.3以上の宿{len(nos)}軒。宿ごとに、いちばん安い日（神日）がわかります。毎日更新。"), body, base, cover(a["key"], base), LJS(base), "areas"))

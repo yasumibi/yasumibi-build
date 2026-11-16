@@ -245,7 +245,7 @@ for meta in AREA["hotels"]:
     _lo = lowest_upcoming(meta["no"])
     if _lo:
         title = f"{name}の安い日・最安値｜{place_of(meta)}・2名{PS}{yen(_lo[0])}〜｜YASUMIBI"
-        desc = (f"{name}（{place_of(meta)}）が安い日を、この先半年のすべての日で調べました。いちばん安いのは"
+        desc = (f"{name}（{place_of(meta)}）の宿泊料金を、この先半年のすべての日で比べました。いちばん安いのは"
                 f"{_lo[1].month}/{_lo[1].day}({WD_JA[_lo[1].weekday()]})泊の{yen(_lo[0])}（2名{PS}・税込）。楽天トラベルの料金から毎日更新。")
     else:
         title = f"{name}の安い日・最安値｜{place_of(meta)}｜YASUMIBI"
