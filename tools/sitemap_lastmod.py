@@ -11,9 +11,9 @@ import re
 import subprocess
 import datetime
 
-from common import OUT
+from common import OUT, TODAY as _TD
 
-TODAY = datetime.date.today().isoformat()
+TODAY = _TD.isoformat()   # 日本時間の今日（Actions は UTC なので date.today() だと前の日になる）
 _DROP = [re.compile(p, re.S) for p in (
     r"<script.*?</script>", r"<style.*?</style>", r"<head>.*?</head>",
     r"\d{4}年\d{1,2}月\d{1,2}日", r"\d{1,2}/\d{1,2}\s?\d{1,2}:\d{2}", r"\d{1,2}/\d{1,2}(時点|取得|現在)",
