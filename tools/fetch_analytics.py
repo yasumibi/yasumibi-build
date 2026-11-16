@@ -14,6 +14,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.environ.get("YB_DATA", os.path.join(ROOT, "data"))
 JST = dt.timezone(dt.timedelta(hours=9))
 CF_SITE_TAG = os.environ.get("CF_SITE_TAG") or "0a93914d9d3d4e50838308c6548442f3"   # Cloudflare Web Analytics のサイト（yasumibi-site.pages.dev +2。秘密ではない）
+INTERNAL_FILTER_SINCE = dt.datetime(2026, 11, 16, 10, 31, tzinfo=dt.timezone(dt.timedelta(hours=9)))   # GA4 の内部トラフィックのフィルタを「有効」にした日時
 EVENTS = ["rakuten_travel", "rakuten_card", "other_card", "favorite_add", "search", "sheet_open", "card_holder", "card_entry"]
 
 # ---- 対象の週
@@ -102,7 +103,15 @@ def ga4():
     try:
         g["internal_test"] = run(["testDataFilterName"], ["sessions", "screenPageViews"], 10, "sessions")
     except Exception as e:
-        err("ga4.internal_test（フィルタが有効・無効のときは取れない）", e)
+        if start < INTERNAL_FILTER_SINCE.date(): err("ga4.internal_test（フィルタが有効・無効のときは取れない）", e)
+    # 本人のアクセス（内部トラフィック）のフィルタ：2026/11/16 10:31 に「有効」。それより後は、本人の分は GA4 の数字に入っていない
+    g["internal_filter"] = {"active_since": INTERNAL_FILTER_SINCE.isoformat(timespec="minutes"),
+                            "this_week": ("除外済み" if start >= INTERNAL_FILTER_SINCE.date() else "含む（totals_external が本人を除いた数）")}
+    if start < INTERNAL_FILTER_SINCE.date():   # 前の週とくらべられるよう、本人を除いた数も残す
+        it = {r.get("testDataFilterName"): r for r in g.get("internal_test") or []}.get("Internal Traffic") or {}
+        t = g.get("totals") or {}
+        g["totals_external"] = {"sessions": t.get("sessions", 0) - it.get("sessions", 0),
+                                "screenPageViews": t.get("screenPageViews", 0) - it.get("screenPageViews", 0)}
     try:
         g["travel_by_hotel"] = run(["customEvent:hotel_no"], ["eventCount"], 30, "eventCount",
                                    {"filter": {"fieldName": "eventName", "stringFilter": {"value": "rakuten_travel"}}})
