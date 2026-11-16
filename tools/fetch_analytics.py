@@ -7,7 +7,7 @@
 使い方：python3 tools/fetch_analytics.py            … 先週分
         python3 tools/fetch_analytics.py 2026-10-19 … その日を含む週（月曜はじまり）
 """
-import datetime as dt, json, os, sys, urllib.request, urllib.error
+import datetime as dt, json, os, re, sys, urllib.request, urllib.error
 
 GA4_PROPERTY = os.environ.get("GA4_PROPERTY_ID") or "560462271"   # GA4のプロパティID（数字。秘密ではない）
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -292,6 +292,9 @@ def sc_session():
     cred = service_account.Credentials.from_service_account_info(json.loads(key), scopes=["https://www.googleapis.com/auth/webmasters.readonly"])
     return AuthorizedSession(cred)
 
+WATCH_Q = r"安い時期|安い月|安い日|いつ安い|箱根|熱海"   # 週次で順位を追う言葉
+
+
 def sc_page_counts(rows):
     """表示が1回以上あったページの数（検索に載ったページの目安）。種類別と、ホスト別（www などが混ざっていないか）。"""
     import urllib.parse
@@ -320,9 +323,12 @@ def sc_fetch(s, d0, d1):
             # queries・pages は表示回数の多い順に300件（2026/11/16。100件ではクリック0の語が途中で切れていた）
             by_imp = lambda rows, n: sorted(rows, key=lambda r: (-r["impressions"], -r["clicks"]))[:n]
             allp = q(["page"], 25000)   # 表示が1回以上あったページを全部（数を数えるため）
+            allq = q(["query"], 5000)
+            # 狙っている言葉（2026/11/17）：「◯◯ 安い時期」の形と、箱根・熱海を含む言葉は、300件の外でも全部残す
+            watch = by_imp([r for r in allq if re.search(WATCH_Q, r["query"])], 1000)
             return {"site": site, "totals": tot[0] if tot else {"clicks": 0, "impressions": 0},
                     "daily": sorted(q(["date"], 10), key=lambda r: r["date"]),
-                    "queries": by_imp(q(["query"], 5000), 300), "pages": by_imp(allp, 300), "devices": q(["device"], 5),
+                    "queries": by_imp(allq, 300), "watch_queries": watch, "pages": by_imp(allp, 300), "devices": q(["device"], 5),
                     "pages_with_impressions": sc_page_counts(allp)}
         except Exception as e:
             last = e   # ドメインのプロパティで無ければ、URLのプロパティで試す
