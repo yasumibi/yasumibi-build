@@ -8,7 +8,7 @@
 import os, sys, glob
 from PIL import Image
 
-SIZES = (480, 640)
+SIZES = (480, 640, 960)   # 960 はエリアページ・特集のいちばん上の写真用（2026/11/16。スマホの高精細画面で全幅）
 QUALITY = 84
 
 

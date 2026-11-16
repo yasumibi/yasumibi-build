@@ -71,7 +71,7 @@ def tabbar(base, cur):
 
 import sys as _sys; _sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import summary_rows, is_b, plan_s, plan_l, COND_PLAN, usual_price, is_hc, place_of, lowest_upcoming, WD_JA, summary_text
-from common import CARD_CAMP, CARD_BONUS, camp_html, camp_live
+from common import CARD_CAMP, CARD_BONUS, camp_html, camp_live, camp_ok
 from common import FETCHED, PRH, fa_label, fa_range, PRICE_NOTE
 from tagarea import pages_for_hotel
 from common import tabbar, footer, site_header, og_meta, load_area, logo_html, CARD_AFF, SLUG, jan_min, MONTHS, DEFAULT_YM, KY, KM, ASOF_BY_AREA, ASOF, AREA_JA, month_prices
@@ -208,6 +208,27 @@ for meta in AREA["hotels"]:
     H["camp"] = dict(bookEnd=CARD_CAMP["book_end"], outLast=CARD_CAMP["out_last"], bonus=CARD_BONUS)
     m0 = months[dmi]
     mn0 = min([v for v in m0["p"] if v] or [0])
+    # 最初の表示の中身を、HTMLに先に書いておく（2026/11/16。スマホではJSが動く前に一度描かれ、あとから文字が入って下がずれていた＝CLS）。
+    # 中身は hotel.js の renderHero・renderBar と同じ（JSはあとで同じものを書き直す）
+    _lab0 = lambda d: f'{m0["m"]}/{d}({WD[(datetime.date(m0["y"], m0["m"], d).weekday() + 1) % 7]})'
+    if mn0:
+        _ds = [i + 1 for i, v in enumerate(m0["p"]) if v == mn0]
+        k_days0 = f'{m0["m"]}月 ' + "・".join(_lab0(d) for d in _ds[:3]) + (f"など{len(_ds)}日" if len(_ds) > 3 else "") + "泊"
+        k_price0 = f"¥{mn0:,}"
+        _sat = [v for i, v in enumerate(m0["p"]) if v and datetime.date(m0["y"], m0["m"], i + 1).weekday() == 5
+                and not ((m0["m"] == 12 and i + 1 >= 29) or (m0["m"] == 1 and i + 1 <= 3))]
+        _sa = round(sum(_sat) / len(_sat)) if _sat else 0
+        _gap = _sa - mn0 if _sa > mn0 else 0
+        hsv0 = ('<a href="#sv-h">' + (f"土曜泊より <b>{_gap:,}円安い</b>" if _gap else "この日は神日") + "<span>／</span>"
+                f'楽天カード入会で <b>+{CARD_BONUS:,}円分</b> <span aria-hidden="true">›</span></a>')
+        _iso = f'{m0["y"]}-{m0["m"]:02d}-{_ds[0]:02d}'; _fa = H["fa"].get(_iso, "")
+        svp0 = (f'{_lab0(_ds[0])}泊（神日）・2名{PS}・税込 <b>¥{mn0:,}</b>'
+                + (f'<small class="fa">{_fa}取得（楽天トラベル）<a href="{base}{PRICE_NOTE}">料金について</a></small>' if _fa else ""))
+        _x = mn0 // 100 + ((mn0 * 10 // 11) // 200 if camp_ok(datetime.date(m0["y"], m0["m"], _ds[0])) else 0)
+        bw0 = f'{esc(H["name"])}｜{_lab0(_ds[0])}泊・2名・{PS}・神日'; ba0 = f"¥{mn0:,}"; br0 = f"楽天カードなら+{_x:,}円分"
+    else:
+        bw0 = ba0 = br0 = ""
+        k_days0 = f'{m0["m"]}月は{"朝食付き" if PS == "1泊朝食" else "2食付き"}プランの空室がありません'; k_price0 = "—"; hsv0 = ""; svp0 = ""
     kd = [i + 1 for i, v in enumerate(m0["p"]) if v == mn0]
     pts0 = mn0 * 2 // 100
     diff0 = pts0 - mn0 // 100
@@ -255,10 +276,10 @@ for meta in AREA["hotels"]:
           <div class="chips"><span class="star43"><i aria-hidden="true">★</i>{H['avg']:.2f}<small>口コミ{H['cnt']:,}件</small></span>{HCL}</div>
           <h1>{esc(H['name'])}{f"<small>{esc(H['full'])}</small>" if H['full'] != H['name'] else ""}</h1>
           <div class="hk">
-            <div class="kl"><span class="tag">神日</span><span id="k-days"></span></div>
-            <div class="kp"><span id="k-price" class="num"></span><span class="u">2名{PS}・税込</span></div>
+            <div class="kl"><span class="tag">神日</span><span id="k-days">{k_days0}</span></div>
+            <div class="kp"><span id="k-price" class="num">{k_price0}</span><span class="u">2名{PS}・税込</span></div>
           </div>
-          <p class="hsv" id="hsv"></p>
+          <p class="hsv" id="hsv">{hsv0}</p>
           <div class="hact">
             <button type="button" class="fav" id="fav" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.2-9.3C1.6 7.8 3.9 4.5 7.3 4.5c2 0 3.6 1.1 4.7 2.7 1.1-1.6 2.7-2.7 4.7-2.7 3.4 0 5.7 3.3 4.5 6.7-1.7 4.7-9.2 9.3-9.2 9.3z"/></svg><span>お気に入り</span></button>
           </div>
@@ -270,7 +291,7 @@ for meta in AREA["hotels"]:
       {_sum}
       <section class="sv" aria-labelledby="sv-h">
     <div class="sv-hd"><h2 id="sv-h">この宿をいちばん安く泊まるには</h2><span class="pr">PR</span></div>
-    <p class="sv-price" id="sv-price"></p>
+    <p class="sv-price" id="sv-price">{svp0}</p>
     <div id="sv-card"></div>
     <a class="sv-go" href="{base}rakuten-card/">楽天カードについて詳しく見る <span aria-hidden="true">→</span></a>
   </section>
@@ -317,8 +338,8 @@ for meta in AREA["hotels"]:
     """ + footer(base) + f"""
     <div class="bar" id="bar">
       <div class="bi">
-        <div class="bw" id="b-when"></div>
-        <div class="ba"><span id="b-amt"></span><small id="b-real"></small></div>
+        <div class="bw" id="b-when">{bw0}</div>
+        <div class="ba"><span id="b-amt">{ba0}</span><small id="b-real">{br0}</small></div>
       </div>
       <a class="bcta" id="b-cta" href="#" target="_blank" rel="noopener sponsored">予約へ</a>
     </div>

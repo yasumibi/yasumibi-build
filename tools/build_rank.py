@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from tagarea import pages_for_area
 from autofeat import area_features
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import img_v, place_of, lowest_upcoming, bk_attr, area_summary
+from common import img_v, cover_img, place_of, lowest_upcoming, bk_attr, area_summary
 KEEP_TITLE = {"kinugawa"}
 # 題名・説明文で「◯◯温泉」と書くエリア（ひとつの温泉地の名前で、「◯◯温泉」で探されるところ。「・」で2つ並ぶエリアや街は付けない）
 ONSEN = {"hakone", "atami", "kusatsu", "yufuin", "beppu", "arima", "kinosaki", "gero", "ito", "shuzenji", "kawaguchiko", "jozankei", "akan",
@@ -165,7 +165,7 @@ def cover(key, base):
     if not img: return ""
     c = CREDITS.get(img)
     cr = f'<span class="cv-cr">写真：{esc(c["artist"] or "Wikimedia Commons")}（{esc(c["license"])}・Wikimedia Commons{"・" + esc(c["edit"]) if c.get("edit") else ""}）</span>' if c else ""
-    return f'<figure class="cv"><img src="{base}assets/img/{img}?v={img_v(img)}" alt="" width="960" height="540">{cr}</figure>'
+    return f'<figure class="cv">{cover_img(base, img)}{cr}</figure>'
 
 
 def page(path, title, desc, crumb, h1, lead, body, base, cv="", js="", cur="features"):

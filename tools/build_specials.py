@@ -10,7 +10,7 @@
 """
 import os, sys, json, html, hashlib, datetime as dt, statistics, urllib.parse
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import img_v, bk_attr
+from common import img_v, bk_attr, cover_img
 from common import is_b, plan_s, plan_l, COND_PLAN, usual_price, is_hc, HC_MIN
 from common import site_header, tabbar, footer, og_meta, OUT, DATA, AREA_JA, HOTELS, PRH, ASOF, TODAY, WINDOW_START, WINDOW_END, KY, KM
 
@@ -110,7 +110,7 @@ def cover(img):
     if not img or not os.path.exists(f"{OUT}/assets/img/{img}"): return ""
     c = CREDITS.get(img)
     cr = f'<span class="cv-cr">写真：{esc(c["artist"] or "Wikimedia Commons")}（{esc(c["license"])}・Wikimedia Commons{"・" + esc(c["edit"]) if c.get("edit") else ""}）</span>' if c else ""
-    return f'<figure class="cv"><img src="../../assets/img/{img}?v={img_v(img)}" alt="" width="960" height="540">{cr}</figure>'
+    return f'<figure class="cv">{cover_img("../../", img)}{cr}</figure>'
 
 
 def page(slug, area, img, eyebrow, h1, lead, body, note, place=None, place_href=None, title=None, desc=None, robots="index,follow"):

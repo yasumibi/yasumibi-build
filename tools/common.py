@@ -330,6 +330,17 @@ def img_v(name):
     return _IMGV[name]
 
 
+def cover_img(base, img):
+    """エリアページ・特集のいちばん上の写真（いちばん大きく見える要素＝LCP）。軽い WebP（640・960px）を出し分けて、先に読み込む。2026/11/16"""
+    stem = img.rsplit(".", 1)[0]
+    w = [x for x in (640, 960) if os.path.exists(f"{OUT}/assets/img/{stem}-{x}.webp")]
+    if len(w) == 2:
+        ss = ", ".join(f"{base}assets/img/{stem}-{x}.webp?v={img_v(f'{stem}-{x}.webp')} {x}w" for x in w)
+        return (f'<img src="{base}assets/img/{stem}-960.webp?v={img_v(stem + "-960.webp")}" srcset="{ss}" sizes="(min-width: 760px) 720px, 100vw" '
+                f'alt="" width="960" height="540" fetchpriority="high" decoding="async">')
+    return f'<img src="{base}assets/img/{img}?v={img_v(img)}" alt="" width="960" height="540" fetchpriority="high">'
+
+
 def tile_img(base, img, sizes, attrs=""):
     """一覧のタイル用の写真。軽い WebP（tools/make_webp.py で作る 480px・640px）があればそれを使い、なければ元の JPG。
     sizes は画面での表示幅（ブラウザが画面に合った大きさを選ぶ）。見た目は JPG と同じ"""

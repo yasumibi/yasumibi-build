@@ -349,5 +349,16 @@ def _indexable(u):
     except OSError: return False
 urls = [u for u in urls if _indexable(u)]
 today = datetime.date.today().isoformat()
-write(f"{OUT}/sitemap.xml", '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + "".join(f"  <url><loc>https://yasumibi.com/{u}</loc><lastmod>{today}</lastmod></url>\n" for u in urls) + "</urlset>\n")
+# 種類ごとに分ける（2026/11/16）。sitemap.xml はその目次。Search Console で、種類ごとに「何ページ載ったか」が見える
+_KIND = lambda u: ("hotels" if u.startswith("hotels/") else "areas" if u.startswith("areas/") else "tags" if u.startswith("tags/")
+                   else "features" if u.startswith("features/") and u != "features/" else "pages")
+_xml = lambda us: ('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+                   + "".join(f"  <url><loc>https://yasumibi.com/{u}</loc><lastmod>{today}</lastmod></url>\n" for u in us) + "</urlset>\n")
+_idx = []
+for k in ("pages", "areas", "hotels", "tags", "features"):
+    us = [u for u in urls if _KIND(u) == k]
+    if not us: continue
+    write(f"{OUT}/sitemap-{k}.xml", _xml(us)); _idx.append(k)
+write(f"{OUT}/sitemap.xml", '<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+      + "".join(f"  <sitemap><loc>https://yasumibi.com/sitemap-{k}.xml</loc><lastmod>{today}</lastmod></sitemap>\n" for k in _idx) + "</sitemapindex>\n")
 print("built", len(FEATURES), "features")
