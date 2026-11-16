@@ -11,6 +11,9 @@ on:
       save:
         description: "yasumibi-data に保存する（yes / no。お試しは no）"
         default: "yes"
+      check:
+        description: "AIクローラーを「いまから過去7日間」でも数えて、画面の数字とくらべる（yes / no）"
+        default: "no"
 
 permissions:
   contents: read
@@ -35,6 +38,8 @@ jobs:
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           YB_DATA: ${{ github.workspace }}/data
+          CF_ZONE_ID: ${{ vars.CF_ZONE_ID }}
+          YB_AI_CHECK: ${{ github.event.inputs.check == 'yes' && '1' || '' }}
         run: |
           pip install -q google-auth requests
           python3 tools/fetch_analytics.py ${{ github.event.inputs.day }}
@@ -50,6 +55,11 @@ jobs:
           print(f"::notice title=流入元×着地::{ {k: v[:3] for k, v in list(lb.items())[:4]} }")
           print(f"::notice title=流入元×楽天・カード::{(g.get('events_by_source') or [])[:12]}")
           print(f"::notice title=運営者の目印::{g.get('internal_test')}")
+          ai = d.get('ai_crawlers') or {}
+          print(f"::notice title=AIクローラー（先週）::{ {k: (v['total'], v['ok_2xx'], v['not_ok']) for k, v in (ai.get('bots') or {}).items()} }")
+          if d.get('ai_crawlers_check_last7'): print(f"::notice title=AIクローラー（過去7日間・確かめ用）::{d['ai_crawlers_check_last7']}")
+          print(f"::notice title=AI・4xxのページ::{[(x['path'], x['count'], x['bots']) for x in (ai.get('paths_4xx') or [])[:8]]}")
+          print(f"::notice title=AI・一覧にないbot::{[(x['user_agent'][:60], x['count']) for x in (ai.get('other_bot_uas') or [])[:10]]}")
           for e in d['errors']: print(f"::warning title={e['where']}::{e['error'][:600]}")
           PY
       - name: 非公開の yasumibi-data に保存

@@ -25,7 +25,7 @@ end = start + dt.timedelta(days=6)
 iso = start.isocalendar()
 OUTF = os.path.join(DATA, "analytics", f"{iso[0]}-W{iso[1]:02d}.json")
 out = {"week": f"{iso[0]}-W{iso[1]:02d}", "from": start.isoformat(), "to": end.isoformat(),
-       "fetched_at": dt.datetime.now(JST).isoformat(timespec="minutes"), "ga4": {}, "cloudflare": {}, "search_console": {}, "errors": []}
+       "fetched_at": dt.datetime.now(JST).isoformat(timespec="minutes"), "ga4": {}, "cloudflare": {}, "ai_crawlers": {}, "search_console": {}, "errors": []}
 
 def err(where, e):
     msg = str(e)
@@ -162,6 +162,113 @@ def cloudflare():
     except Exception as e:
         err("cloudflare.web_vitals", e)
 
+# ================= Cloudflare：AIクローラー（2026/11/16） =================
+# ChatGPT などAI検索の動きを毎週見るため。ゾーン（yasumibi.com）の HTTP リクエスト（httpRequestsAdaptiveGroups）を、
+# ユーザーエージェントでクローラーごとに分けて数える。無料プランでも31日分さかのぼれ、1回で30日分まで取れる（2026/10〜）。
+# 権限：APIトークンに「ゾーン → アナリティクス → 読み取り」（yasumibi.com）。ゾーンIDは CF_ZONE_ID か、名前から探す（「ゾーン → ゾーン → 読み取り」）。
+# ユーザーエージェントは名乗っているだけなので、なりすましも数に入る（Cloudflare の画面の「AIクロール制御」は検証済みのボットだけを数える）。
+AI_BOTS = ["OAI-SearchBot", "ChatGPT-User", "GPTBot", "PerplexityBot", "Perplexity-User", "ClaudeBot", "Claude-User", "Claude-SearchBot",
+           "bingbot", "Googlebot", "Applebot", "Amazonbot", "Bytespider", "meta-externalagent", "meta-externalfetcher",
+           "CCBot", "DuckAssistBot", "MistralAI-User", "cohere-ai", "YouBot", "Google-CloudVertexBot", "PetalBot", "TikTokSpider"]
+CF_ZONE_NAME = os.environ.get("CF_ZONE_NAME") or "yasumibi.com"
+
+
+def cf_zone_tag():
+    z = os.environ.get("CF_ZONE_ID")
+    if z: return z
+    req = urllib.request.Request(f"https://api.cloudflare.com/client/v4/zones?name={CF_ZONE_NAME}",
+                                 headers={"Authorization": f"Bearer {os.environ.get('CF_API_TOKEN', '')}"})
+    try: j = json.load(urllib.request.urlopen(req, timeout=60))
+    except urllib.error.HTTPError as e: raise RuntimeError(f"ゾーンIDを探せない：HTTP {e.code} {e.read()[:200]!r}")
+    if not j.get("result"): raise RuntimeError("ゾーンIDを探せない（トークンに「ゾーン → ゾーン → 読み取り」が無いか、CF_ZONE_ID を入れる）")
+    return j["result"][0]["id"]
+
+
+def cf_zone_query(q, var):
+    tok = os.environ.get("CF_API_TOKEN")
+    if not tok: raise RuntimeError("CF_API_TOKEN がありません")
+    req = urllib.request.Request("https://api.cloudflare.com/client/v4/graphql", data=json.dumps({"query": q, "variables": var}).encode(),
+                                 headers={"Authorization": f"Bearer {tok}", "Content-Type": "application/json"})
+    try: j = json.load(urllib.request.urlopen(req, timeout=90))
+    except urllib.error.HTTPError as e: raise RuntimeError(f"HTTP {e.code} {e.read()[:300]!r}")
+    if j.get("errors"): raise RuntimeError(json.dumps(j["errors"], ensure_ascii=False)[:800])
+    return j["data"]["viewer"]["zones"][0]
+
+
+def _bot_of(ua):
+    u = (ua or "").lower()
+    for b in AI_BOTS:
+        if b.lower() in u: return b
+    return None
+
+
+def ai_crawlers(t_from=None, t_to=None):
+    """先週7日分（月〜日・日本時間）。t_from/t_to を渡すと、その期間（確かめ用）。"""
+    t0 = t_from or dt.datetime.combine(start, dt.time(0), JST)
+    t1 = t_to or dt.datetime.combine(end + dt.timedelta(days=1), dt.time(0), JST)
+    z = cf_zone_tag()
+    utc = lambda t: t.astimezone(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    base = f'{{ datetime_geq: "{utc(t0)}", datetime_lt: "{utc(t1)}", requestSource: "eyeball" }}'
+    parts = []
+    for i, b in enumerate(AI_BOTS):   # クローラーごと：1時間ごと×ステータス
+        parts.append(f'b{i}: httpRequestsAdaptiveGroups(filter: {{ AND: [{base}, {{ userAgent_like: "%{b}%" }}] }}, limit: 5000) '
+                     '{ count dimensions { datetimeHour edgeResponseStatus } }')
+    q = "query($z: String!) { viewer { zones(filter: { zoneTag: $z }) { " + " ".join(parts) + " } } }"
+    a = cf_zone_query(q, {"z": z})
+    res = {"from": t0.isoformat(timespec="minutes"), "to": t1.isoformat(timespec="minutes"), "source": "httpRequestsAdaptiveGroups（userAgent で判定）",
+           "bots": {}, "daily": {}}
+    for i, b in enumerate(AI_BOTS):
+        rows = a[f"b{i}"]
+        if not rows: continue
+        st = {"2xx": 0, "3xx": 0, "4xx": 0, "5xx": 0}; day = {}
+        for r in rows:
+            c = r["count"]; s = r["dimensions"]["edgeResponseStatus"]; k = f"{s // 100}xx"
+            if k in st: st[k] += c
+            dd = dt.datetime.fromisoformat(r["dimensions"]["datetimeHour"].replace("Z", "+00:00")).astimezone(JST).date().isoformat()
+            day[dd] = day.get(dd, 0) + c
+        name = {"bingbot": "BingBot", "meta-externalagent": "Meta-ExternalAgent", "meta-externalfetcher": "Meta-ExternalFetcher"}.get(b, b)
+        res["bots"][name] = {"total": sum(st.values()), "ok_2xx": st["2xx"], "not_ok": st["3xx"] + st["4xx"] + st["5xx"],
+                             "3xx": st["3xx"], "4xx": st["4xx"], "5xx": st["5xx"]}
+        res["daily"][name] = dict(sorted(day.items()))
+    res["bots"] = dict(sorted(res["bots"].items(), key=lambda x: -x[1]["total"]))
+    # ChatGPT のよく読んだページ／4xx のページ／一覧にない「bot」らしいユーザーエージェント
+    or_ai = "{ OR: [" + ", ".join(f'{{ userAgent_like: "%{b}%" }}' for b in AI_BOTS) + "] }"
+    q2 = ("query($z: String!) { viewer { zones(filter: { zoneTag: $z }) { "
+          f'oai: httpRequestsAdaptiveGroups(filter: {{ AND: [{base}, {{ userAgent_like: "%OAI-SearchBot%" }}] }}, limit: 20, orderBy: [count_DESC]) {{ count dimensions {{ clientRequestPath }} }} '
+          f'cgu: httpRequestsAdaptiveGroups(filter: {{ AND: [{base}, {{ userAgent_like: "%ChatGPT-User%" }}] }}, limit: 20, orderBy: [count_DESC]) {{ count dimensions {{ clientRequestPath }} }} '
+          f'e4: httpRequestsAdaptiveGroups(filter: {{ AND: [{base}, {or_ai}, {{ edgeResponseStatus_geq: 400, edgeResponseStatus_lt: 500 }}] }}, limit: 200, orderBy: [count_DESC]) {{ count dimensions {{ clientRequestPath userAgent edgeResponseStatus }} }} '
+          f'other: httpRequestsAdaptiveGroups(filter: {{ AND: [{base}, {{ OR: [{{ userAgent_like: "%bot%" }}, {{ userAgent_like: "%Bot%" }}, {{ userAgent_like: "%crawler%" }}, {{ userAgent_like: "%spider%" }}, {{ userAgent_like: "%-User%" }}, {{ userAgent_like: "%AI%" }}] }}] }}, limit: 100, orderBy: [count_DESC]) {{ count dimensions {{ userAgent }} }} '
+          "} } }")
+    b2 = cf_zone_query(q2, {"z": z})
+    res["top_paths"] = {"OAI-SearchBot": [{"path": r["dimensions"]["clientRequestPath"], "count": r["count"]} for r in b2["oai"]],
+                        "ChatGPT-User": [{"path": r["dimensions"]["clientRequestPath"], "count": r["count"]} for r in b2["cgu"]]}
+    e4 = {}
+    for r in b2["e4"]:
+        p = r["dimensions"]["clientRequestPath"]; bot = _bot_of(r["dimensions"]["userAgent"]) or "?"
+        x = e4.setdefault(p, {"path": p, "count": 0, "bots": {}, "status": {}})
+        x["count"] += r["count"]; x["bots"][bot] = x["bots"].get(bot, 0) + r["count"]
+        sc = str(r["dimensions"]["edgeResponseStatus"]); x["status"][sc] = x["status"].get(sc, 0) + r["count"]
+    res["paths_4xx"] = sorted(e4.values(), key=lambda x: -x["count"])[:20]
+    res["other_bot_uas"] = [{"user_agent": r["dimensions"]["userAgent"][:200], "count": r["count"]} for r in b2["other"]
+                            if not _bot_of(r["dimensions"]["userAgent"])][:30]
+    return res
+
+
+def ai_crawlers_save():
+    try:
+        out["ai_crawlers"] = ai_crawlers()
+    except RuntimeError as e:
+        m = str(e)
+        if "ゾーンIDを探せない" in m or "not authorized" in m.lower() or "authz" in m.lower():
+            # 権限が足りないときは、エラーにせず状態だけ残す（APIトークンに「ゾーン → Analytics → 読み取り」を足せば、次の週から入る）
+            out["ai_crawlers"] = {"status": "APIトークンの権限が足りない（ゾーン → Analytics → 読み取り、ゾーン → ゾーン → 読み取り）"}
+            print("AIクローラー：権限が足りないので飛ばす"); return
+        raise
+    if os.environ.get("YB_AI_CHECK"):   # 確かめ用：いまから過去7日間（Cloudflare の画面の「過去7日間」とくらべる）
+        now = dt.datetime.now(JST)
+        chk = ai_crawlers(now - dt.timedelta(days=7), now)
+        out["ai_crawlers_check_last7"] = {k: v["total"] for k, v in chk["bots"].items()}
+
 # ================= Search Console =================
 # 同じサービスアカウント（GA4_SA_KEY）を、Search Console に「制限付き」以上で追加しておく。
 # Search Console のデータは2〜3日遅れで確定する。月曜の集計では先週の終わり2〜3日がまだ途中なので、
@@ -176,6 +283,18 @@ def sc_session():
     cred = service_account.Credentials.from_service_account_info(json.loads(key), scopes=["https://www.googleapis.com/auth/webmasters.readonly"])
     return AuthorizedSession(cred)
 
+def sc_page_counts(rows):
+    """表示が1回以上あったページの数（検索に載ったページの目安）。種類別と、ホスト別（www などが混ざっていないか）。"""
+    import urllib.parse
+    kinds = {"hotels": 0, "areas": 0, "tags": 0, "features": 0, "other": 0}; hosts = {}
+    for r in rows:
+        u = urllib.parse.urlparse(r["page"]); p = u.path
+        k = ("hotels" if p.startswith("/hotels/") else "areas" if p.startswith("/areas/") else "tags" if p.startswith("/tags/")
+             else "features" if p.startswith("/features/") and p.rstrip("/") != "/features" else "other")
+        kinds[k] += 1; hosts[u.netloc] = hosts.get(u.netloc, 0) + 1
+    return {"total": len(rows), **kinds, "by_host": dict(sorted(hosts.items(), key=lambda x: -x[1]))}
+
+
 def sc_fetch(s, d0, d1):
     import urllib.parse
     last = None
@@ -189,9 +308,13 @@ def sc_fetch(s, d0, d1):
                          ctr=round(row["ctr"], 4), position=round(row["position"], 1)) for row in r.json().get("rows", [])]
         try:
             tot = q([], 1)
+            # queries・pages は表示回数の多い順に300件（2026/11/16。100件ではクリック0の語が途中で切れていた）
+            by_imp = lambda rows, n: sorted(rows, key=lambda r: (-r["impressions"], -r["clicks"]))[:n]
+            allp = q(["page"], 25000)   # 表示が1回以上あったページを全部（数を数えるため）
             return {"site": site, "totals": tot[0] if tot else {"clicks": 0, "impressions": 0},
                     "daily": sorted(q(["date"], 10), key=lambda r: r["date"]),
-                    "queries": q(["query"], 100), "pages": q(["page"], 100), "devices": q(["device"], 5)}
+                    "queries": by_imp(q(["query"], 5000), 300), "pages": by_imp(allp, 300), "devices": q(["device"], 5),
+                    "pages_with_impressions": sc_page_counts(allp)}
         except Exception as e:
             last = e   # ドメインのプロパティで無ければ、URLのプロパティで試す
     raise last
@@ -216,7 +339,7 @@ def search_console():
         except Exception as e:
             err("search_console.prev_week", e)
 
-for name, fn in (("ga4", ga4), ("cloudflare", cloudflare), ("search_console", search_console)):
+for name, fn in (("ga4", ga4), ("cloudflare", cloudflare), ("ai_crawlers", ai_crawlers_save), ("search_console", search_console)):
     try: fn()
     except Exception as e: err(name, e)
 
