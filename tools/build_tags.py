@@ -164,7 +164,7 @@ for t in LIVE:
             r0 = ar[0]; _wd = "月火水木金土日"[r0["d"].weekday()]
             desc = (f"{AREA_JA[a]}で温泉（天然温泉）に入れる★4.3以上のホテル{len(ar)}軒。いちばん安いのは{H[r0['no']]['name']}の"
                     f"{r0['d'].month}/{r0['d'].day}({_wd})泊・¥{r0['p']:,}（2名{plan_s(a)}・税込）。宿ごとの神日がわかります。毎日更新。")
-        write(f"tags/{t['slug']}/{a}/", page(f"tags/{t['slug']}/{a}/", title, desc, [(t["name"], f"{base}tags/{t['slug']}/"), (AREA_JA[a], None)], body, base))
+        write(f"tags/{t['slug']}/{a}/", page(f"tags/{t['slug']}/{a}/", title, desc, [(t["name"], f"{base}tags/{t['slug']}/"), (AREA_JA[a], f"{base}areas/{a}/")], body, base))
         made.append(f"tags/{t['slug']}/{a}/")
 
 # 条件から外れたタグ・エリアのページ（古いデータのまま残るもの）を消す

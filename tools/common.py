@@ -458,45 +458,68 @@ def bk_attr(no, d, n=1):
 
 
 # ---- エリアの「安い時期」のまとめ（エリアページの最初に出す答えの文。毎日の料金から作る）
-def area_summary(area, label, nos, unit=""):
-    """エリアの宿（nos）の料金から、安い月・高い月・いちばん安い宿と日・土曜泊との差を出して、2〜3文にする。"""
+def area_facts(area, nos):
+    """エリアの宿（nos）の料金から、安い月・高い月・曜日の差・連休の差・いちばん安い宿と日を出す（まとめの表と文の元）。"""
     import statistics as _st
     byh = {}
     for no in nos:
-        src = PRH.get(str(no), {})
-        for k, v in src.items():
+        for k, v in PRH.get(str(no), {}).items():
             try: v = int(v or 0)
             except (TypeError, ValueError): continue
             if not v: continue
             d = _dt.date.fromisoformat(k)
             if d <= TODAY or d < WINDOW_START or d > WINDOW_END: continue
-            if (d.month == 12 and d.day >= 29) or (d.month == 1 and d.day <= 3): continue   # 年末年始は比べない
             byh.setdefault(no, []).append((v, d))
-    if len(byh) < 2: return []
-    # 月ごと：宿ごとの「その月のいちばん安い日の料金」の中央値（宿が3軒以上ある月だけ）
+    if len(byh) < 2: return {}
+    nyd = lambda d: (d.month == 12 and d.day >= 29) or (d.month == 1 and d.day <= 3)
+    gwd = lambda d: (d.month == 4 and d.day == 29) or (d.month == 5 and d.day <= 4)
+    f = {"n": len(byh)}
+    # 月ごと：宿ごとの「その月のいちばん安い日の料金」の中央値（年末年始は除く・宿が3軒以上ある月だけ）
     mon = {}
     for no, xs in byh.items():
         mm = {}
-        for v, d in xs: mm.setdefault((d.year, d.month), []).append(v)
+        for v, d in xs:
+            if not nyd(d): mm.setdefault((d.year, d.month), []).append(v)
         for k, vs in mm.items():
             if len(vs) >= 7: mon.setdefault(k, []).append(min(vs))
     mon = {k: _st.median(v) for k, v in mon.items() if len(v) >= max(2, min(3, len(byh)))}
-    out = []
     if len(mon) >= 3:
         order = sorted(mon, key=lambda k: (mon[k], k))
         lo, hi = order[0], order[-1]
         lo2 = [k for k in order[1:3] if mon[k] <= mon[lo] * 1.03]
-        lows = "と".join(f"{k[1]}月" for k in sorted([lo] + lo2[:1]))
-        diff = int(round((mon[hi] - mon[lo]) / 100.0)) * 100
-        out.append(f"{label}の宿が安い時期は、{lows}です。" + (f"高い{hi[1]}月と比べると、宿ごとのいちばん安い日の料金が¥{diff:,}ほど安くなります。" if diff >= 1000 else ""))
-    v, d, no = min(((v, d, no) for no, xs in byh.items() for v, d in xs), key=lambda x: (x[0], x[1]))
-    nm = next((h["name"] for h in HOTELS_ALL if h["no"] == no), "")
-    out.append(f"この先半年でいちばん安いのは、{nm}の{d.month}/{d.day}({WD_JA[d.weekday()]})泊・¥{v:,}{'（' + unit + '）' if unit else ''}です。")
+        f["lows"] = [k[1] for k in sorted([lo] + lo2[:1])]
+        f["high"] = hi[1]
+        f["mdiff"] = int(round((mon[hi] - mon[lo]) / 100.0)) * 100
+    v, d, no = min(((v, d, no) for no, xs in byh.items() for v, d in xs if not nyd(d)), key=lambda x: (x[0], x[1]), default=(0, None, None))
+    if v:
+        f["best"] = dict(v=v, d=d, name=next((h["name"] for h in HOTELS_ALL if h["no"] == no), ""))
+    # 曜日：宿ごとの土曜泊と日〜木泊の中央値の差（年末年始は除く）
     sat, wk = [], []
     for xs in byh.values():
-        s_ = [v for v, d in xs if d.weekday() == 5]; w_ = [v for v, d in xs if d.weekday() in (6, 0, 1, 2, 3)]
+        s_ = [v for v, d in xs if d.weekday() == 5 and not nyd(d)]; w_ = [v for v, d in xs if d.weekday() in (6, 0, 1, 2, 3) and not nyd(d)]
         if len(s_) >= 3 and len(w_) >= 5: sat.append(_st.median(s_)); wk.append(_st.median(w_))
     if len(sat) >= 2:
-        g = int(round((_st.median(sat) - _st.median(wk)) / 100.0)) * 100
-        if g >= 1000: out.append(f"土曜泊は、日〜木泊より¥{g:,}ほど高めです。")
+        f["sat"] = int(round((_st.median(sat) - _st.median(wk)) / 100.0)) * 100
+    # 連休：年末年始（12/29〜1/3泊）・GW（4/29〜5/4泊）の、同じ宿の日〜木泊との差（空室がある宿が3軒以上のときだけ）
+    for key, fn, lab in (("ny", nyd, "年末年始"), ("gw", gwd, "ゴールデンウィーク")):
+        g, cnt = [], 0
+        for xs in byh.values():
+            h_ = [v for v, d in xs if fn(d)]; w_ = [v for v, d in xs if d.weekday() in (6, 0, 1, 2, 3) and not nyd(d) and not gwd(d)]
+            if h_ and len(w_) >= 5: g.append(_st.median(h_) - _st.median(w_)); cnt += 1
+        if cnt >= 3 and len({d for xs in byh.values() for v, d in xs if fn(d)}) >= 4:   # 連休の夜が4日以上そろっているときだけ
+            f[key] = dict(lab=lab, diff=int(round(_st.median(g) / 100.0)) * 100, cnt=cnt)
+    return f
+
+
+def area_summary(area, label, nos, unit=""):
+    """エリアの宿（nos）の料金から、安い月・高い月・いちばん安い宿と日・土曜泊との差を出して、2〜3文にする。"""
+    f = area_facts(area, nos)
+    if not f: return []
+    out = []
+    if f.get("lows"):
+        out.append(f"{label}の宿が安い時期は、{'と'.join(f'{m}月' for m in f['lows'])}です。" + (f"高い{f['high']}月と比べると、宿ごとのいちばん安い日の料金が¥{f['mdiff']:,}ほど安くなります。" if f["mdiff"] >= 1000 else ""))
+    if f.get("best"):
+        b = f["best"]; d = b["d"]
+        out.append(f"この先半年でいちばん安いのは、{b['name']}の{d.month}/{d.day}({WD_JA[d.weekday()]})泊・¥{b['v']:,}{'（' + unit + '）' if unit else ''}です。")
+    if f.get("sat", 0) >= 1000: out.append(f"土曜泊は、日〜木泊より¥{f['sat']:,}ほど高めです。")
     return out

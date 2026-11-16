@@ -31,6 +31,7 @@ def crumbs(page, url):
             t = text(a.group(3))
             if t and t not in ("›", ">"): items.append((t, url))
     items = [(n, u.split("#")[0]) for n, u in items if n]
+    if items and items[-1][1] != url: items[-1] = (items[-1][0], url)   # 最後の項目はこのページ（タグ×エリア・特集で、最後の地名をエリアへのリンクにしているため）
     seen, uniq = set(), []
     for n, u in items:   # 同じURLが2回出るとき（例：「エリア」がトップへのリンク）は、あとのほうを外す
         if u in seen: continue

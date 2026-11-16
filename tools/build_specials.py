@@ -119,8 +119,8 @@ def page(slug, area, img, eyebrow, h1, lead, body, note, place=None, place_href=
     place = place or AREA_JA[area]; place_href = place_href or f"areas/{area}/"
     title = title or f"{h1.rstrip('。')}｜{place}の特集｜YASUMIBI"
     desc = desc or f"{lead} ★4.3以上の宿だけを、楽天トラベルの料金で毎日調べています。"
-    crumb = (f'<a href="{base}">ホーム</a><span aria-hidden="true">›</span><a href="{base}{place_href}">{esc(place)}</a>'
-             f'<span aria-hidden="true">›</span><span>特集</span>')
+    crumb = (f'<a href="{base}">ホーム</a><span aria-hidden="true">›</span><a href="{base}features/">特集</a>'
+             f'<span aria-hidden="true">›</span><a href="{base}{place_href}">{esc(place)}</a>')
     return f"""<!doctype html>
 <html lang="ja">
 <head>
