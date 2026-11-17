@@ -117,6 +117,13 @@ def ga4():
                                    {"filter": {"fieldName": "eventName", "stringFilter": {"value": "rakuten_travel"}}})
     except Exception as e:
         err("ga4.travel_by_hotel", e)
+    # カードの質問の答えごと（2026/11/17）：rakuten_travel・rakuten_card を card_choice（have／no／none＝未回答）で分ける。
+    # GA4にカスタムディメンション card_choice の登録が必要。それより前のクリックは (not set) になる
+    try:
+        g["card_choice"] = run(["eventName", "customEvent:card_choice"], ["eventCount", "totalUsers"], 20, "eventCount",
+                               {"filter": {"fieldName": "eventName", "inListFilter": {"values": ["rakuten_travel", "rakuten_card"]}}})
+    except Exception as e:
+        err("ga4.card_choice（GA4にカスタムディメンション card_choice を登録すると取れる）", e)
 
 def _num(v):
     try: return int(v)
