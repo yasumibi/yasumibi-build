@@ -224,11 +224,7 @@ for meta in AREA["hotels"]:
     PS, PL = plan_s(meta["area"]), plan_l(meta["area"]); H["plan"] = PS
     _u = usual_price(meta["no"])   # ハイクラス：この先半年の料金の中央値が高い宿にだけラベル
     HCL = (f'<span class="hcl">ハイクラス<small>いつもは2名{_u / 10000:.1f}万円</small></span>' if is_hc(meta["no"], meta["area"]) else "")
-    # 同じ日なら、こっちも安い：同じエリアで★が近い（−0.1まで）宿
-    _al = [h for h in AREA["hotels"] if h["area"] == meta["area"] and h["no"] != meta["no"] and str(h["no"]) in INFO and h["avg"] >= meta["avg"] - 0.1]
-    _al.sort(key=lambda h: abs(h["avg"] - meta["avg"]))
-    H["alts"] = [dict(no=h["no"], slug=SLUG[h["no"]][0], name=SLUG[h["no"]][1], loc=h["loc"], avg=h["avg"],
-                      thumb=INFO[str(h["no"])].get("thumb", ""), p=[month_prices(h["no"], mm["y"], mm["m"]) for mm in months]) for h in _al[:15]]
+    # 「同じ日に安い、近くの宿」はやめた（2026/11/17：この宿を見に来た人に、ほかの宿をすすめない）。そのデータ（H["alts"]）も出さない
     _iu = f"https://travel.rakuten.co.jp/HOTEL/{meta['no']}/{meta['no']}.html"
     info_link = f"https://hb.afl.rakuten.co.jp/hgc/{AFF}/?pc={urllib.parse.quote(_iu, safe='')}&m={urllib.parse.quote(_iu, safe='')}"
     dmi = next((i for i, mm in enumerate(months) if (mm["y"], mm["m"]) == DEFAULT_YM), 0)
@@ -296,7 +292,7 @@ for meta in AREA["hotels"]:
             f'<dl class="kv">{"".join(f"<dt>{k}</dt><dd>{v}</dd>" for k, v in _rows)}</dl>'
             f'<small>2名{PS}・税込。{fa_range(meta["area"], PRH.get(str(meta["no"]), {}).keys())}（楽天トラベル）。<a class="fa-l" href="{base}{PRICE_NOTE}">料金について</a></small></section>') if _rows else ""
     _ht = pages_for_hotel(meta["no"])   # この宿があてはまる「エリア×こだわり」のページへ
-    _tags_html = ('<div class="htags"><h3>' + esc(H['area']) + 'で、同じ特徴の宿を探す</h3><ul>'
+    _tags_html = ('<div class="htags"><h3>' + esc(H['area']) + 'で、同じこだわりの宿</h3><ul>'
                   + "".join(f'<li><a href="{base}tags/{s}/{meta["area"]}/">{esc(n)}<small>{c}軒</small></a></li>' for s, n, q, c in _ht) + "</ul></div>") if _ht else ""
     _wh = IMG_WH.get(info.get("img", ""))
     hero_wh = f' width="{_wh[0]}" height="{_wh[1]}"' if _wh else ""
@@ -349,14 +345,13 @@ for meta in AREA["hotels"]:
         <div class="legend cal-lg"><span><i class="lg-min"></i>神日</span><span><i class="lg-t1"></i>+15%まで</span><span><i class="lg-t2"></i>+35%まで</span><span><i class="lg-t3"></i>それ以上</span><span><i class="lg-so"></i>満室</span></div>
       </section>
 
-      <section class="blk alt" aria-labelledby="alth" id="alt" hidden>
-        <div class="sh"><h2 id="alth">この日、この宿より安い近くの宿</h2><span class="j" id="alt-j"></span></div>
-        <ul class="peers" id="alt-list"></ul>
-        <p class="note" id="alt-note"></p>
+      <section class="blk" aria-labelledby="prh">
+        <div class="sh"><h2 id="prh">近くの宿の安い日</h2><span class="j">{H['area']}・同じ価格帯の宿（{KY}年{KM}月）</span></div>
+        <ul class="peers">{peer_html}</ul>
       </section>
 
       <section class="blk" aria-labelledby="rgh">
-        <div class="sh"><h2 id="rgh">この月の、安い日と高い日</h2><span class="j" id="rg-month"></span></div>
+        <div class="sh"><h2 id="rgh">料金比較</h2><span class="j" id="rg-month"></span></div>
         <div class="range" id="range"></div>
       </section>
 
@@ -369,10 +364,6 @@ for meta in AREA["hotels"]:
         <p class="note">※宿の情報・評価・口コミは楽天トラベルの掲載内容です（2026年10月21日時点）。</p>
       </section>
 
-      <section class="blk" aria-labelledby="prh">
-        <div class="sh"><h2 id="prh">近くの宿の、いちばん安い日</h2><span class="j">{H['area']}・同じ価格帯の宿（{KY}年{KM}月）</span></div>
-        <ul class="peers">{peer_html}</ul>
-      </section>
 
       <ul class="cond">
         <li>料金：大人2名・1室・{PL}の最安プラン（2名合計・税込）</li>
