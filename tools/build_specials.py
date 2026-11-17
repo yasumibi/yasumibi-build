@@ -146,7 +146,7 @@ def page(slug, area, img, eyebrow, h1, lead, body, note, place=None, place_href=
   <header class="ok-hd"><p class="sp-eb">特集｜{esc(eyebrow)}</p><h1>{esc(h1)}</h1>{lines(lead, "ld")}</header>
   {body}
   <a class="c-apply" href="{base}{place_href}">{esc(place)}のほかのランキングを見る</a>
-  <ul class="fine cond">{sentences("★4.3以上＝楽天トラベルの口コミ評価4.3以上（口コミ50件以上。ハイクラスは20件以上・★4.6以上）。" + note + f"大人2名・1室・{plan_l(area)}の最安プラン（2名合計・税込）。料金は楽天トラベルの{esc(ASOF)}時点・毎日更新。年末年始（12/29〜1/3）は除いています。宿の写真：楽天トラベル。")}</ul>
+  <ul class="fine cond">{sentences("★4.3以上＝楽天トラベルの口コミ評価4.3以上（口コミ50件以上。ハイクラスは20件以上・★4.6以上）。" + note + f"大人2名・1室・{plan_l(area)}の最安プラン（2名合計・税込）。料金は楽天トラベルの{esc(ASOF)}時点・毎日更新。差や割合は、宿ごとの値の真ん中（中央値）で比べています。年末年始（12/29〜1/3）は除いています。宿の写真：楽天トラベル。")}</ul>
 </main>
 """ + footer(base) + tabbar(base, "") + "</body></html>\n"
 
@@ -229,7 +229,7 @@ its = [item(i + 1, no, yen(v), f"いちばん安い金曜 {lab(d)}", (f"土曜�
        for i, (v, no, d, sa) in enumerate(rows)]
 best = min(fr, key=lambda r: r[1]) if fr else None
 body = ""
-if fr: body += sec("金曜泊の料金", f"熱海の宿の金曜泊・料金の中央値。いちばん安いのは<b>{best[0]}</b>。", bars(fr))
+if fr: body += sec("金曜泊の料金", f"熱海の宿の、金曜泊の料金|いちばん安いのは<b>{best[0]}</b>", bars(fr))
 body += sec("金曜泊が安い宿", "仕事終わりに出発して、土曜はゆっくり。金曜泊がいちばん安い日を宿ごとに。", ol(its),
             f"1位は{esc(H[rows[0][1]]['name'])}。金曜泊なら{yen(rows[0][0])}です。" if rows else "")
 write("atami-5man", page("atami-5man", "atami", "atami-panorama.jpg", "熱海・金曜泊", "熱海の宿、金曜泊がいちばん安い日",
@@ -269,7 +269,7 @@ for wk in sorted(weeks):
 body = ""
 if wr:
     bw = min(wr, key=lambda r: r[1])[0]
-    body += sec("週ごとの料金", f"12〜3月、週ごとに各宿のいちばん安い夜の中央値。いちばん安いのは<b>{bw.month}/{bw.day}からの週</b>。",
+    body += sec("週ごとの料金", f"12〜3月の、週ごとの料金|いちばん安いのは<b>{bw.month}/{bw.day}からの週</b>",
                 bars([(f"{w.month}/{w.day}〜", v, "") for w, v in wr]))
     rows = []
     for no, vs in weeks[bw].items():
@@ -335,7 +335,7 @@ body = ""
 wr = [(f"{k}曜泊", statistics.median(wd[k]), "") for k in "日月火水木" if len(wd.get(k, [])) >= 5]
 if wr:
     bk = min(wr, key=lambda r: r[1])
-    body += sec("曜日ごとの料金", f"鬼怒川の宿の、日〜木泊の料金の中央値。いちばん安いのは<b>{bk[0]}</b>。", bars(wr))
+    body += sec("曜日ごとの料金", f"鬼怒川の宿の、曜日ごとの料金（日〜木泊）|いちばん安いのは<b>{bk[0]}</b>", bars(wr))
 its = [item(i + 1, no, yen(v), f"平日の神日 {lab(d)}", (f"土曜泊の平均より <b>{sa - v:,}円安い</b>" if sa > v else ""), d) for i, (v, no, d, sa) in enumerate(rows)]
 body += sec("平日に泊まるなら、この宿・この日", "日〜木泊だけで、宿ごとにいちばん安い日。", ol(its),
             f"1位の{esc(H[rows[0][1]]['name'])}は、平日なら{yen(rows[0][0])}です。" if rows else "")
@@ -372,7 +372,7 @@ if len(rows) >= 4:
         mb, ms = statistics.median(big), statistics.median(small)
         gap = abs(mb - ms) / max(mb, ms)
         ans = ("ほとんど変わらない" if gap < 0.05 else ("大きな宿のほうが安い" if mb < ms else "小さな宿のほうが安い"))
-        body += sec("比べた結果：" + ans, f"客室100室以上の宿{len(big)}軒と、100室未満の宿{len(small)}軒の、神日の料金の中央値。差は{abs(mb - ms):,.0f}円。",
+        body += sec("比べた結果：" + ans, f"客室100室以上の宿{len(big)}軒と、100室未満の宿{len(small)}軒の神日の料金|差は<b>約{abs(mb - ms):,.0f}円</b>",
                     bars([("100室以上", mb, ""), ("100室未満", ms, "")]))
 its = [item(i + 1, no, yen(v), f"神日 {lab(d)}", f"客室数 {r}室", d) for i, (r, no, d, v) in enumerate(rows)]
 body += sec("客室数の多い順", "宿の大きさと、それぞれの神日。", ol(its, 9))
@@ -403,7 +403,7 @@ body = ""
 br = [(f"{a.month}/{a.day}〜{b.month}/{b.day}", statistics.median(v), "") for (a, b), v in sorted(blocks.items()) if len(v) >= 5]
 if br:
     bb = min(br, key=lambda r: r[1])
-    body += sec("連休ごとの料金", f"この先の連休ごとに、有馬の宿の料金の中央値。いちばん安いのは<b>{bb[0]}</b>の連休。", bars(br))
+    body += sec("連休ごとの料金", f"有馬の宿の、連休ごとの料金|いちばん安いのは<b>{bb[0]}</b>の連休", bars(br))
 its = [item(i + 1, no, yen(v), f"連休中の神日 {lab(d)}", f"{a.month}/{a.day}〜{b.month}/{b.day}の連休", d) for i, (v, no, d, (a, b)) in enumerate(rows)]
 body += sec("連休でも安い宿", "3日以上続く休みの中の夜だけで、宿ごとにいちばん安い日。", ol(its),
             f"1位の{esc(H[rows[0][1]]['name'])}は、連休中でも{yen(rows[0][0])}です。" if rows else "")
@@ -434,7 +434,7 @@ mm = med_by_month(KYO)
 body = ""
 if mm:
     lo = min(mm, key=lambda r: r[2]); hi = max(mm, key=lambda r: r[2])
-    body += sec("月ごとの料金", f"京都の宿の、月ごとの神日の中央値。いちばん安いのは<b>{lo[1]}月</b>、いちばん高いのは<b>{hi[1]}月</b>。",
+    body += sec("月ごとの料金", f"京都の宿の、月ごとの神日の料金|いちばん安い月：<b>{lo[1]}月</b>|いちばん高い月：<b>{hi[1]}月</b>",
                 bars([(f"{m}月", v, "") for y, m, v in mm]))
 rows = []
 ny = TODAY.year if TODAY.month <= 11 else TODAY.year + 1
@@ -487,7 +487,7 @@ mm = med_by_month(ONOS)
 body = ""
 if mm:
     lo = min(mm, key=lambda r: r[2]); hi = max(mm, key=lambda r: r[2])
-    body += sec("月ごとの料金", f"沖縄の宿（那覇・恩納・北谷・宮古島・石垣）の、月ごとの神日の中央値。いちばん安いのは<b>{lo[1]}月</b>。",
+    body += sec("月ごとの料金", f"沖縄の宿（那覇・恩納・北谷・宮古島・石垣）の、月ごとの神日の料金|いちばん安い月：<b>{lo[1]}月</b>",
                 bars([(f"{m}月", v, "") for y, m, v in mm]))
     rows = []
     for no in ONOS:
@@ -508,7 +508,7 @@ ar = []
 for a in OKI:
     ks = [min(nights(no), key=lambda x: x[1])[1] for no in area_nos(a) if nights(no)]
     if len(ks) >= 5: ar.append((AREA_JA[a], statistics.median(ks), ""))
-if ar: body += sec("エリアごとの神日", "エリアごとの、宿の神日（この先半年でいちばん安い日）の中央値。", bars(ar))
+if ar: body += sec("エリアごとの神日", "エリアごとの、神日の料金（この先半年）", bars(ar))
 rows = []
 for a in ("miyako", "ishigaki"):
     for no in area_nos(a):
@@ -540,7 +540,7 @@ for lb, a, b in wk:
     vs = [min([p for d, p in nights(no) if a <= d <= b] or [0]) for no in SP]; vs = [x for x in vs if x]
     if len(vs) >= 5: br.append((lb, statistics.median(vs), ""))
 if len(br) == 3:
-    body += sec("週ごとの料金", "札幌の宿の、その週でいちばん安い夜の中央値。前の週＝1/28〜2/3泊、雪まつり＝2/4〜2/10泊、あとの週＝2/12〜2/18泊。", bars(br),
+    body += sec("週ごとの料金", "札幌の宿の、週ごとの料金|前の週：1/28〜2/3泊|雪まつり：2/4〜2/10泊|あとの週：2/12〜2/18泊", bars(br),
                 f"雪まつりの週は、前の週より{br[1][1] - br[0][1]:,.0f}円{'高くなっています' if br[1][1] > br[0][1] else '安くなっています'}。")
 rows = []
 for no in SP:
@@ -622,7 +622,7 @@ its = [item(i + 1, no, yen(k[1]), f"神日 {lab(k[0])}", f"日〜木泊の平均
 body = ""
 if rows:
     gs = [r[0] for r in rows]
-    body += sec("土曜泊と日〜木泊の料金の差", f"露天風呂付き客室のある箱根の宿{len(rows)}軒の、土曜泊と日〜木泊の平均の差。中央値は<b>{statistics.median(gs):,.0f}円</b>。", "", "")
+    body += sec("土曜泊と日〜木泊の料金の差", f"露天風呂付き客室のある箱根の宿{len(rows)}軒|土曜泊は、日〜木泊より<b>約{statistics.median(gs):,.0f}円高い</b>", "", "")
 body += sec("平日に泊まると差が大きい宿", "土曜泊の平均と、日〜木泊の平均の差が大きい順。", ol(its),
             f"1位の{esc(H[rows[0][1]]['name'])}は、平日にすると平均{rows[0][0]:,.0f}円安くなります。" if its else "")
 write("hakone-rotenburo", page("hakone-rotenburo", "hakone", "hakone-torii.jpg", "箱根・露天風呂付き客室", "箱根の露天風呂付き客室、土曜と平日の料金差",
@@ -639,7 +639,7 @@ wr = [(f"{WDJ[w]}曜泊", statistics.median(byw[w]), "") for w in (6, 0, 1, 2, 3
 body = ""
 if wr:
     lo = min(wr, key=lambda r: r[1]); hi = max(wr, key=lambda r: r[1])
-    body += sec("曜日ごとの料金", f"熱海の宿の、泊まる曜日ごとの料金の中央値。いちばん安いのは<b>{lo[0]}</b>、いちばん高い{hi[0]}とは{hi[1] - lo[1]:,.0f}円の差。", bars(wr))
+    body += sec("曜日ごとの料金", f"熱海の宿の、曜日ごとの料金|いちばん安いのは<b>{lo[0]}</b>|いちばん高い{hi[0]}より<b>約{hi[1] - lo[1]:,.0f}円安い</b>", bars(wr))
     lw = [k for k, w in enumerate(WDJ) if f"{w}曜泊" == lo[0]][0]
     rows = []
     for no in area_nos("atami"):
@@ -648,7 +648,7 @@ if wr:
             d, v = min(ns, key=lambda x: (x[1], x[0])); rows.append((v, no, d))
     rows.sort()
     its = [item(i + 1, no, yen(v), f"いちばん安い{lo[0]} {lab(d)}", "", d) for i, (v, no, d) in enumerate(rows)]
-    body += sec(f"{lo[0]}が安い宿", f"{lo[0]}だけで、宿ごとにいちばん安い日。", ol(its), f"{lo[0]}は、土曜泊より中央値で{hi[1] - lo[1]:,.0f}円安くなっています。")
+    body += sec(f"{lo[0]}が安い宿", f"{lo[0]}だけで、宿ごとにいちばん安い日。", ol(its), f"{lo[0]}は、土曜泊より約{hi[1] - lo[1]:,.0f}円安い。")
 write("atami-youbi", page("atami-youbi", "atami", "atami-panorama.jpg", "熱海・曜日", "熱海の宿の曜日ごとの料金",
       "同じ熱海の宿でも、泊まる曜日で料金は変わる。この先半年の料金を、曜日ごとに比べました。", body, "期間はこの先の半年。"))
 made.append("atami-youbi")
@@ -659,7 +659,7 @@ mm = med_by_month(YNOS)
 body = ""
 if mm:
     lo = min(mm, key=lambda r: r[2]); hi = max(mm, key=lambda r: r[2])
-    body += sec("月ごとの料金", f"由布院の宿の、月ごとの神日の中央値。いちばん安いのは<b>{lo[1]}月</b>、いちばん高いのは<b>{hi[1]}月</b>。", bars([(f"{m}月", v, "") for y, m, v in mm]))
+    body += sec("月ごとの料金", f"由布院の宿の、月ごとの神日の料金|いちばん安い月：<b>{lo[1]}月</b>|いちばん高い月：<b>{hi[1]}月</b>", bars([(f"{m}月", v, "") for y, m, v in mm]))
     rows = []
     for no in YNOS:
         a, da = month_min(no, hi[0], hi[1]); b, db = month_min(no, lo[0], lo[1])
@@ -682,9 +682,9 @@ its = [item(i + 1, no, yen(k[1]), f"神日 {lab(k[0])}", (f"土曜泊の平均�
 q = ""
 if rows:
     q = (f"1位の{esc(H[rows[0][1]]['name'])}は、土曜と平日の差が{max(0, rows[0][0]):,.0f}円です。"
-         f"別府の{len(rows)}軒全体では、土曜は平日より平均{statistics.median(r[0] for r in rows):,.0f}円高くなっています（中央値）。")
+         f"別府の{len(rows)}軒では、土曜泊は平日より約{statistics.median(r[0] for r in rows):,.0f}円高い。")
 write("beppu-doyou", page("beppu-doyou", "beppu", "beppu-chinoike.jpg", "別府・土曜泊", "土曜泊でも料金が上がりにくい別府の宿",
-      "温泉地は、土曜が高いのがふつう|土日しか休めない人向けに、<b>土曜泊と日〜木泊の差が小さい順</b>",
+      "温泉地は、土曜泊が高くなりがち|土日しか休めない人向けに、<b>土曜泊と日〜木泊の差が小さい順</b>",
       sec("土曜の値上がりが小さい順", "土曜泊の平均と、日〜木泊の平均の差。", ol(its, 8), q), "期間はこの先の半年。"))
 made.append("beppu-doyou")
 
@@ -697,7 +697,7 @@ for no in area_nos("izukogen"):
 pet.sort(); body = ""
 if pet and other:
     mp, mo = statistics.median(v for v, _, _ in pet), statistics.median(v for v, _, _ in other)
-    body += sec("ペットと泊まれる宿と、ほかの宿の料金", f"伊豆高原の★4.3以上の宿|<b>ペット可の{len(pet)}軒</b>と、ほかの{len(other)}軒の神日の中央値",
+    body += sec("ペットと泊まれる宿と、ほかの宿の料金", f"伊豆高原の★4.3以上の宿|<b>ペット可の{len(pet)}軒</b>と、ほかの{len(other)}軒の神日の料金",
                 bars([("ペット可", mp, ""), ("それ以外", mo, "")]),
                 ("ほとんど変わりません。" if abs(mp - mo) / max(mp, mo) < 0.05 else (f"ペット可の宿のほうが{mp - mo:,.0f}円高くなっています。" if mp > mo else f"ペット可の宿のほうが{mo - mp:,.0f}円安くなっています。")))
 its = [item(i + 1, no, yen(v), f"神日 {lab(d)}", "ペットと泊まれる", d) for i, (v, no, d) in enumerate(pet)]
@@ -719,8 +719,8 @@ rows.sort(key=lambda r: -r[0])
 its = [item(i + 1, no, yen(v), f"神日 {lab(d)}", f"ふだんの料金（{yen(med)}）より <b>{p * 100:.0f}%安い</b>", d) for i, (p, no, med, d, v) in enumerate(rows)]
 write("karuizawa-luxury", page("karuizawa-luxury", "karuizawa", "karuizawa-kumoba-pond.jpg", "軽井沢・高級ホテル", "軽井沢の高級ホテルが安くなる日",
       "ふだんは2人で6万円を超える軽井沢のホテル・旅館。その宿がいちばん下がる日と、いつもとの差を並べました。",
-      sec("いつもより下がる順", f"この先半年の料金の中央値が6万円以上の宿{len(rows)}軒。", ol(its),
-          f"1位の{esc(H[rows[0][1]]['name'])}は、神日ならいつもより{rows[0][0] * 100:.0f}%安くなります。" if rows else ""), "「いつも」＝この先半年の料金の中央値。"))
+      sec("ふだんより安くなる順", f"ふだんの料金が6万円以上の宿{len(rows)}軒|神日に安くなる割合が大きい順", ol(its),
+          f"1位の{esc(H[rows[0][1]]['name'])}は、神日なら、ふだんより{rows[0][0] * 100:.0f}%安い。" if rows else ""), "ふだんの料金＝この先半年の料金の、真ん中の値（中央値）。"))
 made.append("karuizawa-luxury")
 
 # 25. 城崎・かにの季節は、いくら高い？
@@ -729,7 +729,7 @@ mm = med_by_month(KNOS)
 body = ""
 if mm:
     lo = min(mm, key=lambda r: r[2]); hi = max(mm, key=lambda r: r[2])
-    body += sec("月ごとの料金", f"城崎の宿の、月ごとの神日の中央値。いちばん高いのは<b>{hi[1]}月</b>、いちばん安いのは<b>{lo[1]}月</b>。", bars([(f"{m}月", v, "") for y, m, v in mm]))
+    body += sec("月ごとの料金", f"城崎の宿の、月ごとの神日の料金|いちばん安い月：<b>{lo[1]}月</b>|いちばん高い月：<b>{hi[1]}月</b>", bars([(f"{m}月", v, "") for y, m, v in mm]))
 rows = []
 for no in KNOS:
     k = [(d, v) for d, v in nights(no) if d.month in (11, 12, 1, 2, 3)]
@@ -773,10 +773,10 @@ def hc_page(slug, keys, place, img, h1, lead, quip_tail, place_href=None):
     b = is_b(keys[0])
     its = [item(i + 1, no, yen(k[1]), f"神日 {lab(k[0])}", f"ふだんの料金（{yen(u)}）より <b>{u - k[1]:,}円安い</b>", k[0]) for i, (p, no, u, k) in enumerate(rows)]
     th = HC_MIN[1 if b else 2] // 10000
-    q = (f"1位の{esc(H[rows[0][1]]['name'])}は、神日ならいつもより{rows[0][0] * 100:.0f}%安くなります。" if rows else "")
-    body = sec("いつもより下がる順", f"ふだんの料金（この先半年の中央値）が2名{th}万円以上の宿{len(rows)}軒。神日にどれだけ下がるか。", ol(its, 8), q)
+    q = (f"1位の{esc(H[rows[0][1]]['name'])}は、神日なら、ふだんより{rows[0][0] * 100:.0f}%安い。" if rows else "")
+    body = sec("ふだんより安くなる順", f"ふだんの料金が2名{th}万円以上の宿{len(rows)}軒|神日に安くなる割合が大きい順", ol(its, 8), q)
     write(slug, page(slug, keys[0], img, place + "・ハイクラス", h1, lead, body,
-                     f"ハイクラス＝この先半年の料金の中央値が2名{th}万円以上の宿（{'1泊朝食付き' if b else '1泊2食付き'}）。「いつも」＝その中央値。",
+                     f"ハイクラス＝ふだんの料金（この先半年の真ん中の値）が2名{th}万円以上の宿（{'1泊朝食付き' if b else '1泊2食付き'}）。ふだんの料金＝その真ん中の値。",
                      place=place, place_href=place_href))
     made.append(slug)
 
@@ -791,7 +791,7 @@ hc_page("hc-okinawa", ["onna", "naha", "chatan", "miyako", "ishigaki", "nanbu"],
         "ふだんは2名6万円を超える沖縄のリゾート・ホテル（朝食付き）。いちばん下がる日と、いつもとの差を並べました。", "海の見える部屋は、日を選んで。", place_href="areas/onna/")
 # 憧れの宿：全国の食事付きのハイクラス宿
 hc_page("akogare", [a for a in sorted({h["area"] for h in H.values()}) if not is_b(a)], "全国", "hakone-fuji-ship.jpg", "全国のハイクラスの宿が安くなる日",
-        "全国の★4.3以上で、ふだんは2名9万円を超える食事付きの宿。神日にいつもよりどれだけ下がるかの大きい順に並べました。", "日を選ぶだけで、いつもの憧れが現実になる。", place_href="ranking/")
+        "全国の★4.3以上・食事付きで、ふだん2名9万円を超える宿|神日に安くなる割合が大きい順", "日を選ぶだけで、いつもの憧れが現実になる。", place_href="ranking/")
 
 # ---- 空きが出にくい人気宿、いま空いている日（空きの少なさは毎日の料金データから。空きが増えたら自動で外れる）
 from common import open_days
@@ -866,10 +866,10 @@ for _a, _t in AF.AUTO:
     if _t == "youbi":
         wr, lo, hi = _r["wr"], _r["lo"], _r["hi"]; pct = _r["gap"] * 100; gy = _r["yen"]
         _lead = (f"{_nm}の★4.3以上{_n}軒|いちばん安いのは<b>{WD[lo]}曜泊</b>|"
-                 f"{WD[hi]}曜泊より<b>{gy:,.0f}円（{pct:.0f}%）安い</b>（中央値）")
+                 f"{WD[hi]}曜泊より<b>約{gy:,.0f}円（{pct:.0f}%）安い</b>")
         _title = f"{_nm}の曜日ごとの料金・安い曜日｜★4.3以上{_n}軒の曜日別の料金｜YASUMIBI"
         _desc = (f"{_nm}の★4.3以上・{_pl}の宿{_n}軒を泊まる曜日ごとに比べると、いちばん安いのは{WD[lo]}曜泊で、"
-                 f"{WD[hi]}曜泊より中央値で{gy:,.0f}円（{pct:.0f}%）安い。{WD[lo]}曜日のいちばん安い日を宿ごとに毎日更新。")
+                 f"{WD[hi]}曜泊より約{gy:,.0f}円（{pct:.0f}%）安い。{WD[lo]}曜日のいちばん安い日を宿ごとに毎日更新。")
         rows = []
         for no in AF.area_nos(_a):
             ns = [x for x in nights(no) if x[0].weekday() == lo]
@@ -879,7 +879,7 @@ for _a, _t in AF.AUTO:
         rows.sort()
         its = [item(i + 1, no, yen(v), f"いちばん安い{WD[lo]}曜泊 {lab(d)}", (f"この宿の土曜泊の平均より <b>{sm - v:,.0f}円安い</b>" if sm > v else ""), d)
                for i, (v, no, d, sm) in enumerate(rows)]
-        _body = sec("曜日ごとの料金", f"{_nm}の宿の、泊まる曜日ごとの料金の中央値（2名{plan_s(_a)}）。",
+        _body = sec("曜日ごとの料金", f"{_nm}の宿の、曜日ごとの料金（2名{plan_s(_a)}）",
                     bars([(f"{WD[w]}曜泊", wr[w], "") for w in (6, 0, 1, 2, 3, 4, 5)]))
         _body += sec(f"{WD[lo]}曜泊が安い宿", f"{WD[lo]}曜泊だけで、宿ごとにいちばん安い日。", ol(its, 8))
     elif _t == "5man":
@@ -894,27 +894,27 @@ for _a, _t in AF.AUTO:
     elif _t == "2haku":
         rows = _r["rows"]; b0 = rows[0]; pct = _r["med"] * 100
         _lead = (f"{_nm}の★4.3以上の宿{len(rows)}軒|"
-                 f"いちばん安い2泊は、金・土の2泊より<b>{_r['yen']:,.0f}円（{pct:.0f}%）安い</b>（中央値）|"
+                 f"いちばん安い2泊は、金・土の2泊より<b>約{_r['yen']:,.0f}円（{pct:.0f}%）安い</b>|"
                  f"最安：{esc(H[b0[1]]['name'])}の{lab(b0[2])}から2泊・<b>{yen(b0[0])}</b>（2名・2泊の合計）")
         _title = f"{_nm}、2泊するならこの2日｜金土より{pct:.0f}%安い2泊を宿ごとに｜YASUMIBI"
         _desc = (f"{_nm}の★4.3以上・{_pl}の宿{len(rows)}軒で、2泊の合計がいちばん安くなる2日を宿ごとに。"
-                 f"金・土の2泊より中央値で{_r['yen']:,.0f}円（{pct:.0f}%）安い。毎日更新。")
+                 f"金・土の2泊より約{_r['yen']:,.0f}円（{pct:.0f}%）安い。毎日更新。")
         its = [item(i + 1, no, yen(t), f"{lab(d)}〜2泊（2名合計）", (f"金・土の2泊より <b>{f - t:,.0f}円安い</b>" if f > t else ""), d, 2)
                for i, (t, no, d, f) in enumerate(rows)]
         _body = sec("2泊の合計が安い順", "続けて2泊できる日だけで計算しています。", ol(its, 8))
-        _note += "2泊とも同じ最安プランで計算した目安（連泊プランで変わることがあります）。金・土の2泊＝金曜から2泊の合計の中央値（この先半年）。"
+        _note += "2泊とも同じ最安プランで計算した目安（連泊プランで変わることがあります）。金・土の2泊＝金曜から2泊の合計の真ん中の値（この先半年）。"
     elif _t == "doyou":
         rows = _r["rows"]; med = _r["med"] * 100
-        _lead = (f"{_nm}の★4.3以上の宿は、土曜泊がふつう<b>{med:.0f}%高い</b>（日〜木泊と比べた中央値）|"
-                 f"土曜でも上がり幅が10%以内の宿：<b>{len(rows)}軒</b>")
+        _lead = (f"{_nm}の宿の土曜泊は、日〜木泊より<b>約{med:.0f}%高い</b>|"
+                 f"土曜でも10%以内しか上がらない宿：<b>{len(rows)}軒</b>")
         _title = f"土曜でも安い、{_nm}の宿｜土曜の値上がり10%以内の{len(rows)}軒｜YASUMIBI"
-        _desc = (f"{_nm}の★4.3以上・{_pl}の宿は土曜にふつう{med:.0f}%上がる。そのなかで土曜の値上がりが10%以内の{len(rows)}軒と、"
+        _desc = (f"{_nm}の★4.3以上・{_pl}の宿の土曜泊は、日〜木泊より約{med:.0f}%高い。土曜でも10%以内しか上がらない{len(rows)}軒と、"
                  f"いちばん安い土曜を毎日更新。土日しか休めない人へ。")
         def _up(u): r = round(u * 100); return f"+{r}%" if r > 0 else (f"−{-r}%" if r < 0 else "±0%")
         its = [item(i + 1, no, yen(v), f"いちばん安い土曜 {lab(d)}", (f"土曜泊の平均は、日〜木泊の平均より{round(up * 100)}%高い" if round(up * 100) > 0 else "土曜泊も、日〜木泊とほぼ同じ料金"), d)
                for i, (up, no, sm, wm, d, v) in enumerate(rows)]
-        _body = sec("土曜でも値上がりが小さい宿", f"{_nm}で料金のある{_r['all']}軒のうち|土曜泊の平均が、日〜木泊の<b>1.1倍以内</b>の宿|並びは、いちばん安い土曜の料金が安い順", ol(its, 8))
-        _note += "値上がり＝土曜泊の平均÷日〜木泊の平均。"
+        _body = sec("土曜でも値上がりが小さい宿", f"{_nm}で料金のある{_r['all']}軒のうち|土曜泊が、日〜木泊より<b>10%以内</b>しか高くない宿|並びは、いちばん安い土曜の料金が安い順", ol(its, 8))
+        _note += "上がる割合＝土曜泊の平均÷日〜木泊の平均。"
     write(_sl, page(_sl, _a, AF.IMG[_a], _eb, _h1, _lead, _body + af_related(_a, _sl), _note, title=_title, desc=_desc))
     made.append(_sl)
 
