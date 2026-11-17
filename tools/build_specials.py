@@ -193,7 +193,7 @@ its = [item(i + 1, no, yen(v), f"いちばん安い日 {lab(d)}", f"5万円台�
 q = f"1位の{esc(H[rows[0][2]]['name'])}は★{rows[0][0]:.2f}です。" if rows else ""
 write("hakone-5man", page("hakone-5man", "hakone", "hakone-fuji-ship.jpg", "箱根・2人で5万円",
       "2人で5万円前後の箱根の宿（★の高い順）", "予算は2人で4〜5.5万円に固定。その中で、口コミの★がいちばん高い宿から並べました。",
-      sec("★の高い順", "この先の半年で、2人4〜5.5万円の日がある宿だけ。", ol(its), q), "期間はこの先の半年。"))
+      sec("口コミ★が高い順", "この先の半年で、2人4〜5.5万円の日がある宿だけ。", ol(its), q), "期間はこの先の半年。"))
 made.append("hakone-5man")
 
 # 2. 箱根・10万円の宿が、手の届く日
@@ -250,7 +250,7 @@ rows.sort(key=lambda r: -r[0])
 its = [item(i + 1, no, yen(v), f"{KM}月の神日 {lab(d)}", "宿の紹介文に、海の眺めあり", d) for i, (a, no, d, v) in enumerate(rows)]
 write("atami-10man", page("atami-10man", "atami", "atami-panorama.jpg", "熱海・海が見える宿", "熱海の海が見える宿の神日",
       f"宿の紹介文や設備に「オーシャンビュー」「相模湾一望」などの言葉がある宿だけ。★の高い順に、{KM}月の神日を並べました。",
-      sec("★の高い順", "特別な一泊こそ、安い日に。", ol(its, 6), f"{len(rows)}軒とも、海の見える宿です。" if rows else ""),
+      sec("口コミ★が高い順", "特別な一泊こそ、安い日に。", ol(its, 6), f"{len(rows)}軒とも、海の見える宿です。" if rows else ""),
       "「海が見える」は楽天トラベルの宿の紹介文・設備情報をもとにしています。部屋によって眺めは異なります。"))
 made.append("atami-10man")
 
@@ -315,7 +315,7 @@ rows.sort()
 its = [item(i + 1, no, f"1人 {yen(v // 2)}", f"{lab(d)}泊（2名で{yen(v)}）", f"1人2万円未満の日 {k}日", d) for i, (v, no, d, k) in enumerate(rows)]
 write("beppu-1man", page("beppu-1man", "beppu", "beppu-chinoike.jpg", "別府・1人1万円台", "1人1万円台で泊まれる別府の宿",
       "★4.3以上で、2食付き。それでも1人2万円を切る日がある宿を、安い順に並べました。",
-      sec("1人あたりが安い順", f"{len(rows)}軒が、1人1万円台の日あり。", ol(its, 8)), "1人あたり＝2名合計÷2。"))
+      sec("1人あたりの料金が安い順", f"{len(rows)}軒が、1人1万円台の日あり。", ol(its, 8)), "1人あたり＝2名合計÷2。"))
 made.append("beppu-1man")
 
 # 8. 鬼怒川・鬼怒川の宿、平日でいちばん安い日
@@ -476,7 +476,7 @@ rows.sort()
 its = [item(i + 1, no, f"1人 {yen(v // 2)}", f"{lab(d)}泊（2名で{yen(v)}）", f"1人2万円未満の日 {k}日", d) for i, (v, no, d, k) in enumerate(rows)]
 write("kyoto-46", page("kyoto-46", "kyoto", "kyoto-inari.jpg", "京都・★4.6以上", "1人1万円台で泊まれる、京都の★4.6以上の宿",
       "口コミ★4.6以上は、京都でもひと握り。その中で、1人2万円を切る日がある宿を安い順に並べました。",
-      sec("1人あたりが安い順", f"{len(rows)}軒に、1人1万円台の日があります。", ol(its, 8), f"★4.6以上は、京都の★4.3以上の宿{len(KYO)}軒のうち{sum(1 for no in KYO if H[no]['avg'] >= 4.6)}軒です。" if rows else ""),
+      sec("1人あたりの料金が安い順", f"{len(rows)}軒に、1人1万円台の日があります。", ol(its, 8), f"★4.6以上は、京都の★4.3以上の宿{len(KYO)}軒のうち{sum(1 for no in KYO if H[no]['avg'] >= 4.6)}軒です。" if rows else ""),
       "1人あたり＝2名合計÷2。"))
 made.append("kyoto-46")
 
@@ -569,7 +569,7 @@ rows.sort()
 its = [item(i + 1, no, f"1人 {yen(v // 2)}", f"{lab(d)}泊（2名で{yen(v)}）", f"1人7千円以下の日 {k}日", d) for i, (v, no, d, k) in enumerate(rows)]
 write("sapporo-1man", page("sapporo-1man", "sapporo", "sapporo-odori-blue.jpg", "札幌・1人7千円以下", "1人7千円以下で泊まれる札幌の宿",
       f"★4.3以上・朝食付き|<b>1人7千円（2人で1万4千円）以下</b>の日がある宿|札幌の{len(SP)}軒のうち<b>{len(rows)}軒</b>（安い順）",
-      sec("1人あたりが安い順", f"{len(rows)}軒に、1人7千円以下の日があります。", ol(its, 8)),
+      sec("1人あたりの料金が安い順", f"{len(rows)}軒に、1人7千円以下の日があります。", ol(its, 8)),
       "1人あたり＝2名合計÷2。"))
 made.append("sapporo-1man")
 
@@ -753,7 +753,7 @@ rows.sort()
 its = [item(i + 1, no, f"1人 {yen(v // 2)}", f"{lab(d)}泊（2名で{yen(v)}）", f"1人2万円未満の日 {k}日", d) for i, (v, no, d, k) in enumerate(rows)]
 write("ito-1man", page("ito-1man", "ito", "ito-okawa-river-day.jpg", "伊東・1人1万円台", "1人1万円台で泊まれる伊東の宿",
       "★4.3以上で、2食付き。それでも1人2万円を切る日がある伊東の宿を、安い順に並べました。",
-      sec("1人あたりが安い順", f"伊東の★4.3以上の宿{len(area_nos('ito'))}軒のうち{len(rows)}軒に、1人1万円台の日があります。", ol(its, 8)), "1人あたり＝2名合計÷2。"))
+      sec("1人あたりの料金が安い順", f"伊東の★4.3以上の宿{len(area_nos('ito'))}軒のうち{len(rows)}軒に、1人1万円台の日があります。", ol(its, 8)), "1人あたり＝2名合計÷2。"))
 made.append("ito-1man")
 
 # ---- ハイクラスの宿が、下がる日（エリア別・憧れの宿）
@@ -890,7 +890,7 @@ for _a, _t in AF.AUTO:
         _desc = (f"{_nm}の★4.3以上・{_pl}の宿のうち、2名4〜5.5万円の日がある{len(rows)}軒を口コミの★が高い順に。"
                  f"1位は★{a0[0]:.2f}。5万円台で泊まれる日と、いちばん安い日を毎日更新。")
         its = [item(i + 1, no, yen(v), f"いちばん安い日 {lab(d)}", f"5万円台で泊まれる日 {k}日", d) for i, (a, c, no, d, v, k) in enumerate(rows)]
-        _body = sec("★の高い順", f"この先の半年で、2名4〜5.5万円の日がある宿だけ。★は{rows[-1][0]:.2f}〜{a0[0]:.2f}。", ol(its, 8))
+        _body = sec("口コミ★が高い順", f"この先の半年で、2名4〜5.5万円の日がある宿だけ。★は{rows[-1][0]:.2f}〜{a0[0]:.2f}。", ol(its, 8))
     elif _t == "2haku":
         rows = _r["rows"]; b0 = rows[0]; pct = _r["med"] * 100
         _lead = (f"{_nm}の★4.3以上の宿{len(rows)}軒|"

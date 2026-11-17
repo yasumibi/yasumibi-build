@@ -296,7 +296,7 @@ for meta in AREA["hotels"]:
             f'<dl class="kv">{"".join(f"<dt>{k}</dt><dd>{v}</dd>" for k, v in _rows)}</dl>'
             f'<small>2名{PS}・税込。{fa_range(meta["area"], PRH.get(str(meta["no"]), {}).keys())}（楽天トラベル）。<a class="fa-l" href="{base}{PRICE_NOTE}">料金について</a></small></section>') if _rows else ""
     _ht = pages_for_hotel(meta["no"])   # この宿があてはまる「エリア×こだわり」のページへ
-    _tags_html = ('<div class="htags"><h3>' + esc(H['area']) + 'で、同じこだわりの宿</h3><ul>'
+    _tags_html = ('<div class="htags"><h3>' + esc(H['area']) + 'で、同じ特徴の宿を探す</h3><ul>'
                   + "".join(f'<li><a href="{base}tags/{s}/{meta["area"]}/">{esc(n)}<small>{c}軒</small></a></li>' for s, n, q, c in _ht) + "</ul></div>") if _ht else ""
     _wh = IMG_WH.get(info.get("img", ""))
     hero_wh = f' width="{_wh[0]}" height="{_wh[1]}"' if _wh else ""
@@ -350,13 +350,13 @@ for meta in AREA["hotels"]:
       </section>
 
       <section class="blk alt" aria-labelledby="alth" id="alt" hidden>
-        <div class="sh"><h2 id="alth">同じ日に安い、近くの宿</h2><span class="j" id="alt-j"></span></div>
+        <div class="sh"><h2 id="alth">この日、この宿より安い近くの宿</h2><span class="j" id="alt-j"></span></div>
         <ul class="peers" id="alt-list"></ul>
         <p class="note" id="alt-note"></p>
       </section>
 
       <section class="blk" aria-labelledby="rgh">
-        <div class="sh"><h2 id="rgh">料金の幅</h2><span class="j" id="rg-month"></span></div>
+        <div class="sh"><h2 id="rgh">この月の、安い日と高い日</h2><span class="j" id="rg-month"></span></div>
         <div class="range" id="range"></div>
       </section>
 
@@ -370,7 +370,7 @@ for meta in AREA["hotels"]:
       </section>
 
       <section class="blk" aria-labelledby="prh">
-        <div class="sh"><h2 id="prh">近くの宿の神日</h2><span class="j">{H['area']}・同じ価格帯の宿（{KY}年{KM}月）</span></div>
+        <div class="sh"><h2 id="prh">近くの宿の、いちばん安い日</h2><span class="j">{H['area']}・同じ価格帯の宿（{KY}年{KM}月）</span></div>
         <ul class="peers">{peer_html}</ul>
       </section>
 
