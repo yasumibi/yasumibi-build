@@ -94,7 +94,6 @@ def _old_footer(base):
     return f"""<div class="wrap">
 <footer class="site">
   <nav aria-label="サイト情報"><a href="{base}about/">YASUMIBIについて</a><a href="{base}about/#operator">運営者情報</a><a href="{base}privacy/">プライバシーポリシー</a><a href="{base}disclosure/">広告の掲載について</a></nav>
-  <nav aria-label="SNS" class="sns"><a href="https://www.instagram.com/yasumibi.travel/" target="_blank" rel="noopener">Instagram</a><a href="https://www.tiktok.com/@yasumibi.travel" target="_blank" rel="noopener">TikTok</a></nav>
   <div>本サイトは楽天アフィリエイトを利用しています。掲載している料金は調べた時点のもので、予約時の料金と異なる場合があります。</div>
   <div><a href="https://webservice.rakuten.co.jp/" target="_blank" rel="noopener">Supported by Rakuten Developers</a>　© YASUMIBI</div>
 </footer>
@@ -306,7 +305,7 @@ prose = {
 <h2>用語</h2>
 <dl><dt>神日（かみび）</dt><dd>その宿の、その月の最安値の日</dd><dt>料金</dt><dd>{COND_PLAN}の2名合計（税込）</dd></dl>
 <h2 id="operator">運営者情報</h2>
-<dl><dt>サイト名</dt><dd>YASUMIBI</dd><dt>運営者</dt><dd>{esc(OP_NAME)}</dd><dt>お問い合わせ</dt><dd>{esc(OP_MAIL)}</dd><dt>SNS</dt><dd><a href="https://www.instagram.com/yasumibi.travel/" target="_blank" rel="noopener">Instagram @yasumibi.travel</a><br><a href="https://www.tiktok.com/@yasumibi.travel" target="_blank" rel="noopener">TikTok @yasumibi.travel</a></dd></dl>
+<dl><dt>サイト名</dt><dd>YASUMIBI</dd><dt>運営者</dt><dd>{esc(OP_NAME)}</dd><dt>お問い合わせ</dt><dd>{esc(OP_MAIL)}</dd></dl>
 """),
 "privacy": ("プライバシーポリシー", "ポリシー", """
 <h1>プライバシーポリシー</h1>
