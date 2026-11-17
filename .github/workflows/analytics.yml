@@ -52,6 +52,7 @@ jobs:
           print(f"::notice title=Cloudflare::{list(d['cloudflare'])} totals={d['cloudflare'].get('totals')} sites={d['cloudflare'].get('sites')}")
           sc = d.get('search_console') or {}; print(f"::notice title=Search Console::site={sc.get('site')} totals={sc.get('totals')} 途中の日={sc.get('provisional_days')}")
           print(f"::notice title=表示があったページ::{sc.get('pages_with_impressions')} queries={len(sc.get('queries') or [])} pages={len(sc.get('pages') or [])}")
+          pk = d.get('pack_check') or {}; print(f"::{'notice' if pk.get('ok') else 'warning'} title=楽パックのリンク::{'開けています' if pk.get('ok') else '形が変わった可能性があります'} {pk.get('hotels')}")
           g = d['ga4']; lb = g.get('landing_by_source') or {}
           print(f"::notice title=流入元×着地::{ {k: v[:3] for k, v in list(lb.items())[:4]} }")
           print(f"::notice title=流入元×楽天・カード::{(g.get('events_by_source') or [])[:12]}")

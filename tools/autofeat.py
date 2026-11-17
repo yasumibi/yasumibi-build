@@ -165,7 +165,7 @@ FEATURE_CARDS = [
     ("features/yufuin-month/", "由布院の宿がいちばん安い月", "由布院・月ごとの神日", "yufuin-kinrinko.jpg"),
     ("features/beppu-doyou/", "土曜泊でも料金が上がりにくい別府の宿", "別府・土曜泊", "beppu-chinoike.jpg"),
     ("features/izukogen-pet/", "ペットと泊まれる伊豆高原の宿の神日", "伊豆高原・ペット同宿可", "izukogen-jogasaki.jpg"),
-    ("features/karuizawa-luxury/", "軽井沢の高級ホテルが安くなる日", "軽井沢・いつもより下がる順", "karuizawa-kumoba-pond.jpg"),
+    ("features/karuizawa-luxury/", "軽井沢の高級ホテルが安くなる日", "軽井沢・ふだんより安くなる順", "karuizawa-kumoba-pond.jpg"),
     ("features/kinosaki-kani/", "かにの季節（11〜3月）に城崎の宿が安い日", "城崎・11〜3月", "kinosaki-willow-day.jpg"),
     ("features/ito-1man/", "1人1万円台で泊まれる伊東の宿", "伊東・2食付きで1人2万円未満", "ito-okawa-river-day.jpg"),
     ("features/aki-rare/", "空きが出にくい人気宿の、空いている日", "全国・空きの少ない人気宿", "kusatsu-yubatake-night.jpg"),

@@ -236,7 +236,7 @@ for a in AREAS:
     if _af.get("best"):
         _b = _af["best"]; _d = _b["d"]
         _rows.append(("いちばん安い日", f'{_d.month}/{_d.day}({WD_JA[_d.weekday()]})泊・{_yen(_b["v"])}（{_b["name"]}）'))
-    _tbl = ('<dl class="asum">' + "".join(f"<dt>{esc(k)}</dt><dd>{esc(v)}</dd>" for k, v in _rows) + "</dl>") if len(_rows) >= 3 else f'<p>{"".join(esc(t) for t in _as)}</p>'
+    _tbl = ('<dl class="asum">' + "".join(f"<dt>{esc(k)}</dt><dd>{esc(v)}</dd>" for k, v in _rows) + "</dl>") if len(_rows) >= 3 else ('<ul class="cond">' + "".join(f"<li>{esc(t.rstrip('。'))}</li>" for t in _as) + "</ul>")
     _sum = (f'<section class="hsum" aria-labelledby="asum-h"><h2 id="asum-h">{esc(alab)}の安い時期のまとめ</h2>{_tbl}'
             f'<small>{TODAY.month}/{TODAY.day}時点の楽天トラベルの料金（★4.3以上の{len(nos)}軒・2名{plan_s(a['key'])}・税込）から。差は宿ごとの料金の中央値です。毎日更新します。</small></section>') if _as else ""
     body = _sum + L.list_section(a["key"], base)

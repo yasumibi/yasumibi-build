@@ -310,9 +310,9 @@ def camp_live():
 def camp_html():
     """キャンペーンの期限の文（assets/bsheet.js の campHtml と同じ文）。期限を過ぎたら入会特典の文に変わる。"""
     if not camp_live():
-        return f"はじめて楽天カードを作る方は、入会特典で<b>最大{CARD_BONUS:,}円分</b>のポイント（条件あり）"
+        return f"楽天カードの入会特典：<b>最大{CARD_BONUS:,}円分</b>のポイント（条件あり）"
     e = _dt.datetime.fromisoformat(CARD_CAMP["book_end"]).astimezone(JST)
-    return f"<b>{e.month}/{e.day} {e.hour}:{e.minute:02d}まで</b>の予約なら、楽天カードの事前決済でポイント<b>2.5倍</b>（エントリーが必要）"
+    return f"<b>{e.month}/{e.day} {e.hour}:{e.minute:02d}まで</b>の予約：楽天カードの事前決済でポイント<b>2.5倍</b>（要エントリー）"
 
 
 def card_extra(v, checkin):
@@ -520,6 +520,6 @@ def area_summary(area, label, nos, unit=""):
         out.append(f"{label}の宿が安い時期は、{'と'.join(f'{m}月' for m in f['lows'])}です。" + (f"高い{f['high']}月と比べると、宿ごとのいちばん安い日の料金が¥{f['mdiff']:,}ほど安くなります。" if f["mdiff"] >= 1000 else ""))
     if f.get("best"):
         b = f["best"]; d = b["d"]
-        out.append(f"この先半年でいちばん安いのは、{b['name']}の{d.month}/{d.day}({WD_JA[d.weekday()]})泊・¥{b['v']:,}{'（' + unit + '）' if unit else ''}です。")
+        out.append(f"いちばん安い日は、{b['name']}の{d.month}/{d.day}({WD_JA[d.weekday()]})泊・¥{b['v']:,}{'（' + unit + '）' if unit else ''}。")
     if f.get("sat", 0) >= 1000: out.append(f"土曜泊は、日〜木泊より¥{f['sat']:,}ほど高めです。")
     return out

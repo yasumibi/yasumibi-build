@@ -15,7 +15,7 @@ DATA = os.environ.get("YB_DATA", os.path.join(ROOT, "data"))
 JST = dt.timezone(dt.timedelta(hours=9))
 CF_SITE_TAG = os.environ.get("CF_SITE_TAG") or "0a93914d9d3d4e50838308c6548442f3"   # Cloudflare Web Analytics のサイト（yasumibi-site.pages.dev +2。秘密ではない）
 INTERNAL_FILTER_SINCE = dt.datetime(2026, 11, 16, 10, 31, tzinfo=dt.timezone(dt.timedelta(hours=9)))   # GA4 の内部トラフィックのフィルタを「有効」にした日時
-EVENTS = ["rakuten_travel", "rakuten_card", "other_card", "favorite_add", "search", "sheet_open", "card_holder", "card_entry"]
+EVENTS = ["rakuten_travel", "rakuten_pack", "rakuten_card", "other_card", "favorite_add", "search", "sheet_open", "card_holder", "card_entry"]
 
 # ---- 対象の週
 if len(sys.argv) > 1:
@@ -361,7 +361,28 @@ def search_console():
         except Exception as e:
             err("search_console.prev_week", e)
 
-for name, fn in (("ga4", ga4), ("cloudflare", cloudflare), ("ai_crawlers", ai_crawlers_save), ("search_console", search_console)):
+def pack_check():
+    """楽パック（航空券＋宿）のリンクが、まだ宿の検索結果を開くか（公式のAPIではなく画面の仕組みなので、形が変わったら気づけるように。2026/11/17）。
+    アフィリエイトで包まないURLを、宿2軒で開いてみる。HTTP 200 で、題名に「検索結果」、本文に宿名があればOK"""
+    import re as _re, urllib.request as _u
+    d = dt.date.today() + dt.timedelta(days=45); b = d + dt.timedelta(days=1)
+    res = []
+    for no, arr, name in ((29924, "OKA", "グランビュー沖縄"), (76941, "SPK", "JRタワーホテル日航札幌")):
+        ymd = lambda k, x: f"&{k}Yy={x.year}&{k}Mm={x.month}&{k}Dd={x.day}"
+        u = ("https://package.travel.rakuten.co.jp/anafrt/hotel/searchHotelExecute?fDptab=1&suOtona=2&suTomariHeya=1"
+             f"&noTomariHotel={no}" + ymd("dHatuToujyou", d) + ymd("dTyakuToujyou", b) + ymd("dCheckIn", d) + ymd("dCheckOut", b)
+             + f"&cdHatuKuukou=HND&cdTyakuKuukou={arr}&cdHatuKuukouHukuro={arr}&cdTyakuKuukouHukuro=HND")
+        try:
+            r = _u.urlopen(_u.Request(u, headers={"User-Agent": "Mozilla/5.0 (YASUMIBI link check)"}), timeout=30)
+            body = r.read().decode("utf-8", "replace"); t = (_re.search(r"<title>(.*?)</title>", body, _re.S) or [None, ""])[1]
+            ok = r.status == 200 and "検索結果" in t and name in body
+            res.append(dict(hotel=no, status=r.status, ok=ok, title=t.strip()[:60]))
+        except Exception as e:
+            res.append(dict(hotel=no, ok=False, error=str(e)[:120]))
+    out["pack_check"] = dict(ok=all(x["ok"] for x in res), hotels=res)
+
+
+for name, fn in (("ga4", ga4), ("cloudflare", cloudflare), ("ai_crawlers", ai_crawlers_save), ("search_console", search_console), ("pack_check", pack_check)):
     try: fn()
     except Exception as e: err(name, e)
 

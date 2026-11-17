@@ -125,7 +125,7 @@ page = f"""<!doctype html>
   <header class="rc-hero">
     <p class="eb">神日 × 楽天カード</p>
     <h1>神日と楽天カードで、<br>旅費を安くする方法</h1>
-    <p class="sub">例：{esc(SLUG[best['h']['no']][1])}（{esc(AREA_JA.get(best['h']['area'], ''))}）は、神日に泊まると土曜泊の平均より{best['save']:,}円安くなります（{KY}年{KM}月・2名{plan_s(best['h']['area'])}）。</p>
+    <p class="sub">例：{esc(SLUG[best['h']['no']][1])}（{esc(AREA_JA.get(best['h']['area'], ''))}）<br>神日に泊まると、土曜泊の平均より<b>{best['save']:,}円安い</b><br><small>{KY}年{KM}月・2名{plan_s(best['h']['area'])}</small></p>
     <ol class="steps3">
       <li><b>1</b><span>神日に<br>泊まる</span></li>
       <li><b>2</b><span>楽天カードで<br>払う</span></li>
@@ -146,11 +146,11 @@ page = f"""<!doctype html>
       <li class="hl"><span class="pl">楽天カード</span><span class="pb"><i style="width:{P10[1] / P10[2] * 100:.1f}%"></i></span><b>{P10[1]:,}pt</b></li>
       <li><span class="pl">プレミアム</span><span class="pb"><i style="width:100%"></i></span><b>{P10[2]:,}pt</b></li>
     </ul>
-    <p class="fine">通常分と特典分は税抜料金で、楽天カードの通常分はカードの利用額で計算した目安です。2.5倍・3.5倍は{CARD_CAMP["book_end_ja"]}までの予約・{CARD_CAMP["out_last_ja"]}チェックアウトまでの宿泊が対象です。</p>
+    <ul class="fine cond"><li>通常分・特典分：税抜料金で計算</li><li>楽天カードの通常分：カードの利用額で計算した目安</li><li>2.5倍・3.5倍の対象：{CARD_CAMP["book_end_ja"]}までの予約・{CARD_CAMP["out_last_ja"]}チェックアウトまでの宿泊</li></ul>
     <details class="more"><summary>2.5倍になる条件</summary>
       <ul class="notes">
-        <li>予約する前に、楽天トラベルのキャンペーンページでエントリー（予約したあとのエントリーは対象外）</li>
-        <li>予約のときに楽天カードで事前決済（現地払い・家族カード・予約後の支払い方法の変更は対象外）</li>
+        <li>予約の前に、キャンペーンページでエントリー（予約後は対象外）</li>
+        <li>予約のときに、楽天カードで事前決済（現地払い・家族カード・予約後の変更は対象外）</li>
         <li>国内の宿泊のみ（日帰り・デイユース・楽パック・海外は対象外）</li>
       </ul>
     </details>
@@ -166,7 +166,7 @@ page = f"""<!doctype html>
     <details class="more"><summary>もらえる条件</summary>
       <ul class="notes">
         <li>2,000pt：カードが届いたあと、楽天e-NAVIに初めて登録</li>
-        <li>3,000pt（期間限定ポイント）：申し込みの翌月末までに3回以上使い、引き落とし口座を設定</li>
+        <li>3,000pt（期間限定）：翌月末までに3回以上使い、引き落とし口座を設定</li>
         <li>楽天カードを持っている・持っていたことがある方は対象外</li>
       </ul>
     </details>
@@ -183,7 +183,7 @@ page = f"""<!doctype html>
           <tr><th>海外旅行傷害保険<small>最高額・利用条件あり</small></th><td class="n">2,000万円</td><td class="n">5,000万円</td></tr>
         </tbody>
       </table></div>
-      <p class="fine">年会費の元が取れる目安は、楽天トラベルのポイント差だけで計算したものです（プレミアムは楽天カードより＋1%）。</p>
+      <ul class="fine cond"><li>元が取れる目安：楽天トラベルのポイント差だけで計算</li><li>プレミアムは、楽天カードより＋1%</li></ul>
     </details>
   </section>
 
@@ -193,7 +193,7 @@ page = f"""<!doctype html>
     <ul class="notes small">
       <li>申し込みには審査があります。事前決済はカード払いに対応したプランで使えます。</li>
       <li>ポイント倍率・特典は時期によって変わります。{CHECKED}時点で楽天カードの公式ページを確認した内容です。</li>
-      <li>試算は{ASOF}時点の楽天トラベルの料金。土曜泊の平均は年末年始を除きます。ポイントは1ポイント＝1円分として表示しています（宿代から引いた金額ではありません）。</li>
+      <li>試算は{ASOF}時点の楽天トラベルの料金。土曜泊の平均は年末年始を除きます</li><li>ポイントは1ポイント＝1円分で表示（宿代から引いた金額ではありません）</li>
     </ul>
   </section>
 </main>

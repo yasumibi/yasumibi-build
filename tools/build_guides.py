@@ -264,15 +264,15 @@ def build_2027():
     tbl = "".join(f'<tr><td>{d.month}月{d.day}日（{WD[d.weekday()]}）</td><td>{esc(n)}</td></tr>' for d, n in hs)
     secs = "".join(ev_section(e, base, i) for i, e in enumerate(evs))
     body = f"""<header class="ok-hd"><h1>2027年の連休カレンダー</h1>
-  <p>2027年の祝日は<b>{len(hs)}日</b>。そのままで3連休以上になるのは<b>{len(three)}回</b>。有給を1日足すと4連休以上になるチャンスが<b>{len(plus1)}回</b>あり、有給1日でいちばん長くなるのは{esc(nick(longest['opts'][0][0], longest['opts'][0][1]))}の<b>{ln1}連休</b>。連休ごとに、いちばん安く泊まれる夜も出しています。</p></header>
+  <ul class="ld"><li>祝日：<b>{len(hs)}日</b></li><li>そのままで3連休以上：<b>{len(three)}回</b></li><li>有給1日で4連休以上：<b>{len(plus1)}回</b></li><li>有給1日でいちばん長い連休：{esc(nick(longest['opts'][0][0], longest['opts'][0][1]))}の<b>{ln1}連休</b></li></ul></header>
 <section class="rsec"><h2>2027年のカレンダー</h2>
   <p class="mc-lg"><span class="hd">祝日</span><span class="pl">有給をおすすめする日</span></p>
   <div class="mcs">{cal}</div>
 </section>
-<section class="rsec"><h2>連休と、有給の足し方</h2><p class="rlead">休む日（黄色）を足すと、連休がここまで伸びます。料金が出ている連休は、★4.3以上の宿でいちばん安い夜も並べました。</p></section>
+<section class="rsec"><h2>連休と、有給の足し方</h2><ul class="rlead ls"><li>休む日（黄色）を足すと、連休がここまで伸びます</li><li>料金が出ている連休は、いちばん安い夜も出しています</li></ul></section>
 {secs}
 <section class="rsec"><h2>2027年の祝日一覧（{len(hs)}日）</h2><table class="gd-t"><tbody>{tbl}</tbody></table>
-  <p class="rnote2">内閣府「国民の祝日について」の令和9年の一覧と同じ日付です。お盆休み・年末年始は会社によって違うため、年末年始は12/29〜1/3を休みとして計算しています。</p></section>
+  <ul class="rnote2 cond"><li>内閣府「国民の祝日について」（令和9年）と同じ日付です</li><li>年末年始は、12/29〜1/3を休みとして計算しています</li></ul></section>
 <p class="gd-next"><a href="{base}renkyu/">この先半年の、有給1日でつくれる連休を見る →</a></p>
 <p class="fine">※★4.3以上＝楽天トラベルの口コミ評価4.3以上（口コミ50件以上。ハイクラスの宿は20件以上・★4.6以上）の宿。大人2名・1室・1泊2食付きの最安プラン（2名合計・税込）。料金は楽天トラベルの{esc(ASOF)}時点のもので、毎日更新しています。宿の料金は、今月から6か月先の分まで出しています。宿の写真：楽天トラベル</p>"""
     t = "2027年の連休カレンダー｜祝日一覧と、有給で何連休になるか｜YASUMIBI"
@@ -337,18 +337,18 @@ def build_otoku_days():
 </section>
 <section class="rsec od-steps"><h2>3つの重ね方</h2>
   <ol class="od-s">
-    <li><span class="n">01</span><div><h3>泊まる日は、神日で決める</h3><p>同じ宿でも、日によって2名1泊で数万円ちがいます。まずはYASUMIBIで、その宿がいちばん安い日（神日）を見つけます。</p><a class="od-a" href="{base}">神日を探す →</a></div></li>
-    <li><span class="n">02</span><div><h3>予約は、5と0のつく日に</h3><p>毎月5・10・15・20・25・30日は、楽天トラベルで使える割引クーポンが出る日です。クーポンを取ってから予約します。クーポンの内容や対象の宿泊日は、回ごとに変わります。</p><a class="od-a" href="{esc(aff(FIVE0))}" target="_blank" rel="noopener sponsored">5と0のつく日のクーポンを見る →</a></div></li>
-    <li><span class="n">03</span><div><h3>払うのは、楽天カードで事前決済</h3><p>楽天カードで事前にオンライン決済すると、ポイントは通常2倍。{'予約の前にキャンペーンにエントリーすると2.5倍になります（国内宿泊・' + CARD_CAMP['book_end_ja'] + 'までの予約）。' if camp_live() else ''}</p><a class="od-a" href="{base}cards/">旅行に使うカードを比べる →</a></div></li>
+    <li><span class="n">01</span><div><h3>泊まる日は、神日で決める</h3><p>同じ宿でも、日によって数万円ちがいます。まず、いちばん安い日（神日）を見つけます。</p><a class="od-a" href="{base}">神日を探す →</a></div></li>
+    <li><span class="n">02</span><div><h3>予約は、5と0のつく日に</h3><ul class="cond"><li>毎月5・10・15・20・25・30日に、割引クーポンが出ます</li><li>クーポンを取ってから予約します</li><li>内容・対象の宿泊日は、回ごとに変わります</li></ul><a class="od-a" href="{esc(aff(FIVE0))}" target="_blank" rel="noopener sponsored">5と0のつく日のクーポンを見る →</a></div></li>
+    <li><span class="n">03</span><div><h3>払うのは、楽天カードで事前決済</h3><ul class="cond"><li>楽天カードで事前決済：ポイント2倍</li>{'<li>予約前にエントリー：2.5倍（国内宿泊・' + CARD_CAMP['book_end_ja'] + 'までの予約）</li>' if camp_live() else ''}</ul><a class="od-a" href="{base}cards/">旅行に使うカードを比べる →</a></div></li>
   </ol>
 </section>
 <section class="rsec"><h2>スーパーSALE（年4回）</h2>
-  <p class="rlead">楽天トラベルのスーパーSALEは、例年<b>3月・6月・9月・12月</b>の4日の夜から始まります。半額以下のセールプランが出て、クーポンとも組み合わせられます。</p>
+  <ul class="rlead ls"><li>例年<b>3月・6月・9月・12月</b>の4日の夜から</li><li>半額以下のセールプランが出ます</li><li>クーポンとも組み合わせられます</li></ul>
   <table class="gd-t od-t"><thead><tr><th>回</th><th>期間</th><th></th></tr></thead><tbody>{sale_rows}</tbody></table>
   <p class="rnote2">※「予想」は例年の時期から出したもので、正式な日程ではありません。発表されたら、ここを直します。</p>
 </section>
 <section class="rsec"><h2>毎月の、ほかのクーポン</h2>
-  <p class="rlead">楽天トラベルでは毎月「クーポン祭」も開かれます。クーポンの種類や条件は毎月変わるので、予約の前に見ておくと安心です。</p>
+  <ul class="rlead ls"><li>毎月「クーポン祭」も開かれます</li><li>種類・条件は毎月変わるので、予約の前に確かめてください</li></ul>
   <p><a class="od-a" href="{esc(aff(MATSURI))}" target="_blank" rel="noopener sponsored">今月のクーポン祭を見る →</a></p>
 </section>
 <aside class="od-card"><p class="prtop"><span>PR</span></p>
@@ -442,7 +442,7 @@ def build_weekend():
         for i, (r, p, no, d, med) in enumerate(top)) + "</ol>" if top else ""
     if not secs: secs = '<section class="rsec"><p class="gd-soon">この2週間の週末の料金を取得しています。明日の更新から、ここに並びます。</p></section>'
     body = f"""<header class="ok-hd"><h1>今週末・来週末に泊まれる神日</h1>
-  <p>直前でも、安くなっている宿はあります。この先2週間の週末で、<b>いつもの週末より安い</b>★4.3以上の宿を、毎日更新で並べました。</p></header>
+  <ul class="ld"><li>この先2週間の週末で、<b>いつもの週末より安い</b>宿</li><li>★4.3以上の宿だけ・毎日更新</li></ul></header>
 {secs}
 <section class="rsec"><h2>平日に休めるなら（この先2週間）</h2>
   <p class="rlead">ふだんの料金と比べて、いちばん下がっている平日の夜です。</p>{wday}</section>
