@@ -60,7 +60,7 @@ page = f"""<!doctype html>
     <div class="fv-tw"><table class="fv-t" id="fv-t"></table></div>
     <p class="fv-lg"><span class="lo">その宿の神日</span><span class="best">その日いちばん安い宿</span>数字は2名1泊の料金（万円）。朝食付きで比べている宿には「朝食付き」と表示</p>
   </section>
-  <p class="fine">※お気に入りは、この端末のブラウザに保存しています（ほかの端末とは共有されません）。{COND_PLAN}（2名合計・税込）。料金は楽天トラベルの料金で、毎日更新しています。</p>
+  <ul class="fine cond"><li>お気に入りは、この端末のブラウザに保存（ほかの端末とは共有されません）</li><li>{COND_PLAN}（2名合計・税込）</li><li>料金は楽天トラベルの料金で、毎日更新</li></ul>
 </main>
 """ + footer(base) + tabbar(base, "fav") + f"""<script src="{base}assets/favs.js?v={v[3]}"></script>
 </body></html>

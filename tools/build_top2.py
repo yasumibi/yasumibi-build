@@ -190,7 +190,7 @@ def _kami(lane):
     return f'<ul class="km-row" data-lane="{lane}"{" hidden" if lane == "b" else ""}>{li}</ul>' if out else ""
 _km = months[DEF_MI]
 kami_html = (f'<section class="kmc" aria-labelledby="kmh"><h2 id="kmh"><small class="keb">★4.6以上の高級宿・旅館</small>ハイクラスの宿が、<span class="kw">安く泊まれる日</span></h2>'
-             f'<p class="sub">憧れの宿も、{_km["m"]}月の神日（その月いちばん安い日）なら、ふだんよりこれだけ安く泊まれます。2名1泊・税込</p>'
+             f'<p class="sub">{_km["m"]}月の神日なら、憧れの宿もこれだけ安い（2名1泊・税込）</p>'
              + _kami("2") + _kami("b") + f'<a class="kmore" href="{base}tags/hc/">ハイクラスの宿をもっと見る ›</a></section>')
 TOP_JS = json.dumps(dict(months=months, areas=DATA["areas"], picks=_top_picks, preg=(["all"] + REGIONS).index(DEF_REG), regs=["全国"] + REGIONS), ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
 if os.path.exists(f"{OUT}/top-data.json"): os.remove(f"{OUT}/top-data.json")   # 前の大きいファイルは消す
@@ -221,7 +221,7 @@ page = f"""<!doctype html>
   <div class="gin">
     <div class="hcopy">
     <div class="shift"><div class="o"><small>これまで</small>休みの日に、安い宿を探す。</div><h1 class="n"><small>これから</small><b>安い日に、休みを合わせる。</b></h1></div>
-    <p class="lead">口コミ★4.3以上の宿だけを、毎日の料金で比べて、月ごとにいちばん安い日（神日）を出しています。</p>
+    <p class="lead">★4.3以上の宿だけを、毎日の料金で比較。月ごとの、いちばん安い日（神日）がわかります。</p>
     <p class="kexp"><span class="star"><i aria-hidden="true">★</i>口コミ4.3以上の宿だけ</span><span class="kd"><b>神日</b>＝その月いちばん安い日</span></p>
     </div>
     <div class="sbox">

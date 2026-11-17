@@ -27,9 +27,16 @@ def pack_link(no, arr, d):
     return f"https://hb.afl.rakuten.co.jp/hgc/{AFF}/?pc={e}&m={e}"
 
 
+def short_rev(t, n=48):
+    """口コミの抜き出しを短くする（長い文は読みにくいので。2026/11/17）。n字以内の、文の切れ目（。！!）で切る"""
+    if len(t) <= n: return t.rstrip("。")
+    cut = max((t.rfind(c, 0, n) for c in "。！!？?"), default=-1)
+    return (t[:cut] if cut >= 20 else t[:n]).rstrip("。、")
+
+
 def pack_note(d):
     w = "月火水木金土日"[d.weekday()]
-    return f"{d.month}/{d.day}({w})泊・2名、東京（羽田）発の日程を入れてあります。出発する空港は、開いた先で選び直せます。"
+    return f"{d.month}/{d.day}({w})泊・2名・羽田発で開きます（空港は変更できます）"
 # 楽天アフィリエイトの公式素材（楽天カードの券面だけ・200x200）。加工せず縮めて表示する。
 RK_FACE = ("https://hbb.afl.rakuten.co.jp/hsb/58adb89a.1783e5b6.58ad7ff2.3c792b49/?me_id=2101008&me_adv_id=373425&t=pict",
            "https://hb.afl.rakuten.co.jp/hsc/58adb89a.1783e5b6.58ad7ff2.3c792b49/?link_type=pict&ut=eyJwYWdlIjoic2hvcCIsInR5cGUiOiJwaWN0IiwiY29sIjoxLCJjYXQiOiIxIiwiYmFuIjozNzM0MjUsImFtcCI6ZmFsc2V9")
@@ -173,13 +180,13 @@ def feat_html(no, name, base_link_aff):
     av = AREA_RT.get(NO_AREA.get(no), [0] * 6)
     bars = "".join(f'<li{" class=\"tp\"" if v == top else ""}><span class="rl">{l}</span><span class="rb"><i style="width:{v/5*100:.1f}%"></i>{f'<em style="left:{a/5*100:.1f}%" title="エリア平均 {a:.2f}"></em>' if a else ''}</span><span class="rv">{v:.2f}</span></li>' for l, v, a in zip(RT_LABEL, d["rt"], av) if v)
     st = strengths(no); an = AREA_JA.get(NO_AREA.get(no), "")
-    st_html = (f'<p class="strong"><b>この宿の強み</b>{"・".join(st)}が、{an}の★4.3以上の宿の平均より高い</p>' if st
+    st_html = (f'<p class="strong"><b>この宿の強み</b>{"・".join(st)}<small>（{an}の★4.3以上の平均より高い）</small></p>' if st
                else f'<p class="strong"><b>この宿の評価</b>どの項目も、{an}の★4.3以上の宿の平均に近い</p>')
     hi = f'<span class="hi">{esc(d["hi"])}</span>' if d["hi"] else ""
     fac = "".join(f"<li>{esc(x)}</li>" for x in d["fac"])
     rev_html = (f"""<figure class="rev">
           <figcaption>最近の口コミ{('（' + d['rdate'] + '投稿）') if d['rdate'] else ''}</figcaption>
-          <blockquote><p>{esc(d['rev'])}…</p></blockquote>
+          <blockquote><p>{esc(short_rev(d['rev']))}…</p></blockquote>
           <a href="{esc(rv_link)}" target="_blank" rel="noopener sponsored">口コミをもっと読む（楽天トラベル）<span aria-hidden="true">→</span></a>
         </figure>""" if d["rev"] else "")
     return f"""
@@ -195,12 +202,12 @@ def feat_html(no, name, base_link_aff):
         {('<div class="fac"><h3>館内の施設</h3><ul>' + fac + '</ul></div>') if fac else ''}"""
 
 # キャンペーンの期限を過ぎたら、2.5倍の注記は出さない（毎日の更新で切り替わる）
-OT_RATE = (f'楽天トラベルでエントリーして楽天カードで事前決済すると、国内宿泊のポイントは2.5倍。楽天カード以外で払うと1倍です（2.5倍は{CARD_CAMP["book_end_ja"]}までの予約・{CARD_CAMP["out_last_ja"]}チェックアウトまでの宿泊）。'
-           if camp_live() else "楽天カードで事前決済すると、楽天カード以外で払うよりポイントが多くもらえます（カード利用100円につき1ポイント）。")
-OT_NOTE = "（エントリーが必要・2.5倍）。特典分は税抜料金で計算されます" if camp_live() else "（カード通常分）"
-CAMP_NOTE = (f'2.5倍は予約前のエントリーと楽天カードでの事前決済が条件で、{CARD_CAMP["book_end_ja"]}までの予約・{CARD_CAMP["out_last_ja"]}チェックアウトまでの宿泊が対象です（楽天トラベルのキャンペーン）。特典分は税抜料金で計算されます。'
+OT_RATE = (f'<li>エントリーして楽天カードで事前決済：国内宿泊のポイント2.5倍</li><li>楽天カード以外で払う：1倍</li><li>2.5倍の対象：{CARD_CAMP["book_end_ja"]}までの予約・{CARD_CAMP["out_last_ja"]}チェックアウトまで</li>'
+           if camp_live() else "<li>楽天カードで事前決済すると、ポイントが多くもらえます（100円につき1ポイント）</li>")
+OT_NOTE = "（要エントリー・2.5倍。特典分は税抜で計算）" if camp_live() else "（カード通常分）"
+CAMP_NOTE = (f'2.5倍の条件：予約前のエントリーと、楽天カードでの事前決済。対象：{CARD_CAMP["book_end_ja"]}までの予約・{CARD_CAMP["out_last_ja"]}チェックアウトまで。特典分は税抜料金で計算。'
              if camp_live() else "")
-CAMP_COND = f'（エントリーが必要。2.5倍は{CARD_CAMP["out_last_ja"]}チェックアウトまでの宿泊）' if camp_live() else ""
+CAMP_COND = f'（要エントリー。2.5倍は{CARD_CAMP["out_last_ja"]}チェックアウトまで）' if camp_live() else ""
 
 built = 0
 for meta in AREA["hotels"]:
@@ -260,7 +267,7 @@ for meta in AREA["hotels"]:
         pack_html = f"""
       <section class="pk" aria-labelledby="pk-h"{'' if _d0 else ' hidden'}>
         <div class="pk-hd"><h2 id="pk-h">飛行機で行くなら</h2><span class="pr">PR</span></div>
-        <p class="pk-t">ANA・JALの航空券と、この宿をまとめて予約できます（楽天トラベルの楽パック）。</p>
+        <p class="pk-t">ANA・JALの航空券と、この宿をまとめて予約（楽天トラベルの楽パック）</p>
         <p class="pk-n" id="pk-n">{pack_note(_d0) if _d0 else ""}</p>
         <a class="pk-go" id="pk-go" href="{pack_link(meta["no"], _pk, _d0) if _d0 else "#"}" target="_blank" rel="sponsored noopener"><svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg>航空券＋宿をまとめて探す</a>
       </section>"""
@@ -367,7 +374,13 @@ for meta in AREA["hotels"]:
         <ul class="peers">{peer_html}</ul>
       </section>
 
-      <div class="cond">※大人2名・1室・{PL}の最安プラン（2名合計・税込）。楽天トラベルから取得した料金で、取得日時は泊まる日ごとに異なります（日付を押すと表示）。<a href="{base}{PRICE_NOTE}">料金について</a>。予約前に最新の料金をご確認ください。ポイントは、楽天カードで事前決済すると楽天カード以外で払うより多くもらえる分の目安です{CAMP_COND}。条件は楽天トラベルのキャンペーンページでご確認ください。宿の写真：楽天トラベル</div>
+      <ul class="cond">
+        <li>料金：大人2名・1室・{PL}の最安プラン（2名合計・税込）</li>
+        <li>楽天トラベルから取得。取得日時は日付を押すと出ます（<a href="{base}{PRICE_NOTE}">料金について</a>）</li>
+        <li>予約の前に、最新の料金をご確認ください</li>
+        <li>ポイント：楽天カードで事前決済したときに増える分の目安{CAMP_COND}</li>
+        <li>宿の写真：楽天トラベル</li>
+      </ul>
     </div>
     """ + footer(base) + f"""
     <div class="bar" id="bar">
@@ -425,13 +438,13 @@ otoku = ohead + f"""
       <span class="sn">02</span>
       <div class="sb">
         <h2>楽天カードで払う</h2>
-        <p>{OT_RATE}はじめての方は、入会と利用で合計5,000ポイントの特典もあります。ポイントは宿代とは別に戻ってきます。</p>
+        <ul class="cond">{OT_RATE}<li>はじめての方：入会と利用で合計5,000ポイントの特典</li><li>ポイントは、宿代とは別に戻ってきます</li></ul>
         <section class="calc2" aria-labelledby="ch">
           <div class="c-hd"><h3 id="ch">戻ってくるポイントを計算する</h3><span class="pr">PR</span></div>
           <label class="c-in" for="cv"><span>宿代（2名分・税込）</span><span class="ci"><span aria-hidden="true">¥</span><input id="cv" inputmode="numeric" value="50,000" autocomplete="off"></span></label>
           <ol class="c-rows" id="cr" aria-live="polite"></ol>
           <div class="c-total"><span>戻ってくるポイント</span><b id="ct"></b></div>
-          <p class="c-note">楽天カードで事前決済した場合{OT_NOTE}の目安です。入会特典は初めて楽天カードを作る方が対象で、3,000ポイントは期間限定・3回以上の利用などの条件があります（{CARD_CAMP["checked"]}時点）。</p>
+          <ul class="c-note cond"><li>楽天カードで事前決済した場合{OT_NOTE}の目安</li><li>入会特典は、初めて楽天カードを作る方が対象</li><li>3,000ポイントは期間限定・3回以上の利用などが条件（{CARD_CAMP["checked"]}時点）</li></ul>
           <a class="c-apply" href="{CARD_AFF}" target="_blank" rel="nofollow sponsored noopener">楽天カードを申し込む（年会費無料）</a>
           <p class="c-fine">申し込み・審査・特典の条件は、楽天カードの公式ページでご確認ください。</p>
           <a class="ok-more" href="{ob}rakuten-card/">実際の宿での試算と、上位カードとの違いを見る →</a>
@@ -484,7 +497,7 @@ for _h in HOTELS_ALL:
 <title>{esc(_h['name'])}｜いまは掲載を休んでいます｜YASUMIBI</title><link rel="stylesheet" href="/assets/site.css"></head>
 <body><main style="max-width:640px;margin:0 auto;padding:48px 16px;line-height:1.8">
 <h1 style="font-size:20px">{esc(_h['name'])}</h1>
-<p>この宿は、この先の空きが少ないため（または掲載の基準を下回ったため）、いまは掲載を休んでいます。空きが戻れば、また自動で載ります。</p>
+<p>この宿は、いま掲載を休んでいます。</p><ul><li>理由：この先の空きが少ない、または掲載の基準を下回った</li><li>空きが戻れば、また自動で載ります</li></ul>
 <p><a href="/areas/{_h['area']}/">{esc(_an)}の宿を見る</a>　／　<a href="/">トップへ</a></p>
 </main></body></html>""")
     if os.path.exists(f"{_d}/data.json"): os.remove(f"{_d}/data.json")
