@@ -367,7 +367,7 @@ def pack_check():
     import re as _re, urllib.request as _u
     d = dt.date.today() + dt.timedelta(days=45); b = d + dt.timedelta(days=1)
     res = []
-    for no, arr, name in ((29924, "OKA", "グランビュー沖縄"), (76941, "SPK", "JRタワーホテル日航札幌")):
+    for no, arr, name in ((29924, "OKA", "グランビュー沖縄"), (76941, "SPK", "ホテル日航札幌")):
         ymd = lambda k, x: f"&{k}Yy={x.year}&{k}Mm={x.month}&{k}Dd={x.day}"
         u = ("https://package.travel.rakuten.co.jp/anafrt/hotel/searchHotelExecute?fDptab=1&suOtona=2&suTomariHeya=1"
              f"&noTomariHotel={no}" + ymd("dHatuToujyou", d) + ymd("dTyakuToujyou", b) + ymd("dCheckIn", d) + ymd("dCheckOut", b)
