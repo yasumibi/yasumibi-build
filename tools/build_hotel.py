@@ -10,6 +10,26 @@ except FileNotFoundError:
     IMG_WH = {}
 WD = "日月火水木金土"
 AFF = "589faade.b97f81b7.589faadf.010fa421"
+
+
+def pack_link(no, arr, d):
+    """楽天トラベルの宿ページの「航空券+宿泊（ANA）」と同じ形。宿・泊まる日（翌日に帰る）・大人2名1室。
+    出発は楽天と同じく東京（羽田）にして、開いた先で変えてもらう（空にすると赤い注意が出る画面になる）。
+    開いた先の「JALから探す」で、同じ宿・日程のままJALに切り替えられる。hotel.js の packLink と同じ"""
+    import urllib.parse as _u
+    b = d + datetime.timedelta(days=1)
+    q = (f"fDptab=1&suOtona=2&suTomariHeya=1&noTomariHotel={no}"
+         f"&dHatuToujyouYy={d.year}&dHatuToujyouMm={d.month}&dHatuToujyouDd={d.day}&dTyakuToujyouYy={b.year}&dTyakuToujyouMm={b.month}&dTyakuToujyouDd={b.day}"
+         f"&dCheckInYy={d.year}&dCheckInMm={d.month}&dCheckInDd={d.day}&dCheckOutYy={b.year}&dCheckOutMm={b.month}&dCheckOutDd={b.day}"
+         f"&cdHatuKuukou=HND&cdTyakuKuukou={arr}&cdHatuKuukouHukuro={arr}&cdTyakuKuukouHukuro=HND")
+    u = "https://package.travel.rakuten.co.jp/anafrt/hotel/searchHotelExecute?" + q
+    e = _u.quote(u, safe="")
+    return f"https://hb.afl.rakuten.co.jp/hgc/{AFF}/?pc={e}&m={e}"
+
+
+def pack_note(d):
+    w = "月火水木金土日"[d.weekday()]
+    return f"{d.month}/{d.day}({w})泊・2名、東京（羽田）発の日程を入れてあります。出発する空港は、開いた先で選び直せます。"
 # 楽天アフィリエイトの公式素材（楽天カードの券面だけ・200x200）。加工せず縮めて表示する。
 RK_FACE = ("https://hbb.afl.rakuten.co.jp/hsb/58adb89a.1783e5b6.58ad7ff2.3c792b49/?me_id=2101008&me_adv_id=373425&t=pict",
            "https://hb.afl.rakuten.co.jp/hsc/58adb89a.1783e5b6.58ad7ff2.3c792b49/?link_type=pict&ut=eyJwYWdlIjoic2hvcCIsInR5cGUiOiJwaWN0IiwiY29sIjoxLCJjYXQiOiIxIiwiYmFuIjozNzM0MjUsImFtcCI6ZmFsc2V9")
@@ -73,6 +93,7 @@ import sys as _sys; _sys.path.insert(0, os.path.dirname(os.path.abspath(__file__
 from common import summary_rows, is_b, plan_s, plan_l, COND_PLAN, usual_price, is_hc, place_of, lowest_upcoming, WD_JA, summary_text
 from common import CARD_CAMP, CARD_BONUS, camp_html, camp_live, camp_ok
 from common import FETCHED, PRH, fa_label, fa_range, PRICE_NOTE
+from common import AREAS
 from tagarea import pages_for_hotel
 from common import tabbar, footer, site_header, og_meta, load_area, logo_html, CARD_AFF, SLUG, jan_min, MONTHS, DEFAULT_YM, KY, KM, ASOF_BY_AREA, ASOF, AREA_JA, month_prices
 AREA = load_area()
@@ -230,6 +251,19 @@ for meta in AREA["hotels"]:
         bw0 = ba0 = br0 = ""
         k_days0 = f'{m0["m"]}月は{"朝食付き" if PS == "1泊朝食" else "2食付き"}プランの空室がありません'; k_price0 = "—"; hsv0 = ""; svp0 = ""
     kd = [i + 1 for i, v in enumerate(m0["p"]) if v == mn0]
+    # 楽パック（航空券＋宿）：飛行機で行くエリアだけ（areas.json の pack＝ANAの到着空港）。料金は出さない（2026/11/17）
+    _pk = next((a.get("pack") for a in AREAS if a["key"] == meta["area"]), None)
+    pack_html = ""
+    if _pk:
+        H["pk"] = _pk
+        _d0 = datetime.date(m0["y"], m0["m"], kd[0]) if mn0 else None
+        pack_html = f"""
+      <section class="pk" aria-labelledby="pk-h"{'' if _d0 else ' hidden'}>
+        <div class="pk-hd"><h2 id="pk-h">飛行機で行くなら</h2><span class="pr">PR</span></div>
+        <p class="pk-t">ANA・JALの航空券と、この宿をまとめて予約できます（楽天トラベルの楽パック）。</p>
+        <p class="pk-n" id="pk-n">{pack_note(_d0) if _d0 else ""}</p>
+        <a class="pk-go" id="pk-go" href="{pack_link(meta["no"], _pk, _d0) if _d0 else "#"}" target="_blank" rel="sponsored noopener"><svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg>航空券＋宿をまとめて探す</a>
+      </section>"""
     pts0 = mn0 * 2 // 100
     diff0 = pts0 - mn0 // 100
     feat_slug = FEAT.get((meta["area"], meta["tier"]))
@@ -294,7 +328,7 @@ for meta in AREA["hotels"]:
     <p class="sv-price" id="sv-price">{svp0}</p>
     <div id="sv-card"></div>
     <a class="sv-go" href="{base}rakuten-card/">楽天カードについて詳しく見る <span aria-hidden="true">→</span></a>
-  </section>
+  </section>{pack_html}
 
       <section class="blk" aria-labelledby="calh">
         <div class="sh"><h2 id="calh">神日カレンダー</h2><span class="j">日付を押すと料金が下に出ます</span></div>
