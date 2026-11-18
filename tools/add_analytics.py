@@ -15,6 +15,13 @@ if not os.path.exists(js):
 v = hashlib.md5(open(js, "rb").read()).hexdigest()[:8]
 TAG = f'<script defer src="/assets/ga.js?v={v}" data-id="{GA_ID}"></script>'
 OLD = re.compile(r'<script defer src="/assets/ga\.js\?v=[0-9a-f]+" data-id="[^"]*"></script>')
+# 次のページの先読み（2026/11/18。Modern Web Guidance「improve-next-page-load-performance」）
+# ・リンクに指やマウスが近づいたら、HTMLだけ取っておく（prefetch：スクリプトは動かないので計測に影響しない）
+# ・押し始めたら、ページを裏で組み立てておく（prerender：ほぼ確実に開くときだけ）
+# ・サイト内だけ。別タブで開くリンク・ダウンロードは除く。Chrome系だけが使い、ほかのブラウザは無視する
+SPEC = ('<script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"selector_matches":"[target=_blank], [download], [rel~=nofollow]"}}]},"eagerness":"moderate"}],'
+        '"prerender":[{"where":{"and":[{"href_matches":"/*"},{"not":{"selector_matches":"[target=_blank], [download], [rel~=nofollow]"}}]},"eagerness":"conservative"}]}</script>')
+OLD_SPEC = re.compile(r'<script type="speculationrules">.*?</script>', re.S)
 
 n_add = n_upd = n_same = 0
 for root, dirs, files in os.walk(OUT):
@@ -24,7 +31,11 @@ for root, dirs, files in os.walk(OUT):
             continue
         p = os.path.join(root, f)
         s = open(p, encoding="utf-8").read()
+        s0 = s
+        if SPEC not in s:
+            s = OLD_SPEC.sub(SPEC, s) if OLD_SPEC.search(s) else s.replace("</head>", SPEC + "\n</head>", 1)
         if TAG in s:
+            if s != s0: open(p, "w", encoding="utf-8").write(s)
             n_same += 1
             continue
         if OLD.search(s):
