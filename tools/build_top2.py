@@ -111,7 +111,7 @@ def _pcard(h, i, m, v, days, gap):
     body = (f'<div class="pr"><span class="tg">神日</span><span class="d">{dl}</span><span class="v">¥{v:,}</span></div>'
             + (f'<div class="gap">土曜泊の平均より <b>{gap:,}円安い</b></div>' if gap
                else f'<div class="pt">楽天カードなら +{card_extra(v, datetime.date(m["y"], m["m"], days[0])):,}円分</div>'))
-    return (f'<li class="rc"><a class="ph" href="../hotels/{h["slug"]}/"><img src="{h["thumb"]}" alt="" loading="lazy" width="300" height="200"></a>'
+    return (f'<li class="rc"><a class="ph" href="../hotels/{h["slug"]}/" tabindex="-1" aria-hidden="true"><img src="{h["thumb"]}" alt="" loading="lazy" width="300" height="200"></a>'
             f'<div class="inf"><span class="rk">{i + 1}</span><a class="nm" href="../hotels/{h["slug"]}/">{h["name"]}</a>'
             f'<span class="meta">{esc(place_of(h))}｜★{h["avg"]:.2f}<i class="mb">{"朝食付き" if is_b(h["area"]) else "2食付き"}</i></span>{body}</div>'
             f'<div class="acts"><a class="cal" href="../hotels/{h["slug"]}/">神日カレンダー<span aria-hidden="true">›</span></a>'

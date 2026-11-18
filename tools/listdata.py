@@ -180,7 +180,7 @@ def first_rows(area, base):
         dl = "・".join(lab(y, m, d) for d in days[:2]) + (f"など{len(days)}日" if len(days) > 2 else "")
         meta = f'{esc(h["loc"])}｜★{h["avg"]:.2f}' if area else f'{esc(place_of(h))}｜★{h["avg"]:.2f}<i class="mb">{meal_ja(h["area"])}</i>'
         if "hc" in h["t"]: meta += '<i class="hcm">ハイクラス</i>'
-        out.append(f'<li class="ri"><span class="rk">{i + 1}</span><a href="{base}hotels/{h["slug"]}/"><img class="rt" src="{h["thumb"]}" alt="" loading="lazy" width="96" height="64"></a>'
+        out.append(f'<li class="ri"><span class="rk">{i + 1}</span><a href="{base}hotels/{h["slug"]}/" tabindex="-1" aria-hidden="true"><img class="rt" src="{h["thumb"]}" alt="" loading="lazy" width="96" height="64"></a>'
                    f'<div class="rb"><a class="rn" href="{base}hotels/{h["slug"]}/">{esc(h["name"])}</a><span class="rm">{meta}</span>'
                    f'<div class="rk2"><i class="kd">神日</i>{dl} <b>¥{v:,}</b></div></div>'
                    f'<a class="rgo" href="{link(h["no"], y, m, days[0])}"{bk_attr(h["no"], datetime.date(y, m, days[0]))} target="_blank" rel="noopener sponsored">楽天トラベルで見る</a></li>')

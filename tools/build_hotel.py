@@ -303,6 +303,7 @@ for meta in AREA["hotels"]:
       <nav class="crumb" aria-label="現在地"><a href="{base}">ホーム</a><span>›</span><a href="{crumb_area}">{H['area']}</a><span>›</span><b>{esc(H['name'])}</b></nav>
     </div>
 
+    <main>
     <header class="hhero">
       <a class="hphoto" href="{esc(info_link)}" target="_blank" rel="noopener sponsored" aria-label="楽天トラベルで{esc(H['name'])}の写真と詳細を見る">
         <img src="{esc(info.get('img',''))}"{hero_wh} alt="{esc(H['name'])}の外観・館内（楽天トラベル掲載写真）" fetchpriority="high">
@@ -373,6 +374,7 @@ for meta in AREA["hotels"]:
         <li>宿の写真：楽天トラベル</li>
       </ul>
     </div>
+    </main>
     """ + footer(base) + f"""
     <div class="bar" id="bar">
       <div class="bi">
