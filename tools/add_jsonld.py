@@ -6,7 +6,7 @@
 ・宿の★（楽天の口コミ）は入れない（Googleの決まりで、よそのサイトの評価は構造化データに使えないため）
 """
 import html, json, os, re, sys
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 OUT = os.environ.get("YB_OUT") or os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "yasumibi-site")
@@ -42,6 +42,28 @@ def crumbs(page, url):
             "itemListElement": [{"@type": "ListItem", "position": i + 1, "name": n, "item": u} for i, (n, u) in enumerate(items)]}
 
 
+CRUMB = re.compile(r'(<nav class="crumb"[^>]*>)(.*?)(</nav>)', re.S)
+PART = re.compile(r'<a\b[^>]*>.*?</a>|<(b|span)\b[^>]*>(.*?)</\1>', re.S)
+
+
+def crumb_list(page, url):
+    """パンくずを、順番のあるリスト（ol）にする。区切りの「›」はCSSで出す（読み上げでは読まない）。
+    最後が今いるページ（リンクでない）なら、自分へのリンクにして aria-current="page" を付ける（2026/11/18。Modern Web Guidance「breadcrumbs」）。
+    見た目は変えない（中の b・span はそのまま残す）。"""
+    def one(m):
+        if "<ol" in m.group(2): return m.group(0)
+        items = []
+        for x in PART.finditer(m.group(2)):
+            if x.group(1) and text(x.group(2)) in ("›", ">", ""): continue   # 区切り
+            items.append(x.group(0))
+        if len(items) < 2: return m.group(0)
+        last = items[-1]
+        if not last.startswith("<a"):
+            items[-1] = f'<a href="{html.escape(urlparse(url).path, quote=True)}" aria-current="page">{last}</a>'
+        return m.group(1) + "<ol>" + "".join(f"<li>{i}</li>" for i in items) + "</ol>" + m.group(3)
+    return CRUMB.sub(one, page, count=1)
+
+
 def itemlist(page, url):
     m = re.search(r'<ol class="rl[^"]*">(.*?)</ol>', page, re.S)
     if not m: return None
@@ -70,12 +92,13 @@ def main():
             s0 = OLD.sub("", s)
             blocks = [b for b in (crumbs(s0, url), itemlist(s0, url)) if b]
             if not blocks:
+                s0 = crumb_list(s0, url)
                 if s0 != s: open(p, "w", encoding="utf-8").write(s0)
                 continue
             nb += any(b["@type"] == "BreadcrumbList" for b in blocks); ni += any(b["@type"] == "ItemList" for b in blocks)
             js = "".join('<script type="application/ld+json">' + json.dumps(b, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/") + "</script>"
                          for b in blocks)   # 文字の中の </script> で切れないように、JSONの中だけ </ を逃がす
-            s1 = s0.replace("</head>", f"{MARK_S}{js}{MARK_E}\n</head>", 1)
+            s1 = crumb_list(s0.replace("</head>", f"{MARK_S}{js}{MARK_E}\n</head>", 1), url)
             if s1 != s: open(p, "w", encoding="utf-8").write(s1)
             n += 1
     print(f"構造化データ：{n}ページ（パンくず {nb}・宿の一覧 {ni}）")

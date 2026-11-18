@@ -227,10 +227,11 @@ page = f"""<!doctype html>
     <div class="sbox">
       {lane_html}
       <div class="stabs" role="tablist" aria-label="探し方">
-        <button type="button" role="tab" id="t-free" aria-selected="true" aria-controls="p-search">日付はまだ決めていない</button>
-        <button type="button" role="tab" id="t-date" aria-selected="false" aria-controls="p-search">日付が決まっている</button>
+        <button type="button" role="tab" id="t-free" aria-selected="true">日付はまだ決めていない</button>
+        <button type="button" role="tab" id="t-date" aria-selected="false">日付が決まっている</button>
       </div>
-      <form class="sform" id="p-search" role="tabpanel" aria-labelledby="t-free">
+      <div role="tabpanel" id="p-panel" aria-labelledby="t-free"><search>
+      <form class="sform" id="p-search">
         <label class="fld"><span>エリア</span>
           <select id="f-area">{area_opts}</select></label>
         <label class="fld"><span>予算（2名1泊）</span>
@@ -249,6 +250,7 @@ page = f"""<!doctype html>
         <p class="ppl-note" hidden></p>
         <div class="cands" id="w-cands" hidden><span class="cl">ほかに休めそうな日</span><div class="cl2" id="f-cands"></div><button type="button" class="cadd" id="f-add">＋日付を追加</button></div>
       </form>
+      </search></div>
       <form class="kw" id="kw" role="search" data-base="{base}" autocomplete="off">
         <label class="kw-f"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
           <input type="search" id="kw-in" placeholder="宿の名前・地名・こだわりで探す" aria-label="宿の名前・地名・こだわりで探す" aria-controls="kw-dd" enterkeyhint="search"><button type="submit">探す</button></label>
