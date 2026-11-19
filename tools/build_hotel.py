@@ -306,7 +306,7 @@ for meta in AREA["hotels"]:
     <main>
     <header class="hhero">
       <a class="hphoto" href="{esc(info_link)}" target="_blank" rel="noopener sponsored" aria-label="楽天トラベルで{esc(H['name'])}の写真と詳細を見る">
-        <img src="{esc(info.get('img',''))}"{hero_wh} alt="{esc(H['name'])}の外観・館内（楽天トラベル掲載写真）" fetchpriority="high">
+        <img src="{esc(info.get('thumb') or info.get('img',''))}"{hero_wh}{(' data-hi="' + esc(info['img']) + '"') if info.get('thumb') and info.get('img') else ''} alt="{esc(H['name'])}の外観・館内（楽天トラベル掲載写真）" fetchpriority="high">
         <span class="credit">写真：楽天トラベル</span>
       </a>
       <div class="wrap">
