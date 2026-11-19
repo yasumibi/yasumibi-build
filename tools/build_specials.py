@@ -73,10 +73,14 @@ def rk_link(no, d, n=1):
 
 def fc_media(no, info):
     """特集の宿カードの写真：宿＋客室の2枚（客室の写真がなければ宿の1枚）"""
-    main = info.get("img") or info.get("thumb") or ""; rm = room_img(no)
+    # 宿の写真は一覧用の幅300pxを使う。楽天の大きい写真（share/HOTEL）は2,000〜3,000px・数MBあり、スマホでは数秒たっても出ない（2026/11/19 実測）
+    main = info.get("thumb") or info.get("img") or ""; rm = room_img(no)
     if not main: return ""
-    room = (f'<figure><img src="{esc(rm)}" alt="" loading="lazy" decoding="async"><figcaption>客室</figcaption></figure>' if rm else "")
-    return f'<div class="fph{"" if rm else " one"}"><img src="{esc(main)}" alt="" loading="lazy" decoding="async">{room}</div>'
+    fb = ""
+    # 2枚目が読めなければ1枚の形にする
+    rerr = ' onerror="this.closest(\'.fph\').classList.add(\'one\');this.parentNode.remove()"'
+    room = (f'<figure><img src="{esc(rm)}" alt="" loading="lazy" decoding="async"{rerr}></figure>' if rm else "")   # 2枚目は客室とは限らない（ロビー・風呂のこともある）ので、ラベルは付けない
+    return f'<div class="fph{"" if rm else " one"}"><img src="{esc(main)}" alt="" loading="lazy" decoding="async"{fb}>{room}</div>'
 
 
 def fc_osu(no):
@@ -86,6 +90,8 @@ def fc_osu(no):
 
 def item(i, no, big, small, sub, d, n=1):
     h = H[no]; info = INFO[str(no)]
+    m = re.search(r"食事の評価 ★([\d.]+)", sub or "")
+    if m and any(f"食事 {m.group(1)}" in t for t in osu_points(no)): sub = ""   # おすすめと同じ点数は重ねて出さない
     hp = f"../../hotels/{h['slug']}/" if h["slug"] in built else None
     name = f'<a class="rn" href="{hp}">{esc(h["name"])}</a>' if hp else f'<span class="rn">{esc(h["name"])}</span>'
     return f"""<li class="ri fc">

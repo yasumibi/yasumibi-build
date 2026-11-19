@@ -144,7 +144,7 @@ for f in FEATURES:
         rows += f'<tr><th scope="row">{esc(h["name"].replace("小田急 ","").replace("箱根仙石原プリンスホテル","仙石原プリンス").replace("ホテルグランバッハ熱海クレッシェンド","グランバッハ熱海"))}</th>{cells}</tr>'
     head = "".join(f'<td class="{ {"土": "sa", "日": "su"}.get(wd(d), "") }">{d}<small>{wd(d)}</small></td>' for d in range(1, ND + 1))
     foot = ""
-    data = {"year": Y, "month": M, "days": ND, "hotels": [dict(no=h["no"], name=h["name"], loc=h["loc"], avg=h["avg"], cnt=h["cnt"], p=h["p"], img=img_of(h["no"]), room=room_img(h["no"]), pt=osu_points(h["no"])) for h in hs]}
+    data = {"year": Y, "month": M, "days": ND, "hotels": [dict(no=h["no"], name=h["name"], loc=h["loc"], avg=h["avg"], cnt=h["cnt"], p=h["p"], img=thumb_of(h["no"]) or img_of(h["no"]), room=room_img(h["no"]), pt=osu_points(h["no"])) for h in hs]}
     base = "../../"
     title = f"{AREA_JA[f['area']]}の神日カレンダー（{TIER_JA[f['tier']]}・{Y}年{M}月）｜YASUMIBI"
     desc = f"{AREA_JA[f['area']]}の人気宿5軒の神日カレンダー。{lede}{Y}年{M}月泊の料金を全日調査。"
