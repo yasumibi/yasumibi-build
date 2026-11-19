@@ -8,7 +8,7 @@ from common import img_v
 from common import B_AREA_NAMES, B_AREA_LABEL, is_b, plan_s, plan_l, COND_PLAN
 from common import site_header, tabbar, footer as cfooter, og_meta, load_area
 D = load_area()
-from common import month_prices
+from common import month_prices, room_img, osu_points
 D["hotels"] = [h for h in D["hotels"] if h.get("added") == "2026-10-19"]   # 特集4本は最初の20軒で組んだ記事（2027年1月）
 for _h in D["hotels"]: _h["p"] = month_prices(_h["no"], 2027, 1)
 INFO = json.load(open(f"{ROOT}/data/hotel_info_20261021.json"))["hotels"]
@@ -144,7 +144,7 @@ for f in FEATURES:
         rows += f'<tr><th scope="row">{esc(h["name"].replace("小田急 ","").replace("箱根仙石原プリンスホテル","仙石原プリンス").replace("ホテルグランバッハ熱海クレッシェンド","グランバッハ熱海"))}</th>{cells}</tr>'
     head = "".join(f'<td class="{ {"土": "sa", "日": "su"}.get(wd(d), "") }">{d}<small>{wd(d)}</small></td>' for d in range(1, ND + 1))
     foot = ""
-    data = {"year": Y, "month": M, "days": ND, "hotels": [dict(no=h["no"], name=h["name"], loc=h["loc"], avg=h["avg"], cnt=h["cnt"], p=h["p"], img=img_of(h["no"])) for h in hs]}
+    data = {"year": Y, "month": M, "days": ND, "hotels": [dict(no=h["no"], name=h["name"], loc=h["loc"], avg=h["avg"], cnt=h["cnt"], p=h["p"], img=img_of(h["no"]), room=room_img(h["no"]), pt=osu_points(h["no"])) for h in hs]}
     base = "../../"
     title = f"{AREA_JA[f['area']]}の神日カレンダー（{TIER_JA[f['tier']]}・{Y}年{M}月）｜YASUMIBI"
     desc = f"{AREA_JA[f['area']]}の人気宿5軒の神日カレンダー。{lede}{Y}年{M}月泊の料金を全日調査。"

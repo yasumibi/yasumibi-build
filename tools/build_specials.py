@@ -10,7 +10,7 @@
 """
 import os, re, sys, json, html, hashlib, datetime as dt, statistics, urllib.parse
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import img_v, bk_attr, cover_img
+from common import img_v, bk_attr, cover_img, osu_points, room_img
 from common import is_b, plan_s, plan_l, COND_PLAN, usual_price, is_hc, HC_MIN
 from common import site_header, tabbar, footer, og_meta, OUT, DATA, AREA_JA, HOTELS, PRH, ASOF, TODAY, WINDOW_START, WINDOW_END, KY, KM
 
@@ -71,15 +71,29 @@ def rk_link(no, d, n=1):
     return f"https://hb.afl.rakuten.co.jp/hgc/{AFF}/?pc={q}&m={q}"
 
 
+def fc_media(no, info):
+    """特集の宿カードの写真：宿＋客室の2枚（客室の写真がなければ宿の1枚）"""
+    main = info.get("img") or info.get("thumb") or ""; rm = room_img(no)
+    if not main: return ""
+    room = (f'<figure><img src="{esc(rm)}" alt="" loading="lazy" decoding="async"><figcaption>客室</figcaption></figure>' if rm else "")
+    return f'<div class="fph{"" if rm else " one"}"><img src="{esc(main)}" alt="" loading="lazy" decoding="async">{room}</div>'
+
+
+def fc_osu(no):
+    pts = osu_points(no)
+    return f'<div class="osu"><b>おすすめ</b><ul>{"".join(f"<li>{esc(t)}</li>" for t in pts)}</ul></div>' if pts else ""
+
+
 def item(i, no, big, small, sub, d, n=1):
     h = H[no]; info = INFO[str(no)]
     hp = f"../../hotels/{h['slug']}/" if h["slug"] in built else None
     name = f'<a class="rn" href="{hp}">{esc(h["name"])}</a>' if hp else f'<span class="rn">{esc(h["name"])}</span>'
-    return f"""<li class="ri">
+    return f"""<li class="ri fc">
+  {fc_media(no, info)}
   <span class="rk">{i}</span>
-  <img class="rt" src="{esc(info.get('thumb',''))}" alt="" loading="lazy" width="96" height="64">
   <div class="rb">
     {name}<span class="rm">{esc(h.get('loc',''))}｜★{h.get('avg',0):.2f}（{h.get('cnt',0):,}件）</span>
+    {fc_osu(no)}
     <div class="rp"><span class="lb">{small}</span><b>{big}</b></div>{f'<div class="rs">{sub}</div>' if sub else ''}
   </div>
   <a class="rgo" href="{esc(rk_link(no, d, n))}"{bk_attr(no, d, n)} target="_blank" rel="noopener sponsored">楽天トラベルで見る</a>
@@ -816,11 +830,12 @@ def rare_items(rows):
         name = f'<a class="rn" href="{hp}">{esc(h["name"])}</a>' if hp else f'<span class="rn">{esc(h["name"])}</span>'
         chips = "".join(f"<i>{lab(d)}</i>" for d, _ in ns[:4])
         more = f"<em>など{len(ns)}日</em>" if len(ns) > 4 else ""
-        out.append(f"""<li class="ri rare">
+        out.append(f"""<li class="ri rare fc">
+  {fc_media(no, info)}
   <span class="rk">{i + 1}</span>
-  <img class="rt" src="{esc(info.get('thumb',''))}" alt="" loading="lazy" width="96" height="64">
   <div class="rb">
     {name}<span class="rm">{esc(h.get('loc',''))}｜★{h.get('avg',0):.2f}（{h.get('cnt',0):,}件）</span>
+    {fc_osu(no)}
     <div class="rv"><span class="ak">この先半年で空いている日</span><b>{od}</b><span class="ak">日</span></div>
     <dl class="rare-d"><div><dt>いちばん近い空き</dt><dd><span>{lab(near[0])}</span><b>{yen(near[1])}</b></dd></div><div><dt>いちばん安い日</dt><dd><span>{lab(low[0])}</span><b>{yen(low[1])}</b></dd></div></dl>
     <div class="rare-days"><span>空いている日</span>{chips}{more}</div>

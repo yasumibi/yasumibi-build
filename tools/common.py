@@ -522,3 +522,59 @@ def area_summary(area, label, nos, unit=""):
         out.append(f"いちばん安い日は、{b['name']}の{d.month}/{d.day}({WD_JA[d.weekday()]})泊・¥{b['v']:,}{'（' + unit + '）' if unit else ''}。")
     if f.get("sat", 0) >= 1000: out.append(f"土曜泊は、日〜木泊より¥{f['sat']:,}ほど高めです。")
     return out
+
+
+# ---- 特集の宿カード：客室の写真と「おすすめ」3つ（2026/11/19。aumo型の宿カード）
+# 楽天の説明文は書き換えずに使わない。口コミの項目別の点数・夕食の場所・設備などのデータから、こちらの言葉で作る
+import re
+_OSU = None
+_SC_JA = ("サービス", "立地", "部屋", "設備", "風呂", "食事")   # 施設情報APIの評価の並び（service, location, room, equipment, bath, meal）
+
+
+def _osu_load():
+    global _OSU
+    if _OSU is not None: return _OSU
+    _OSU = {}
+    try: ex = json.load(open(f"{DATA}/hotel_extra.json", encoding="utf-8"))
+    except Exception: ex = {}
+    det = {}
+    try:
+        for ln in open(f"{DATA}/hotel_detail_20261021.tsv", encoding="utf-8"):
+            c = ln.rstrip("\n").split("\t")
+            if len(c) >= 10 and c[0].isdigit(): det[int(c[0])] = c
+    except Exception: pass
+    for k, e in ex.items():
+        if k.isdigit(): _OSU[int(k)] = {"ex": e, "det": det.get(int(k))}
+    for no, c in det.items(): _OSU.setdefault(no, {"ex": {}, "det": c})
+    return _OSU
+
+
+def room_img(no):
+    return (_osu_load().get(int(no), {}).get("ex") or {}).get("room_img") or ""
+
+
+def osu_points(no):
+    """宿の「おすすめ」を最大3つ。どれもデータから言えることだけ"""
+    d = _osu_load().get(int(no)) or {}; e = d.get("ex") or {}; c = d.get("det")
+    sp = c[7] if c else (e.get("special") or ""); fac = c[9] if c else ""
+    pts = []
+    if re.search(r"全(客)?室.{0,10}露天|露天.{0,14}全\d*(客)?室", sp): pts.append("全室に露天風呂")
+    elif "露天風呂付" in sp: pts.append("露天風呂つきの客室あり")
+    sc = []
+    if c:
+        try: sc = [(float(v), _SC_JA[i]) for i, v in enumerate(c[3].split(",")[:6]) if v]
+        except Exception: sc = []
+    if sc:
+        top = sorted(sc, key=lambda x: -x[0])[:2]
+        pts.append("口コミで高い項目：" + "・".join(f"{n} {v:.2f}" for v, n in top))
+    dn = [x for x in re.split(r"[、,]", e.get("dinner") or "") if x]
+    MAP = {"部屋": "部屋食", "個室": "個室", "レストラン(バイキング)": "ビュッフェ", "広間": "広間", "料亭": "料亭", "食事処": "食事処", "レストラン": "レストラン", "ダイニングルーム": "ダイニング", "炉端処": "炉端", "茶寮": "茶寮", "食堂": "食堂"}
+    dn = [MAP.get(x, x) for x in dn if x != "コンベンションホール"][:2]
+    ext = [w for w, k in (("大浴場", "大浴場"), ("サウナ", "サウナ"), ("送迎", "送迎")) if k in fac][:2]
+    if dn: pts.append("夕食：" + "・".join(dict.fromkeys(dn)) + (f"／{'・'.join(ext)}あり" if ext and len(pts) >= 2 else ""))
+    if len(pts) < 3 and ext and not any("あり" in p and "夕食" in p for p in pts): pts.append("・".join(ext) + "あり")
+    if len(pts) < 3 and c:
+        try: rooms = int(c[6] or 0)
+        except Exception: rooms = 0
+        if 0 < rooms <= 30: pts.append(f"全{rooms}室の小さな宿")
+    return pts[:3]
