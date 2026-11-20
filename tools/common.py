@@ -671,7 +671,38 @@ def ev_corner(base):
             out.append(_ev_block(c, base, ex, lv, when, f' data-ev-s="{int(_dt.datetime.fromisoformat(c["s"]).timestamp()*1000)}" data-ev-e="{int(_dt.datetime.fromisoformat(c["e"]).timestamp()*1000)}" data-ev-g="top"'))
         else:
             out.append(_ev_block(c, base, ex, lv, when, _ev_attr(c, "top")))
-    return ("".join(out) + _EV_JS) if out else ""
+    return ("".join(out) + _EV_JS + _EVF_JS) if out else ""
+
+
+# トップのキャンペーンは、画面に大きく出さず「小さい帯 → 押すと開く」にする（2026/11/20 決定）。
+# ・最初の画面には出さない。検索（写真）の下まで進んだら出す
+# ・スマホ／幅1440px未満のPC：下に小さい帯。×で閉じても右下に小さいボタンが残る（押せばまた開ける）
+# ・幅1440px以上のPC：右の白いところに縦長の告知（クーポンを取る／神日と重ねると）
+# ・中身（今のコーナー）は <dialog> で開く。スマホは下から、PCは真ん中
+_EVF_JS = r"""<script>(function(){function go(){
+var sec=document.querySelector('section.ev:not([hidden])');if(!sec||!window.HTMLDialogElement)return;
+var A=function(k){return sec.getAttribute(k)||''};
+var pre=A('data-pre')=='1',n=A('data-n'),s=A('data-s'),u=A('data-u');
+var cp=sec.querySelector('.go a.p');
+var dlg=document.createElement('dialog');dlg.className='evd';dlg.setAttribute('aria-label',n);
+dlg.innerHTML='<button type="button" class="evd-x" aria-label="閉じる">×</button>';dlg.appendChild(sec);document.body.appendChild(dlg);
+var f=document.createElement('div');f.className='evf';f.hidden=true;
+f.innerHTML='<button type="button" class="evf-o"><span class="lv'+(pre?' pre':'')+'">'+(pre?'まもなく':'開催中')+'</span><span class="t"><b></b> <em></em></span><span class="u"></span><span class="op">見る</span></button>'
+ +(cp?'<a class="evf-c" target="_blank" rel="noopener sponsored"></a>':'')+'<button type="button" class="evf-k">神日と重ねると、いくら？</button><button type="button" class="evf-x" aria-label="小さくする">×</button>';
+f.querySelector('b').textContent=n;f.querySelector('em').textContent=s;f.querySelector('.u').textContent=u;
+if(cp){var c=f.querySelector('.evf-c');c.href=cp.href;c.textContent=cp.textContent.replace('（楽天トラベル）','');c.setAttribute('data-ev',cp.getAttribute('data-ev')||'');}
+if(!sec.querySelector('.evx'))f.querySelector('.evf-k').remove();
+var m=document.createElement('button');m.type='button';m.className='evf-m';m.hidden=true;m.textContent=(pre?'まもなく ':'')+n.replace('楽天トラベル','').trim().slice(0,10);
+document.body.appendChild(f);document.body.appendChild(m);
+var K='yb_evf_'+(cp&&cp.getAttribute('data-ev')||'x'),mini=false;try{mini=sessionStorage.getItem(K)=='1'}catch(e){}
+var past=false;function draw(){f.hidden=!past||mini;m.hidden=!past||!mini;}
+function open(){dlg.showModal();var x=sec.querySelector('.evx');if(x&&this&&this.classList&&this.classList.contains('evf-k'))x.open=true;}
+f.querySelector('.evf-o').addEventListener('click',open);var k=f.querySelector('.evf-k');if(k)k.addEventListener('click',open);m.addEventListener('click',open);
+f.querySelector('.evf-x').addEventListener('click',function(){mini=true;try{sessionStorage.setItem(K,'1')}catch(e){}draw();});
+dlg.querySelector('.evd-x').addEventListener('click',function(){dlg.close()});
+dlg.addEventListener('click',function(e){if(e.target===dlg)dlg.close();var a=e.target.closest&&e.target.closest('a[href*="#search"]');if(a)dlg.close();});
+var tk=0;function chk(){tk=0;var p=scrollY>innerHeight*.8;if(p!=past){past=p;draw()}}addEventListener('scroll',function(){if(!tk)tk=requestAnimationFrame(chk)},{passive:true});chk();
+}if(document.readyState=='loading')document.addEventListener('DOMContentLoaded',go);else go();})();</script>"""
 
 
 def _yen(v): return f"¥{v:,}"
@@ -691,7 +722,10 @@ def _ev_block(c, base, ex, lv, when, attr):
                f'<div class="evb c"><span>最大{c["pct"]}%オフなら</span><i style="width:{w(cut)}"><span>{_yen(cut)}</span></i></div>'
                f'<p class="nt">クーポンの割引率は宿によって違います。「最大{c["pct"]}%オフなら」は、上限まで使えた場合の計算です。</p></div></details>')
     w_ = f'<span class="ct">{when}</span>' if when else ""
-    return (f'<section class="ev" aria-label="開催中のキャンペーン" hidden{attr}><div class="in">'
+    _n = c["name"].replace("楽天トラベル ", "")
+    _s = f'最大{c["pct"]}%オフ' if c.get("pct") else c["short"]
+    _u = when.replace("(", "（").replace(")", "）") if when else ""
+    return (f'<section class="ev" aria-label="開催中のキャンペーン" hidden{attr} data-n="{_n}" data-s="{_s}" data-u="{when}" data-pre="{1 if "pre" in lv else 0}"><div class="in">'
             f'<div class="hd">{lv}<b>{c["name"]}</b>{w_}</div><div class="bd"><ul>{pts}</ul>{grf}'
             f'<div class="go"><a class="p" href="{camp_link(c["url"])}" target="_blank" rel="noopener sponsored" data-ev="{c["key"]}">{c["cta"]}</a>'
             f'<a class="s" href="{base}#search">神日を探す</a></div></div></div></section>')
