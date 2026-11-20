@@ -97,7 +97,7 @@ def tabbar(base, cur):
     return f'<nav class="tabbar" aria-label="メニュー">{a}</nav>'
 
 import sys as _sys; _sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import summary_rows, is_b, plan_s, plan_l, COND_PLAN, usual_price, is_hc, place_of, lowest_upcoming, WD_JA, summary_text
+from common import summary_rows, is_b, plan_s, plan_l, COND_PLAN, usual_price, is_hc, place_of, lowest_upcoming, WD_JA, summary_text, ev_bar_line
 from common import CARD_CAMP, CARD_BONUS, camp_html, camp_live, camp_ok
 from common import FETCHED, PRH, fa_label, fa_range, PRICE_NOTE
 from common import AREAS
@@ -377,6 +377,7 @@ for meta in AREA["hotels"]:
     </main>
     """ + footer(base) + f"""
     <div class="bar" id="bar">
+      {ev_bar_line()}
       <div class="bi">
         <div class="bw" id="b-when">{bw0}</div>
         <div class="ba"><span id="b-amt">{ba0}</span><small id="b-real">{br0}</small></div>

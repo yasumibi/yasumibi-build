@@ -579,3 +579,103 @@ def osu_points(no):
         except Exception: rooms = 0
         if 0 < rooms <= 30: pts.append(f"全{rooms}室の小さな宿")
     return pts[:3]
+
+
+# ---- 楽天トラベルのキャンペーン（2026/11/20）
+# トップのコーナーと宿ページの予約バーに、いま開催中のものを1つだけ出す（ブラックフライデー → スーパーSALE → 5と0のつく日の順）。
+# 期間の判定は開いた人のブラウザでする（ページの作り直しを待たずに、始まったら出て、終わったら消える）。
+# 日程・割引の書き方は楽天の発表どおり。「最大◯%」の形で書き、推測の数字は使わない。
+CAMPAIGNS = [
+    {"key": "bf", "name": "楽天トラベル ブラックフライデー", "s": "2026-11-19T10:00:00+09:00", "e": "2026-12-01T09:59:00+09:00",
+     "when": "12/1(火) 9:59まで", "when_bar": "〜12/1 9:59", "url": "https://travel.rakuten.co.jp/special/blackfriday/", "pct": 30,
+     "short": "クーポン最大30%オフ", "cta": "クーポンを取る（楽天トラベル）",
+     "pts": ["国内の宿：クーポン併用で<b>最大30%オフ</b>", "楽天トラベルクーポン 最大10%＋宿クーポン 最大20%"],
+     "src": "楽天グループ 2026/11/19 発表"},
+    # 楽天トラベルのSALEは楽天市場より長く続くことが多い（2026年3・6月は20日まで、9月は10/1まで）。終わりは開始後に公式ページで確かめて when に書く
+    {"key": "ss", "name": "楽天トラベル スーパーSALE", "s": "2026-12-04T20:00:00+09:00", "e": "2026-12-20T23:59:00+09:00", "pre": "2026-12-01T10:00:00+09:00",
+     "when": "", "when_pre": "12/4(金) 20時から", "url": "https://travel.rakuten.co.jp/special/supersale/", "pct": None,
+     "short": "SALEプラン・クーポンあり", "cta": "SALEを見る（楽天トラベル）",
+     "pts": ["SALE価格のプランと、割引クーポンが出ます", "まず神日を決めて、SALEのプランと見比べる"]},
+    {"key": "f0", "name": "5と0のつく日", "daily": True, "url": "https://travel.rakuten.co.jp/camp/50luxday/", "pct": 20,
+     "short": "クーポン最大20%オフ", "cta": "クーポンを取る（楽天トラベル）", "when": "今日23:59まで",
+     "pts": ["ホテル・温泉宿：クーポンで<b>最大20%オフ</b>", "クーポンを取ってから予約する"]},
+]
+CARD_PT = "楽天カードで事前決済：ポイント<b>2.5倍</b>（要エントリー・" + CARD_CAMP["book_end_ja"].replace("2026年", "").replace("月", "/").replace("日", " ") + "まで）"
+
+
+def camp_link(url):
+    import urllib.parse
+    return f"https://hb.afl.rakuten.co.jp/hgc/589faade.b97f81b7.589faadf.010fa421/?pc={urllib.parse.quote(url, safe='')}&m={urllib.parse.quote(url, safe='')}"
+
+
+_EV_JS = ("<script>(function(){var n=Date.now(),d=new Date(n+324e5),day=d.getUTCDate(),f=day%5==0&&day<=30,hit=0;"
+          "document.querySelectorAll('[data-ev-s]').forEach(function(x){if(hit&&x.getAttribute('data-ev-g')==hit)return x.remove();"
+          "var ok=x.hasAttribute('data-ev-d')?f:(n>=+x.getAttribute('data-ev-s')&&n<=+x.getAttribute('data-ev-e'));"
+          "if(ok){x.hidden=false;hit=x.getAttribute('data-ev-g')}else x.remove()})})();</script>")
+
+
+def _ev_attr(c, g):
+    if c.get("daily"): return f' data-ev-s="0" data-ev-d data-ev-g="{g}"'
+    ts = lambda s: int(_dt.datetime.fromisoformat(s).timestamp() * 1000)
+    return f' data-ev-s="{ts(c.get("pre") or c["s"])}" data-ev-e="{ts(c["e"])}" data-ev-g="{g}"'
+
+
+def ev_example():
+    """棒グラフの例：箱根・はつはな（16108）の、神日がある月の「高い日」と「神日」"""
+    b = lowest_upcoming(16108)
+    if not b: return None
+    v, d = b; hi = max(month_prices(16108, d.year, d.month))
+    return {"name": "はつはな（箱根）", "hi": hi, "kami": v, "d": d}
+
+
+def ev_corner(base):
+    """トップのキャンペーンコーナー（開催中のものを1つだけ）"""
+    ex = ev_example(); out = []
+    for c in CAMPAIGNS:
+        if not c.get("daily") and _dt.datetime.fromisoformat(c["e"]) < _dt.datetime.now(JST): continue
+        pre = c.get("pre")
+        lv = '<span class="lv">開催中</span>'
+        when = c["when"]
+        if pre:   # 始まる前は「まもなく」と開始の日時
+            out.append(_ev_block(c, base, ex, '<span class="lv pre">まもなく</span>', c["when_pre"], f' data-ev-s="{int(_dt.datetime.fromisoformat(pre).timestamp()*1000)}" data-ev-e="{int(_dt.datetime.fromisoformat(c["s"]).timestamp()*1000) - 1}" data-ev-g="top"'))
+            out.append(_ev_block(c, base, ex, lv, when, f' data-ev-s="{int(_dt.datetime.fromisoformat(c["s"]).timestamp()*1000)}" data-ev-e="{int(_dt.datetime.fromisoformat(c["e"]).timestamp()*1000)}" data-ev-g="top"'))
+        else:
+            out.append(_ev_block(c, base, ex, lv, when, _ev_attr(c, "top")))
+    return ("".join(out) + _EV_JS) if out else ""
+
+
+def _yen(v): return f"¥{v:,}"
+
+
+def _ev_block(c, base, ex, lv, when, attr):
+    card = [CARD_PT] if _dt.datetime.now(JST) < _dt.datetime.fromisoformat(CARD_CAMP["book_end"]) else []
+    pts = "".join(f"<li>{p}</li>" for p in c["pts"] + card)
+    grf = ""
+    if ex and c.get("pct"):
+        cut = int(ex["kami"] * (100 - c["pct"]) / 100)
+        w = lambda v: f"{max(8, round(v / ex['hi'] * 100, 1))}%"
+        grf = (f'<details class="evx"><summary><span>神日と重ねると、いくらになる？</span><small>例：{ex["name"]}</small></summary>'
+               f'<div class="ex"><small>{ex["name"]}・2名1泊・税込</small>'
+               f'<div class="evb"><span>高い日</span><i style="width:100%"><span>{_yen(ex["hi"])}</span></i></div>'
+               f'<div class="evb k"><span>神日 {ex["d"].month}/{ex["d"].day}</span><i style="width:{w(ex["kami"])}"><span>{_yen(ex["kami"])}</span></i></div>'
+               f'<div class="evb c"><span>最大{c["pct"]}%オフなら</span><i style="width:{w(cut)}"><span>{_yen(cut)}</span></i></div>'
+               f'<p class="nt">クーポンの割引率は宿によって違います。「最大{c["pct"]}%オフなら」は、上限まで使えた場合の計算です。</p></div></details>')
+    w_ = f'<span class="ct">{when}</span>' if when else ""
+    return (f'<section class="ev" aria-label="開催中のキャンペーン" hidden{attr}><div class="in">'
+            f'<div class="hd">{lv}<b>{c["name"]}</b>{w_}</div><div class="bd"><ul>{pts}</ul>{grf}'
+            f'<div class="go"><a class="p" href="{camp_link(c["url"])}" target="_blank" rel="noopener sponsored" data-ev="{c["key"]}">{c["cta"]}</a>'
+            f'<a class="s" href="{base}#search">神日を探す</a></div></div></div></section>')
+
+
+def ev_bar_line():
+    """宿ページの予約バーの上に出す1行（開催中のものを1つだけ）"""
+    out = []
+    for c in CAMPAIGNS:
+        if not c.get("daily") and _dt.datetime.fromisoformat(c["e"]) < _dt.datetime.now(JST): continue
+        if c.get("pre"):
+            attr = f' data-ev-s="{int(_dt.datetime.fromisoformat(c["s"]).timestamp()*1000)}" data-ev-e="{int(_dt.datetime.fromisoformat(c["e"]).timestamp()*1000)}" data-ev-g="bar"'
+        else: attr = _ev_attr(c, "bar")
+        when = f"・{c.get('when_bar') or c['when']}" if c.get("when") else ""
+        out.append(f'<a class="bev" hidden{attr} href="{camp_link(c["url"])}" target="_blank" rel="noopener sponsored" data-ev="{c["key"]}">'
+                   f'<span class="t"><b>{c["name"].replace("楽天トラベル ", "")}</b>{c["short"]}{when}</span><span aria-hidden="true">›</span></a>')
+    return ("".join(out) + _EV_JS) if out else ""

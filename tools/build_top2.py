@@ -4,7 +4,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # このリポジトリ
 OUT = os.environ.get("YB_OUT", os.path.join(os.path.dirname(ROOT), "yasumibi-site"))  # 公開用リポジトリ（隣に置く）
-from common import img_v, tile_img, place_of, bk_attr, is_hc, usual_price
+from common import img_v, tile_img, place_of, bk_attr, is_hc, usual_price, ev_corner
 from common import is_b, plan_s, plan_l, COND_PLAN
 from common import site_header, tabbar, footer, og_meta, load_area, AREAS, AREA_JA, MONTHS, DEFAULT_YM, ASOF, PRH, TODAY
 AREA = load_area()
@@ -216,6 +216,7 @@ page = f"""<!doctype html>
 <body class="app top2">
 {site_header(base)}
 
+{ev_corner(base)}
 <section class="hero hero-ph" id="search">
   {hero_html}
   <div class="gin">

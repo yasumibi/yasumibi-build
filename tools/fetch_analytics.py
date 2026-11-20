@@ -15,7 +15,7 @@ DATA = os.environ.get("YB_DATA", os.path.join(ROOT, "data"))
 JST = dt.timezone(dt.timedelta(hours=9))
 CF_SITE_TAG = os.environ.get("CF_SITE_TAG") or "0a93914d9d3d4e50838308c6548442f3"   # Cloudflare Web Analytics のサイト（yasumibi-site.pages.dev +2。秘密ではない）
 INTERNAL_FILTER_SINCE = dt.datetime(2026, 11, 16, 10, 31, tzinfo=dt.timezone(dt.timedelta(hours=9)))   # GA4 の内部トラフィックのフィルタを「有効」にした日時
-EVENTS = ["rakuten_travel", "rakuten_pack", "rakuten_card", "other_card", "favorite_add", "search", "sheet_open", "card_holder", "card_entry"]
+EVENTS = ["rakuten_travel", "rakuten_coupon", "rakuten_pack", "rakuten_card", "other_card", "favorite_add", "search", "sheet_open", "card_holder", "card_entry"]
 
 # ---- 対象の週
 if len(sys.argv) > 1:
@@ -124,6 +124,12 @@ def ga4():
                                {"filter": {"fieldName": "eventName", "inListFilter": {"values": ["rakuten_travel", "rakuten_card"]}}})
     except Exception as e:
         err("ga4.card_choice（GA4にカスタムディメンション card_choice を登録すると取れる）", e)
+    # キャンペーンの「クーポンを取る」（2026/11/20）：rakuten_coupon を campaign（bf／ss／f0）と place で分ける。カスタムディメンション campaign の登録が必要
+    try:
+        g["coupon_by_campaign"] = run(["customEvent:campaign", "customEvent:place"], ["eventCount", "totalUsers"], 30, "eventCount",
+                                      {"filter": {"fieldName": "eventName", "stringFilter": {"value": "rakuten_coupon"}}})
+    except Exception as e:
+        err("ga4.coupon_by_campaign（GA4にカスタムディメンション campaign を登録すると取れる）", e)
 
 def _num(v):
     try: return int(v)

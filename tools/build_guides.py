@@ -6,7 +6,7 @@
 """
 import os, sys, json, html, hashlib, statistics, datetime as dt, urllib.parse, calendar
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import is_b, plan_s, plan_l, COND_PLAN, place_of, bk_attr, camp_live, CARD_CAMP
+from common import is_b, plan_s, plan_l, COND_PLAN, place_of, bk_attr, camp_live, CARD_CAMP, camp_link
 from common import (site_header, tabbar, footer, og_meta, OUT, DATA, AREA_JA, HOTELS, PRH, ASOF,
                     WINDOW_START, WINDOW_END, TODAY, CARD_AFF)
 import jp_holidays
@@ -288,7 +288,7 @@ FIVE0 = "https://travel.rakuten.co.jp/camp/50luxday/"
 MATSURI = "https://travel.rakuten.co.jp/coupon/special/matsuri/"
 # スーパーSALE（楽天トラベル）。実績は公表された日程、先の回は例年の時期からの予想。
 SALES = [(dt.date(2026, 3, 4), dt.date(2026, 3, 20), "実績"), (dt.date(2026, 6, 4), dt.date(2026, 6, 20), "実績"),
-         (dt.date(2026, 9, 4), dt.date(2026, 10, 1), "実績"), (dt.date(2026, 12, 4), dt.date(2026, 12, 20), "予想"),
+         (dt.date(2026, 9, 4), dt.date(2026, 10, 1), "実績"), (dt.date(2026, 12, 4), None, "決定"),   # 12月は4日20時から（終わりは開始後に楽天トラベルで確かめて入れる）
          (dt.date(2027, 3, 4), dt.date(2027, 3, 20), "予想"), (dt.date(2027, 6, 4), dt.date(2027, 6, 20), "予想")]
 CHECKED = "2026年10月"
 
@@ -297,9 +297,17 @@ CHECKED = "2026年10月"
 SALES_ON = [x for x in SALES if x[2] != "予想"]
 
 
+# ほかのセール（楽天の発表どおり）
+OTHER_SALES = [("楽天トラベル ブラックフライデー", dt.date(2026, 11, 19), dt.date(2026, 12, 1), "11/19(木) 10:00〜12/1(火) 9:59", "国内の宿：クーポン併用で最大30%オフ", "https://travel.rakuten.co.jp/special/blackfriday/")]
+
+
+def bf_on(d):
+    return any(a <= d <= b for _, a, b, *_ in OTHER_SALES)
+
+
 def sale_on(d):
     for a, b, k in SALES_ON:
-        if a <= d <= b: return k
+        if a <= d <= (b or a): return k
     return ""
 
 
@@ -311,7 +319,8 @@ def big_cal(y, m):
         cls = []
         if d.day % 5 == 0: cls.append("f0")
         s = sale_on(d)
-        if s: cls.append("ss" + (" yo" if s == "予想" else ""))
+        if s: cls.append("ss")
+        if bf_on(d): cls.append("bf")
         if d < TODAY: cls.append("past")
         if d == TODAY: cls.append("td")
         if d.weekday() == 6 or hol(d): cls.append("su")
@@ -326,16 +335,22 @@ def build_otoku_days():
     y2, m2 = (TODAY.year + (TODAY.month == 12), TODAY.month % 12 + 1)
     cals = big_cal(TODAY.year, TODAY.month) + big_cal(y2, m2)
     nxt = next(TODAY + day(i) for i in range(0, 7) if (TODAY + day(i)).day % 5 == 0 and (TODAY + day(i)).day <= 30)
-    up = next(((a, b, k) for a, b, k in SALES_ON if b >= TODAY), None)
-    sale_rows = "".join(f'<tr><td>{a.year}年{a.month}月</td><td>{a.month}/{a.day}〜{b.month}/{b.day}</td><td>{"開催済み" if b < TODAY else "開催決定"}</td></tr>'
+    up = next(((a, b, k) for a, b, k in SALES_ON if (b or a) >= TODAY), None)
+    sale_rows = "".join(f'<tr><td>{a.year}年{a.month}月</td><td>{f"{a.month}/{a.day}〜{b.month}/{b.day}" if b else f"{a.month}/{a.day} 20時〜（終わりは始まってから載せます）"}</td><td>{"開催済み" if b and b < TODAY else "開催決定"}</td></tr>'
                         for a, b, k in SALES_ON)
-    up_s = (f'次は<b>{up[0].month}月{up[0].day}日（{WD[up[0].weekday()]}）</b>から') if up else "<b>次の日程は発表待ち</b>"
+    other_rows = "".join(f'<tr><td><a href="{camp_link(u)}" target="_blank" rel="noopener sponsored" data-ev="bf">{n}</a><br><small>{x}</small></td><td>{w}</td></tr>' for n, a, b, w, x, u in OTHER_SALES if b >= TODAY)
+    other_sec = ('''<section class="rsec"><h2>ほかのセール</h2>
+  <table class="gd-t od-t"><thead><tr><th>セール</th><th>期間</th></tr></thead><tbody>''' + other_rows + '''</tbody></table>
+  <p class="rnote2">※割引率は「最大」の値です。宿やクーポンによって違います。出典：楽天グループの発表（2026/11/19）</p>
+</section>
+''') if other_rows else ""
+    up_s = (f'次は<b>{up[0].month}月{up[0].day}日（{WD[up[0].weekday()]}）20時</b>から') if up else "<b>次の日程は発表待ち</b>"
     body = f"""<header class="ok-hd"><h1>楽天トラベルで、さらに安くなる日</h1>
   <p><b>泊まる日</b>は神日で決める。<b>予約する日</b>は「5と0のつく日」かスーパーSALE。<b>払う</b>のは楽天カード。この3つを重ねるのが、いちばん安い泊まり方です。</p></header>
 <div class="od-now"><div><small>次の5と0のつく日</small><b id="od-next">{nxt.month}月{nxt.day}日（{WD[nxt.weekday()]}）</b><span id="od-left"></span></div>
   <div><small>楽天トラベル スーパーSALE</small><b>{up_s}</b></div></div>
 <section class="rsec"><h2>予約するなら、この日</h2>
-  <p class="od-lg"><span class="f0">5と0のつく日</span><span class="ss">スーパーSALE</span></p>
+  <p class="od-lg"><span class="f0">5と0のつく日</span><span class="ss">スーパーSALE</span><span class="bf">ブラックフライデー</span></p>
   <div class="bcs">{cals}</div>
   <p class="rnote2">※カレンダーは「予約する日」です。泊まる日とは別に考えます。</p>
 </section>
@@ -346,10 +361,10 @@ def build_otoku_days():
     <li><span class="n">03</span><div><h3>払うのは、楽天カードで事前決済</h3><ul class="cond"><li>楽天カードで事前決済：ポイント2倍</li>{'<li>予約前にエントリー：2.5倍（国内宿泊・' + CARD_CAMP['book_end_ja'] + 'までの予約）</li>' if camp_live() else ''}</ul><a class="od-a" href="{base}cards/">旅行に使うカードを比べる →</a></div></li>
   </ol>
 </section>
-<section class="rsec"><h2>スーパーSALE（年4回）</h2>
+{other_sec}<section class="rsec"><h2>スーパーSALE（年4回）</h2>
   <ul class="rlead ls"><li>2026年は<b>3月・6月・9月</b>に開催（どれも4日の夜から）</li><li>半額以下のセールプランが出ます</li><li>クーポンとも組み合わせられます</li></ul>
   <table class="gd-t od-t"><thead><tr><th>回</th><th>期間</th><th></th></tr></thead><tbody>{sale_rows}</tbody></table>
-  <p class="rnote2">※次の回の日程は、楽天トラベルが発表してから載せます。</p>
+  <p class="rnote2">※楽天トラベルのSALEの期間です。楽天市場のSALEとは、終わりの日が違うことがあります。</p>
 </section>
 <section class="rsec"><h2>毎月の、ほかのクーポン</h2>
   <ul class="rlead ls"><li>毎月「クーポン祭」も開かれます</li><li>種類・条件は毎月変わるので、予約の前に確かめてください</li></ul>
