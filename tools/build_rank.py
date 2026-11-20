@@ -9,7 +9,7 @@
 import os, sys, json, html, hashlib, datetime, calendar, statistics, urllib.parse
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from tagarea import pages_for_area
-from autofeat import area_features
+from autofeat import area_features, nearby_features
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import img_v, cover_img, place_of, lowest_upcoming, bk_attr, area_summary, area_facts, WD_JA
 KEEP_TITLE = {"kinugawa"}
@@ -207,6 +207,7 @@ def write(path, s):
 
 
 made = []
+AREA_ROWS = []   # エリア一覧（/areas/）用
 by_area = {}
 for h in H.values(): by_area.setdefault(h["area"], []).append(h["no"])
 LJS = lambda base: f'<script src="{base}assets/list.js?v={ver("list.js")}" defer></script>\n'
@@ -248,6 +249,11 @@ for a in AREAS:
     if _fe:
         body += (f'<section class="rsec tg-sec" aria-labelledby="feh"><h2 id="feh">{esc(nm)}の特集</h2><ul class="tg-ar">'
                  + "".join(f'<li><a href="{base}features/{s}/">{esc(t.rstrip("。"))}</a></li>' for s, t in _fe) + "</ul></section>")
+    else:   # 特集のないエリア：同じ地方のほかのエリアの特集と、全国の特集へ（2026/11/20 案4-A）
+        _nh, _nf = nearby_features(a["key"])
+        if _nf:
+            body += (f'<section class="rsec tg-sec" aria-labelledby="feh"><h2 id="feh">{esc(_nh)}</h2><ul class="tg-ar">'
+                     + "".join(f'<li><a href="{base}features/{s}/">{esc(t.rstrip("。"))}</a></li>' for s, t in _nf) + "</ul></section>")
     gap = pen = near = []
     if len(nos) >= 5:
         gap, pen, near = rank_sets(nos)
@@ -274,10 +280,31 @@ for a in AREAS:
     # 検索結果の説明文に、答え（安い時期・いちばん安い日）を先に出す（2026/11/16。「◯◯ 安い時期」で表示されてもクリックされていなかった）
     desc = ("".join(_as[:2]) + f"★4.3以上の{len(nos)}軒の料金を毎日比べています。") if _as else \
            f"{alab}の★4.3以上・{plan_l(a['key'])}の宿{len(nos)}軒を、毎日の料金で比べて、月ごとにいちばん安い日（神日）を出しています。休みを、安い日に合わせるなら。"
-    crumb = f'<a href="{base}">ホーム</a><span aria-hidden="true">›</span><a href="{base}#areas">エリア</a><span aria-hidden="true">›</span><span>{esc(nm)}</span>'
+    crumb = f'<a href="{base}">ホーム</a><span aria-hidden="true">›</span><a href="{base}areas/">エリア</a><span aria-hidden="true">›</span><span>{esc(nm)}</span>'
     write(f"{OUT}/areas/{a['key']}/index.html", page(f"areas/{a['key']}/", title, desc, crumb, esc(ask) if a["key"] not in KEEP_TITLE else f"{esc(nm)}の宿がいちばん安い日",
                                                     ("" if _as else f"{esc(nm)}の★4.3以上の宿{len(nos)}軒。宿ごとに、いちばん安い日（神日）がわかります。毎日更新。"), body, base, cover(a["key"], base), LJS(base), "areas"))
     if gap or pen: made.append((a, len(nos), gap[:1]))
+    AREA_ROWS.append((a, len(nos), _af.get("lows") or []))
+
+
+# エリア一覧 /areas/（2026/11/20 案5-B）：地方ごとの表。エリア・県・軒数・安い月・2名の最安
+_b = "../"
+_by = {a["key"]: (a, n, lows) for a, n, lows in AREA_ROWS}
+_regs = [r for r in L.REGIONS if any(a["region"] == r for a, _, _ in AREA_ROWS)]
+_nav = '<ul class="ar-nav">' + "".join(f'<li><a href="#r{i}">{esc(r)}</a></li>' for i, r in enumerate(_regs)) + "</ul>"
+def _arow(a, n, lows):
+    lo = "・".join(f"{m}月" for m in lows[:2]) or "—"
+    return (f'<tr><th scope="row"><a href="{_b}areas/{a["key"]}/">{esc(a["name"])}</a><small>{esc(a.get("pref", ""))}・{n}軒</small></th>'
+            f'<td class="m">{lo}</td><td class="p">{yen(L.AREA_MIN[a["key"]])}〜<small>{L.meal_ja(a["key"])}</small></td></tr>')
+_secs = "".join(
+    f'<section class="ar-reg" id="r{i}" aria-labelledby="r{i}h"><h2 id="r{i}h">{esc(r)}</h2><table class="ar-tb"><thead><tr><th scope="col">エリア</th><th scope="col">安い月</th><th scope="col" class="p">2名・最安</th></tr></thead><tbody>'
+    + "".join(_arow(*_by[a["key"]]) for a in L.LIVE if a["region"] == r and a["key"] in _by) + "</tbody></table></section>"
+    for i, r in enumerate(_regs))
+_tot = sum(n for _, n, _ in AREA_ROWS)
+write(f"{OUT}/areas/index.html", page("areas/", f"エリアから探す｜全国{len(AREA_ROWS)}エリアの安い月と最安値｜YASUMIBI",
+      f"全国{len(AREA_ROWS)}エリア・★4.3以上の宿{_tot:,}軒の、いちばん安い月と料金の一覧。温泉地も街のホテルも、安い日に休みを合わせるなら。毎日更新。",
+      f'<a href="{_b}">ホーム</a><span aria-hidden="true">›</span><span>エリア</span>', "エリアから探す",
+      f"全国{len(AREA_ROWS)}エリア・★4.3以上の宿{_tot:,}軒。エリアごとの、いちばん安い月と料金です。毎日更新。", _nav + _secs, _b, cur="areas"))
 
 # 全国版：2食付きの宿と朝食付きの宿で、ランキングを分ける（違う条件の宿は同じ並びに入れない）
 LANES = [dict(b=False, path="ranking/", base="../", name="2食付きの宿", other=("ranking/asa/", "朝食付きの宿")),

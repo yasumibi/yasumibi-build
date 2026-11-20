@@ -182,3 +182,22 @@ def area_features(area):
     out = [(s, title[s]) for s in MANUAL.get(area, []) if s in title]
     out += [(sl, hd) for a, t, sl, hd in live() if a == area]
     return out
+
+
+NATIONAL = ["akogare", "aki-rare"]   # 全国の特集（どのエリアからも出してよいもの）
+
+
+def nearby_features(area, n_reg=4):
+    """特集のないエリアに出す、同じ地方のほかのエリアの特集＋全国の特集（2026/11/20）：(見出し, [(slug, 題名)])"""
+    from common import AREAS
+    reg = next((a["region"] for a in AREAS if a["key"] == area), None)
+    title = {c[0].split("/")[1]: c[1] for c in FEATURE_CARDS}
+    near = []
+    for a in AREAS:
+        if a["key"] == area or a["region"] != reg: continue
+        for s, t in area_features(a["key"]):
+            if s not in dict(near): near.append((s, t))
+    near = near[:n_reg]
+    nat = [(s, title[s]) for s in NATIONAL if s in title]
+    head = f"{reg}・全国の特集" if near else "全国の特集"
+    return head, near + nat

@@ -125,6 +125,7 @@ FINE = (f'<p class="fine">※★4.3以上＝楽天トラベルの口コミ評価
 
 LIVE = [t for t in TAGS if rows_for(t)]
 made = []
+TOPA = []   # こだわり一覧（/tags/）用
 for t in LIVE:
     rows = rows_for(t)
     areas = {a["key"]: len(rows_for(t, a["key"])) for a in AREAS}   # 朝食付きのエリアは全国版に入らないので、エリアごとに数える
@@ -145,8 +146,9 @@ for t in LIVE:
     if t.get("min", 2) >= 3:
         title = f"街なかで温泉に入れるホテル｜安い日がわかる★4.3以上{len(rows)}軒｜YASUMIBI"
         desc = f"東京・大阪・京都・札幌など街のエリアで、天然温泉に入れる★4.3以上のホテル{len(rows)}軒。宿ごとにいちばん安く泊まれる日（神日）と料金がわかります。毎日更新。"
-    write(f"tags/{t['slug']}/", page(f"tags/{t['slug']}/", title, desc, [(t["name"], None)], body, base))
+    write(f"tags/{t['slug']}/", page(f"tags/{t['slug']}/", title, desc, [("こだわり", f"{base}tags/"), (t["name"], None)], body, base))
     made.append(f"tags/{t['slug']}/")
+    TOPA.append((t, len(rows), sorted(order, key=lambda k: -areas[k])[:6], areas))
     # エリア別
     for a in order:
         ar = rows_for(t, a); base = "../../../"
@@ -164,7 +166,7 @@ for t in LIVE:
             r0 = ar[0]; _wd = "月火水木金土日"[r0["d"].weekday()]
             desc = (f"{AREA_JA[a]}で温泉（天然温泉）に入れる★4.3以上のホテル{len(ar)}軒。いちばん安いのは{H[r0['no']]['name']}の"
                     f"{r0['d'].month}/{r0['d'].day}({_wd})泊・¥{r0['p']:,}（2名{plan_s(a)}・税込）。宿ごとの神日がわかります。毎日更新。")
-        write(f"tags/{t['slug']}/{a}/", page(f"tags/{t['slug']}/{a}/", title, desc, [(t["name"], f"{base}tags/{t['slug']}/"), (AREA_JA[a], f"{base}areas/{a}/")], body, base))
+        write(f"tags/{t['slug']}/{a}/", page(f"tags/{t['slug']}/{a}/", title, desc, [("こだわり", f"{base}tags/"), (t["name"], f"{base}tags/{t['slug']}/"), (AREA_JA[a], f"{base}areas/{a}/")], body, base))
         made.append(f"tags/{t['slug']}/{a}/")
 
 # 条件から外れたタグ・エリアのページ（古いデータのまま残るもの）を消す
@@ -176,5 +178,17 @@ for _t in os.listdir(f"{OUT}/tags") if os.path.isdir(f"{OUT}/tags") else []:
     if f"tags/{_t}/" not in _keep: shutil.rmtree(_d); continue
     for _a in os.listdir(_d):
         if os.path.isdir(f"{_d}/{_a}") and f"tags/{_t}/{_a}/" not in _keep: shutil.rmtree(f"{_d}/{_a}")
+
+# こだわり一覧 /tags/（2026/11/20）：9つのこだわりの入口。軒数と、宿の多いエリア6つへ
+_b = "../"
+_cards = "".join(
+    f'<li><h2><a href="{_b}tags/{t["slug"]}/">{esc(t["name"])}</a><small>{n}軒</small></h2><p>{esc(t["q"])}</p>'
+    + '<ul class="tg-ar">' + "".join(f'<li><a href="{_b}tags/{t["slug"]}/{k}/">{esc(AREA_JA[k])}<small>{ar[k]}軒</small></a></li>' for k in top) + "</ul></li>"
+    for t, n, top, ar in TOPA)
+_body = (f'<header class="ok-hd"><h1>こだわりで探す</h1><p>露天風呂付き客室・部屋食・ペットなど、{len(TOPA)}つのこだわり。★4.3以上の宿だけです。</p></header>'
+         f'<ul class="tg-cards">{_cards}</ul>{FINE}')
+write("tags/", page("tags/", f"こだわりで探す｜露天風呂付き客室・部屋食・ペットなど{len(TOPA)}つ｜YASUMIBI",
+                    f"露天風呂付き客室・貸切風呂・部屋食・海が見える・ペットと泊まれるなど、{len(TOPA)}つのこだわりから★4.3以上の宿を探せます。宿ごとのいちばん安い日（神日）がわかります。毎日更新。",
+                    [("こだわり", None)], _body, _b))
 json.dump([dict(slug=t["slug"], name=t["name"], n=len(rows_for(t))) for t in LIVE], open(f"{OUT}/tags/tags.json", "w"), ensure_ascii=False)
 print("tags built", [(t["slug"], len(rows_for(t))) for t in LIVE], len(made), "pages")

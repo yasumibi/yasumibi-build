@@ -300,7 +300,7 @@ for meta in AREA["hotels"]:
             f"https://yasumibi.com/assets/og/{slug}.jpg" if os.path.exists(f"{OUT}/assets/og/{slug}.jpg") else None)) + f"""
     {site_header(base)}
     <div class="wrap">
-      <nav class="crumb" aria-label="現在地"><a href="{base}">ホーム</a><span>›</span><a href="{crumb_area}">{H['area']}</a><span>›</span><b>{esc(H['name'])}</b></nav>
+      <nav class="crumb" aria-label="現在地"><a href="{base}">ホーム</a><span>›</span><a href="{base}areas/">エリア</a><span>›</span><a href="{crumb_area}">{H['area']}</a><span>›</span><b>{esc(H['name'])}</b></nav>
     </div>
 
     <main>

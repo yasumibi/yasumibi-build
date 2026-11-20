@@ -48,7 +48,7 @@ def _asset_v(name):
 def footer(base):
     # 読みもの（特集・ランキングなど）は、宿・エリアのページからたどる道が少なかったので、全ページのフッターに入口を置く（2026/11/20）
     return f"""<div class="wrap"><footer class="site">
-  <nav class="fr" aria-label="読みもの"><a href="{base}features/">特集</a><a href="{base}ranking/">ランキング</a><a href="{base}weekend/">今週末の神日</a><a href="{base}renkyu/">有給1日で連休</a><a href="{base}otoku-days/">さらに安くなる日</a></nav>
+  <nav class="fr" aria-label="読みもの"><a href="{base}features/">特集</a><a href="{base}ranking/">ランキング</a><a href="{base}weekend/">今週末の神日</a><a href="{base}renkyu/">有給1日で連休</a><a href="{base}otoku-days/">さらに安くなる日</a><a href="{base}areas/">エリア一覧</a><a href="{base}tags/">こだわりで探す</a></nav>
   <nav aria-label="サイト情報"><a href="{base}about/">YASUMIBIについて</a><a href="{base}about/#operator">運営者情報</a><a href="{base}privacy/">プライバシーポリシー</a><a href="{base}disclosure/">広告の掲載について</a></nav>
   <div class="prnote">PR｜当サイトは広告（アフィリエイト）を利用しています。掲載している料金は調べた時点のもので、予約時の料金と異なる場合があります。</div>
   <div class="prnote">このサイトで掲載されている情報は、YASUMIBIの作成者により運営されています。価格、販売可能情報は、変更される場合があります。予約時に楽天トラベル（travel.rakuten.co.jp）に表示されている価格が、その宿泊に適用されます。</div>
