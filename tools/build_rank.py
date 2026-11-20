@@ -18,7 +18,7 @@ ONSEN = {"hakone", "atami", "kusatsu", "yufuin", "beppu", "arima", "kinosaki", "
          "nasu", "ikaho", "shima", "yugawara", "isawa", "yuzawa", "okuhida", "wakura", "dogo", "kurokawa", "ibusuki", "zao", "naruko",
          "shiobara", "hanamaki", "bandaiatami", "iizaka", "higashiyama", "tsukioka", "unazuki", "awara", "nozawa", "hirugami", "izunagaoka",
          "yumura", "misasa", "kaike", "tamatsukuri", "yubara", "kirishima", "tokachigawa", "yunoyama", "nagato", "yuda", "tsuetate", "totsukawa"}   # 検索で上位（2026/10/29時点で2位）。タイトルを変えずに様子を見るエリア
-from common import B_AREA_NAMES, B_AREA_LABEL, is_b, plan_s, plan_l, COND_PLAN
+from common import B_AREA_NAMES, B_AREA_LABEL, is_b, plan_s, plan_l, COND_PLAN, area_gap, man
 from common import (site_header, tabbar, footer, og_meta, OUT, DATA, AREAS, AREA_JA, HOTELS, MONTHS, KY, KM,
                     month_prices, ASOF_BY_AREA, ASOF, TODAY)
 
@@ -165,7 +165,7 @@ def cover(key, base):
     if not img: return ""
     c = CREDITS.get(img)
     cr = f'<span class="cv-cr">写真：{esc(c["artist"] or "Wikimedia Commons")}（{esc(c["license"])}・Wikimedia Commons{"・" + esc(c["edit"]) if c.get("edit") else ""}）</span>' if c else ""
-    return f'<figure class="cv">{cover_img(base, img)}{cr}</figure>'
+    return f'<figure class="cv sm">{cover_img(base, img)}{cr}</figure>'   # 写真は細く（答えを最初の1画面に。2026/11/20 案3）
 
 
 def page(path, title, desc, crumb, h1, lead, body, base, cv="", js="", cur="features"):
@@ -228,8 +228,7 @@ for a in AREAS:
     if _af.get("lows"):
         _rows.append(("安い月", "・".join(f"{m}月" for m in _af["lows"])))
         if _af["mdiff"] >= 1000: _rows.append(("高い月", f'{_af["high"]}月（安い月より{_yen(_af["mdiff"])}ほど高い）'))
-    if "sat" in _af:
-        _rows.append(("曜日", f'日〜木泊が安い（土曜泊は{_yen(_af["sat"])}ほど高い）' if _af["sat"] >= 1000 else "曜日による差は小さい"))
+    # 「曜日」の行（土曜と日〜木泊の差）は外す。土曜との差は、上の「土曜より安い日」（土曜と神日の差）に一本化（2026/11/20）
     for _k in ("ny", "gw"):
         if _k in _af:
             _x = _af[_k]
@@ -239,8 +238,22 @@ for a in AREAS:
         _rows.append(("いちばん安い日", f'{_d.month}/{_d.day}({WD_JA[_d.weekday()]})泊・{_yen(_b["v"])}（{_b["name"]}）'))
     _tbl = ('<dl class="asum">' + "".join(f"<dt>{esc(k)}</dt><dd>{esc(v)}</dd>" for k, v in _rows) + "</dl>") if len(_rows) >= 3 else ('<ul class="cond">' + "".join(f"<li>{esc(t.rstrip('。'))}</li>" for t in _as) + "</ul>")
     _sum = (f'<section class="hsum" aria-labelledby="asum-h"><h2 id="asum-h">{esc(alab)}の安い時期のまとめ</h2>{_tbl}'
-            f'<small>{TODAY.month}/{TODAY.day}時点の楽天トラベルの料金（★4.3以上の{len(nos)}軒・2名{plan_s(a['key'])}・税込）から。差は宿ごとの料金の中央値です。毎日更新します。</small></section>') if _as else ""
-    body = _sum + L.list_section(a["key"], base)
+            f'<small>{TODAY.month}/{TODAY.day}時点の楽天トラベルの料金（★4.3以上の{len(nos)}軒・2名{plan_s(a['key'])}・税込）から。差は宿ごとの料金の中央値です。「土曜より安い日」は、宿ごとの土曜の料金と、その宿のいちばん安い日との差（3連休の日曜・年末年始は除く）。毎日更新します。</small></section>') if _as else ""
+    # 最初の1画面：日にちで変わる額と、比べている条件（2026/11/20 案3）。差が1万円未満のエリアは「変わりにくい」文面に
+    _g = area_gap(nos); _ag = ""
+    if _g:
+        _lo = "・".join(f"{m}月" for m in (_af.get("lows") or [])[:2])
+        _all = "すべて" if _g["cnt"] == _g["n"] else (f"{round(_g['cnt'] / _g['n'] * 10)}割" if _g["cnt"] else "ありません")
+        _big = _g["med"] >= 10000
+        _hd = (f'{esc(nm)}は、日にちで2人1万円以上変わる宿が<mark>{_all}</mark>。' if _big
+               else f'{esc(nm)}は、日にちで料金が<mark>変わりにくい</mark>エリア。')
+        _k1 = (f'<div><dt>土曜より安い日（2人）</dt><dd class="g">約{man(_g["med"])}</dd></div>' if _big
+               else f'<div><dt>土曜との差（2人）</dt><dd>約{man(_g["med"])}</dd></div>')
+        _ag = (f'<div class="ag"><p class="ag-h">{_hd}</p><dl class="ag-k">{_k1}'
+               f'<div><dt>1万円以上変わる宿</dt><dd>{_g["cnt"]}<small>／{_g["n"]}軒</small></dd></div>'
+               + (f'<div><dt>安い時期</dt><dd>{_lo}</dd></div>' if _lo else "")
+               + f'</dl><p class="ag-c">条件：2名1室・{plan_l(a["key"])}の、その日いちばん安いプラン／★4.3以上の宿だけ／毎日更新</p></div>')
+    body = _ag + _sum + L.list_section(a["key"], base)
     _tp = pages_for_area(a["key"])   # このエリアのタグ×エリアのページへのリンク（検索で入りやすいページに、サイトの中から道をつくる）
     if _tp:
         body += (f'<section class="rsec tg-sec" aria-labelledby="tgh"><h2 id="tgh">{esc(nm)}を、こだわりで探す</h2><ul class="tg-ar">'
@@ -278,7 +291,13 @@ for a in AREAS:
     else:
         title = f"{ask}・{'いちばん安い日' if is_b(a['key']) else '宿がいちばん安い日'}（神日）｜★4.3以上{len(nos)}軒・2名{plan_s(a['key'])}¥{min(_lows)[0]:,}〜｜YASUMIBI"
     # 検索結果の説明文に、答え（安い時期・いちばん安い日）を先に出す（2026/11/16。「◯◯ 安い時期」で表示されてもクリックされていなかった）
-    desc = ("".join(_as[:2]) + f"★4.3以上の{len(nos)}軒の料金を毎日比べています。") if _as else \
+    if _g:   # 検索結果の説明文：比べた範囲 → 日にちで変わる額 → 安い時期 → 条件（2026/11/20）
+        _lo = "・".join(f"{m}月" for m in (_af.get("lows") or [])[:2])
+        desc = (f"{alab}の★4.3以上の{'ホテル' if is_b(a['key']) else '宿'}{len(nos)}軒を、半年分すべての日で比べました。"
+                + (f"土曜より、2人で約{man(_g['med'])}安い日があります。" if _g["med"] >= 10000 else f"土曜でも料金が変わりにくく、差は2人で約{man(_g['med'])}。")
+                + (f"いちばん安い時期は{_lo}。" if _lo else "") + f"2名{plan_s(a['key'])}・毎日更新。")
+    else:
+      desc = ("".join(_as[:2]) + f"★4.3以上の{len(nos)}軒の料金を毎日比べています。") if _as else \
            f"{alab}の★4.3以上・{plan_l(a['key'])}の宿{len(nos)}軒を、毎日の料金で比べて、月ごとにいちばん安い日（神日）を出しています。休みを、安い日に合わせるなら。"
     crumb = f'<a href="{base}">ホーム</a><span aria-hidden="true">›</span><a href="{base}areas/">エリア</a><span aria-hidden="true">›</span><span>{esc(nm)}</span>'
     write(f"{OUT}/areas/{a['key']}/index.html", page(f"areas/{a['key']}/", title, desc, crumb, esc(ask) if a["key"] not in KEEP_TITLE else f"{esc(nm)}の宿がいちばん安い日",

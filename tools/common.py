@@ -513,6 +513,34 @@ def area_facts(area, nos):
     return f
 
 
+def area_gap(nos):
+    """日にちで変わる額（2026/11/20 戦略部屋の決定：行き先は決まっていて、日にちはまだの人に「いつがいちばん安いか」を数字で）。
+    宿ごとに「土曜の料金の真ん中の値 − その宿のいちばん安い日（神日）の料金」を出し、エリアの真ん中の値を返す。
+    比べる日：この先半年。3連休の日曜（翌日が祝日）と年末年始は除く。土曜が3回以上・料金が20日以上ある宿だけ。"""
+    import statistics as _st, jp_holidays as _jh
+    nyd = lambda d: (d.month == 12 and d.day >= 29) or (d.month == 1 and d.day <= 3)
+    rsun = lambda d: d.weekday() == 6 and bool(_jh.name(d + _dt.timedelta(days=1)))
+    ds = []
+    for no in nos:
+        xs = []
+        for k, v in PRH.get(str(no), {}).items():
+            try: v = int(v or 0)
+            except (TypeError, ValueError): continue
+            if not v: continue
+            d = _dt.date.fromisoformat(k)
+            if d <= TODAY or d < WINDOW_START or d > WINDOW_END or nyd(d) or rsun(d): continue
+            xs.append((v, d))
+        sat = [v for v, d in xs if d.weekday() == 5]
+        if len(sat) >= 3 and len(xs) >= 20: ds.append(_st.median(sat) - min(v for v, d in xs))
+    if len(ds) < 3: return None
+    return dict(n=len(ds), med=int(round(_st.median(ds) / 100.0)) * 100, cnt=sum(1 for x in ds if x >= 10000))
+
+
+def man(v):
+    """2.2万円／4,000円（1万円以上は万円で小数1けた）"""
+    return f"{v / 10000:.1f}万円" if v >= 10000 else f"{int(round(v, -2)):,}円"
+
+
 def area_summary(area, label, nos, unit=""):
     """エリアの宿（nos）の料金から、安い月・高い月・いちばん安い宿と日・土曜泊との差を出して、2〜3文にする。"""
     f = area_facts(area, nos)
