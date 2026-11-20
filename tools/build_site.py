@@ -8,7 +8,7 @@ from common import img_v
 from common import B_AREA_NAMES, B_AREA_LABEL, is_b, plan_s, plan_l, COND_PLAN
 from common import site_header, tabbar, footer as cfooter, og_meta, load_area
 D = load_area()
-from common import month_prices, room_img, osu_points
+from common import month_prices, room_img, osu_points, SLUG
 D["hotels"] = [h for h in D["hotels"] if h.get("added") == "2026-10-19"]   # 特集4本は最初の20軒で組んだ記事（2027年1月）
 for _h in D["hotels"]: _h["p"] = month_prices(_h["no"], 2027, 1)
 INFO = json.load(open(f"{ROOT}/data/hotel_info_20261021.json"))["hotels"]
@@ -141,7 +141,10 @@ for f in FEATURES:
             t = "so" if not v else ("t0" if v <= mn else "t1" if v / mn <= 1.15 else "t2" if v / mn <= 1.35 else "t3")
             sat = " sat" if wd(d) == "土" else ""
             cells += f'<td class="c {t}{sat}" title="{lab(d)} {yen(v) if v else "満室"}">{f"{v/10000:.1f}" if v else ""}</td>'
-        rows += f'<tr><th scope="row">{esc(h["name"].replace("小田急 ","").replace("箱根仙石原プリンスホテル","仙石原プリンス").replace("ホテルグランバッハ熱海クレッシェンド","グランバッハ熱海"))}</th>{cells}</tr>'
+        _nm = esc(h["name"].replace("小田急 ","").replace("箱根仙石原プリンスホテル","仙石原プリンス").replace("ホテルグランバッハ熱海クレッシェンド","グランバッハ熱海"))
+        _sl = (SLUG.get(h["no"]) or (None,))[0]   # 宿の名前から宿ページへ（2026/11/20。前はこの特集から宿ページへのリンクが無かった）
+        _th = f'<a href="../../hotels/{_sl}/">{_nm}</a>' if _sl else _nm
+        rows += f'<tr><th scope="row">{_th}</th>{cells}</tr>'
     head = "".join(f'<td class="{ {"土": "sa", "日": "su"}.get(wd(d), "") }">{d}<small>{wd(d)}</small></td>' for d in range(1, ND + 1))
     foot = ""
     data = {"year": Y, "month": M, "days": ND, "hotels": [dict(no=h["no"], name=h["name"], loc=h["loc"], avg=h["avg"], cnt=h["cnt"], p=h["p"], img=thumb_of(h["no"]) or img_of(h["no"]), room=room_img(h["no"]), pt=osu_points(h["no"])) for h in hs]}

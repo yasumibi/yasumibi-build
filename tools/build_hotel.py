@@ -269,8 +269,8 @@ for meta in AREA["hotels"]:
       </section>"""
     pts0 = mn0 * 2 // 100
     diff0 = pts0 - mn0 // 100
-    feat_slug = FEAT.get((meta["area"], meta["tier"]))
-    crumb_area = f'{base}features/{feat_slug}/' if feat_slug else f'{base}areas/{meta["area"]}/'
+    # パンくずは、どの宿も「ホーム › エリア › 宿」にそろえる（2026/11/20。前は箱根・熱海だけ特集だった。特集へは「この宿が載っている特集」から）
+    crumb_area = f'{base}areas/{meta["area"]}/'
     _mine = jan_min(meta["p"])   # 同じエリアで、1月の神日が近い価格の宿を6軒
     peers = sorted([h for h in AREA["hotels"] if h["area"] == meta["area"] and h["no"] != meta["no"] and str(h["no"]) in INFO and jan_min(h["p"])],
                    key=lambda h: abs(jan_min(h["p"]) - _mine))[:6]
@@ -326,7 +326,7 @@ for meta in AREA["hotels"]:
     </header>
 
     <div class="wrap">
-      {_sum}
+      {_sum}<!--xf-b-->
       <section class="sv" aria-labelledby="sv-h">
     <div class="sv-hd"><h2 id="sv-h">この宿をいちばん安く泊まるには</h2><span class="pr">PR</span></div>
     <p class="sv-price" id="sv-price">{svp0}</p>
@@ -359,7 +359,7 @@ for meta in AREA["hotels"]:
       <section class="blk" aria-labelledby="fth">
         <div class="sh"><h2 id="fth">宿の特徴</h2></div>
         {feat_html(meta["no"], name, info_link)}
-        {_tags_html}
+        <!--xf-a-->{_tags_html}
         {room_html}
         <dl class="acc"><dt>アクセス</dt><dd>{esc(info.get('access',''))}</dd><dt>最寄り駅</dt><dd>{esc(info.get('station',''))}</dd></dl>
         <p class="note">※宿の情報・評価・口コミは楽天トラベルの掲載内容です（2026年10月21日時点）。</p>
