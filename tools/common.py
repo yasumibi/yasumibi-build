@@ -49,6 +49,7 @@ def footer(base):
     return f"""<div class="wrap"><footer class="site">
   <nav aria-label="サイト情報"><a href="{base}about/">YASUMIBIについて</a><a href="{base}about/#operator">運営者情報</a><a href="{base}privacy/">プライバシーポリシー</a><a href="{base}disclosure/">広告の掲載について</a></nav>
   <div class="prnote">PR｜当サイトは広告（アフィリエイト）を利用しています。掲載している料金は調べた時点のもので、予約時の料金と異なる場合があります。</div>
+  <div class="prnote">このサイトで掲載されている情報は、YASUMIBIの作成者により運営されています。価格、販売可能情報は、変更される場合があります。予約時に楽天トラベル（travel.rakuten.co.jp）に表示されている価格が、その宿泊に適用されます。</div>
   <div><a href="https://webservice.rakuten.co.jp/" target="_blank" rel="noopener">Supported by Rakuten Developers</a>　© YASUMIBI</div>
 </footer></div><script src="{base}assets/ppl.js?v={_asset_v('ppl.js')}" defer></script>
 """

@@ -149,6 +149,7 @@ for f in FEATURES:
     title = f"{AREA_JA[f['area']]}の神日カレンダー（{TIER_JA[f['tier']]}・{Y}年{M}月）｜YASUMIBI"
     desc = f"{AREA_JA[f['area']]}の人気宿5軒の神日カレンダー。{lede}{Y}年{M}月泊の料金を全日調査。"
     page = HEAD.format(ver=VER, canon=f"features/{f['slug']}/", title=esc(title), desc=esc(desc), base=base, bodycls=' class="has-sheet"', og=og_meta(esc(title), esc(desc), f"features/{f['slug']}/")) + runhead(base, "") + f"""
+<main>
 <div class="cover">
   {photo_block(f, base)}
   <div class="lede">
@@ -178,6 +179,7 @@ for f in FEATURES:
   <div class="hotels" id="hotels"></div>
   <div class="cond">※大人2名・1室・1泊2食付きの最安プラン（2名合計・税込）。{ASOF}時点の楽天トラベルの料金。予約前に最新料金をご確認ください。宿の写真：楽天トラベル</div>
 </section>
+</main>
 </div>
 """ + footer(base) + f"""
 <div class="sheet" aria-live="polite"><div class="in">
